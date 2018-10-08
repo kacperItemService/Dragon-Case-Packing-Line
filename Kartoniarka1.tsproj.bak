@@ -4738,48 +4738,6 @@ External Setpoint Generation:
 							</SubVar>
 						</Var>
 						<Var>
-							<Name>GVL_IO.di_PBStart</Name>
-							<Comment>
-								<![CDATA[ Push button - Start]]>
-							</Comment>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
-							<Name>GVL_IO.di_PBStop</Name>
-							<Comment>
-								<![CDATA[ Push button - Stop]]>
-							</Comment>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
-							<Name>GVL_IO.di_PBReset</Name>
-							<Comment>
-								<![CDATA[ Push button - ResetL]]>
-							</Comment>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
-							<Name>GVL_IO.di_Auto</Name>
-							<Comment>
-								<![CDATA[ automatyczny tryb]]>
-							</Comment>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
-							<Name>GVL_IO.di_Manual</Name>
-							<Comment>
-								<![CDATA[ tryb ręczny]]>
-							</Comment>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
-							<Name>GVL_IO.di_Maintance</Name>
-							<Comment>
-								<![CDATA[ tryb obsługi]]>
-							</Comment>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
 							<Name>GVL_IO.Wyp_wys</Name>
 							<Comment>
 								<![CDATA[wejscia]]>
@@ -5048,6 +5006,10 @@ External Setpoint Generation:
 							<Type>BOOL</Type>
 						</Var>
 						<Var>
+							<Name>GVL_NCI.arrNCToPLC_NCIChannel_REF</Name>
+							<Type GUID="{45D9D182-C252-216C-9BD4-57E7AD7AF14A}">ARRAY [1..1] OF MC.NCTOPLC_NCICHANNEL_REF</Type>
+						</Var>
+						<Var>
 							<Name>GVL_Omron.wOmron_1_Status</Name>
 							<Comment>
 								<![CDATA[Kartoniarka ]]>
@@ -5059,12 +5021,12 @@ External Setpoint Generation:
 							<Type>INT</Type>
 						</Var>
 						<Var>
-							<Name>GVL_Omron.wOmron_2_Status</Name>
-							<Type>WORD</Type>
+							<Name>GVL_Omron.iOmronErectorAcc</Name>
+							<Type>UDINT</Type>
 						</Var>
 						<Var>
-							<Name>GVL_Omron.iOmron_2_ActVelo</Name>
-							<Type>INT</Type>
+							<Name>GVL_Omron.iOmronErectorDcc</Name>
+							<Type>UDINT</Type>
 						</Var>
 						<Var>
 							<Name>GVL_Omron.wOmron_Za_Status</Name>
@@ -5198,10 +5160,6 @@ External Setpoint Generation:
 								<![CDATA[rezerwa ]]>
 							</Comment>
 							<Type>BOOL</Type>
-						</Var>
-						<Var>
-							<Name>GVL_NCI.arrNCToPLC_NCIChannel_REF</Name>
-							<Type GUID="{45D9D182-C252-216C-9BD4-57E7AD7AF14A}">ARRAY [1..1] OF MC.NCTOPLC_NCICHANNEL_REF</Type>
 						</Var>
 					</Vars>
 					<Vars VarGrpType="2">
@@ -5663,19 +5621,15 @@ External Setpoint Generation:
 							<Type>BYTE</Type>
 						</Var>
 						<Var>
+							<Name>GVL_NCI.arrPLCToNC_NCIChannel_REF</Name>
+							<Type GUID="{5BADCFB9-BDED-2900-AEEF-46EFF514B76F}">ARRAY [1..1] OF MC.PLCTONC_NCICHANNEL_REF</Type>
+						</Var>
+						<Var>
 							<Name>GVL_Omron.wOmron_1_Control</Name>
 							<Type>WORD</Type>
 						</Var>
 						<Var>
 							<Name>GVL_Omron.iOmron_1_SeVelo</Name>
-							<Type>INT</Type>
-						</Var>
-						<Var>
-							<Name>GVL_Omron.wOmron_2_Control</Name>
-							<Type>WORD</Type>
-						</Var>
-						<Var>
-							<Name>GVL_Omron.iOmron_2_SeVelo</Name>
 							<Type>INT</Type>
 						</Var>
 						<Var>
@@ -5762,10 +5716,6 @@ External Setpoint Generation:
 							</Comment>
 							<Type>BOOL</Type>
 						</Var>
-						<Var>
-							<Name>GVL_NCI.arrPLCToNC_NCIChannel_REF</Name>
-							<Type GUID="{5BADCFB9-BDED-2900-AEEF-46EFF514B76F}">ARRAY [1..1] OF MC.PLCTONC_NCICHANNEL_REF</Type>
-						</Var>
 					</Vars>
 					<UnrestoredVarLinks ImportTime="2018-03-02T13:48:39">
 						<OwnerA Name="InputDst" Prefix="TIPC^PLC^PLC Instance" Type="1">
@@ -5851,6 +5801,20 @@ External Setpoint Generation:
 							</OwnerB>
 							<OwnerB Name="TINC^NC-Task 1 SAF^Axes^Mcs_Y_Virtual">
 								<Link VarA="PRG_HBotv2.Axis_MCS_Y.NcToPlc" TypeA="MC.NCTOPLC_AXIS_REF" InOutA="0" GuidA="{6A65C767-34E5-42BF-AD87-E1A503EAC7BE}" VarB="Outputs^ToPlc" RestoreInfo="ANotFound"/>
+							</OwnerB>
+						</OwnerA>
+					</UnrestoredVarLinks>
+					<UnrestoredVarLinks ImportTime="2018-10-08T10:51:26">
+						<OwnerA Name="OutputSrc" Prefix="TIPC^PLC^PLC Instance" Type="2">
+							<OwnerB Name="TIID^Device 3 (EtherCAT)^Box 12 (3G3AX-MX2-ECT)">
+								<Link VarA="GVL_Omron.iOmron_2_SeVelo" TypeA="INT" InOutA="1" GuidA="{18071995-0000-0000-0000-000000000006}" VarB="258th receive PDO Mapping^Frequency reference" RestoreInfo="ANotFound"/>
+								<Link VarA="GVL_Omron.wOmron_2_Control" TypeA="WORD" InOutA="1" GuidA="{18071995-0000-0000-0000-000000000004}" VarB="258th receive PDO Mapping^Command" RestoreInfo="ANotFound"/>
+							</OwnerB>
+						</OwnerA>
+						<OwnerA Name="InputDst" Prefix="TIPC^PLC^PLC Instance" Type="1">
+							<OwnerB Name="TIID^Device 3 (EtherCAT)^Box 12 (3G3AX-MX2-ECT)">
+								<Link VarA="GVL_Omron.iOmron_2_ActVelo" TypeA="INT" InOutA="0" GuidA="{18071995-0000-0000-0000-000000000006}" VarB="258th transmit PDO Mapping^Output frequency monitor" RestoreInfo="ANotFound"/>
+								<Link VarA="GVL_Omron.wOmron_2_Status" TypeA="WORD" InOutA="0" GuidA="{18071995-0000-0000-0000-000000000004}" VarB="258th transmit PDO Mapping^Status" RestoreInfo="ANotFound"/>
 							</OwnerB>
 						</OwnerA>
 					</UnrestoredVarLinks>
@@ -10730,12 +10694,6 @@ External Setpoint Generation:
 				<Link VarA="PlcTask Inputs^GVL_Omron.wOmron_1_Status" VarB="258th transmit PDO Mapping^Status"/>
 				<Link VarA="PlcTask Outputs^GVL_Omron.iOmron_1_SeVelo" VarB="258th receive PDO Mapping^Frequency reference"/>
 				<Link VarA="PlcTask Outputs^GVL_Omron.wOmron_1_Control" VarB="258th receive PDO Mapping^Command"/>
-			</OwnerB>
-			<OwnerB Name="TIID^Device 3 (EtherCAT)^Box 12 (3G3AX-MX2-ECT)">
-				<Link VarA="PlcTask Inputs^GVL_Omron.iOmron_2_ActVelo" VarB="258th transmit PDO Mapping^Output frequency monitor"/>
-				<Link VarA="PlcTask Inputs^GVL_Omron.wOmron_2_Status" VarB="258th transmit PDO Mapping^Status"/>
-				<Link VarA="PlcTask Outputs^GVL_Omron.iOmron_2_SeVelo" VarB="258th receive PDO Mapping^Frequency reference"/>
-				<Link VarA="PlcTask Outputs^GVL_Omron.wOmron_2_Control" VarB="258th receive PDO Mapping^Command"/>
 			</OwnerB>
 			<OwnerB Name="TIID^Device 3 (EtherCAT)^Box 13 (BNI ECT-507-005-Z040)">
 				<Link VarA="PlcTask Inputs^GVL_IO.Kl_1_cof" VarB="Module 3 (IOL_I/O_8/_2byte)^TxPDO^input byte 0[5]"/>

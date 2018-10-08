@@ -10690,6 +10690,8 @@ External Setpoint Generation:
 		</OwnerA>
 		<OwnerA Name="TIPC^PLC^PLC Instance">
 			<OwnerB Name="TIID^Device 3 (EtherCAT)^Box 11 (3G3AX-MX2-ECT)">
+				<Link VarA="PlcTask Inputs^GVL_Omron.iOmronErectorAcc" VarB="1st transmit PDO Mapping^F002 1st Acceleration Time 1"/>
+				<Link VarA="PlcTask Inputs^GVL_Omron.iOmronErectorDcc" VarB="2nd transmit PDO Mapping^F003 1st Deceleration Time 1"/>
 				<Link VarA="PlcTask Inputs^GVL_Omron.iOmron_1_ActVelo" VarB="258th transmit PDO Mapping^Output frequency monitor"/>
 				<Link VarA="PlcTask Inputs^GVL_Omron.wOmron_1_Status" VarB="258th transmit PDO Mapping^Status"/>
 				<Link VarA="PlcTask Outputs^GVL_Omron.iOmron_1_SeVelo" VarB="258th receive PDO Mapping^Frequency reference"/>
