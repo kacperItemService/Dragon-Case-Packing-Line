@@ -211,8 +211,8 @@ END_IF*)]]></ST>
 					R_Pobranie_Kierownica(CLK:=GVL_GLOBAL.Zabierz_Z_Kierownicy);
 					R_bReadyForMove(CLK:=bReadyForMove);
 				
-					bZabral;
-					GVL_GLOBAL.odloz_do_kartonu;
+					//bZabral;
+					//GVL_GLOBAL.odloz_do_kartonu;
 //automat do plotera 
 				(*	IF GVL_HMI.A_Stop=TRUE OR GVL_HMI.bEnablePloter=FALSE THEN	
 					seq									:=0;

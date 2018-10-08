@@ -87,6 +87,9 @@ VAR_GLOBAL
 	//zaklejarka automat
 	zamykacz_zaklejarka_auto: BOOL;
 	bFZaklejarka_CCW: BOOL;
+	//Markery z stanem pierwszego cyklu
+	
+	IOLinkOn :BOOL:= TRUE;
 
 	
 END_VAR]]></Declaration>

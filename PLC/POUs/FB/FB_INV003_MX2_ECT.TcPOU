@@ -14,7 +14,7 @@ VAR_INPUT
 END_VAR
 VAR_OUTPUT
 	ENO												:BOOL;
-	Frequency_out									:REAL;	
+	Frequency_out									:INT;	
 	During_Fwd										:BOOL;
 	During_Rev										:BOOL;	
 	Fault											:BOOL;		
@@ -37,7 +37,7 @@ VAR
 END_VAR
 VAR_IN_OUT
 	Command												:WORD;	
-	Frequency_Reference									:UINT;	
+	Frequency_Reference									:INT;	
 	F002_1st_Acceleration								:UDINT;		
 	F003_1st_Deceleration								:UDINT;		
 	Status												:WORD;	
@@ -71,13 +71,13 @@ END_IF;
 IF Frequency_in>0.01 THEN;
 	tmp_freq_in_real:=Frequency_in*100;
 	tmp_freq_in_int:=REAL_TO_UINT(tmp_freq_in_real);
-	Frequency_Reference:=tmp_freq_in_int;
+	Frequency_Reference:=UINT_TO_INT(tmp_freq_in_int);
 END_IF;
 
 //Convert Output_Frequency_Monitor to a REAL value//
 	tmp_freq_out_int:=Output_Frequency_Monitor;
 	tmp_freq_out_real:=UINT_TO_REAL(tmp_freq_out_int);
-	Frequency_out:=tmp_freq_out_real/100.0;
+	Frequency_out:=REAL_TO_INT(tmp_freq_out_real/100.0);
 	
 //Acceleration/Deceleration Time  in REAL value//
 IF Acceleration>0.01 THEN;
