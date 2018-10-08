@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.6">
+  <POU Name="MAIN" Id="{ec9d94be-1f59-48aa-98f1-d37d8cb1d080}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM MAIN
+VAR
+	bReset						: BOOL;
+	iStep						: INT;
+	tonDelay					: TON;
+	bDelayReq					: BOOL;
+	rtReset						: R_TRIG;	// Rising edge detection
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[GVL_IO_SAFETY.dwGroupErrors.0			:=	GVL_IO_SAFETY.bCOM_ERR_TSG1;
+GVL_IO_SAFETY.dwGroupErrors.1			:=	GVL_IO_SAFETY.bFB_ERR_TSG1;
+GVL_IO_SAFETY.dwGroupErrors.2			:=	GVL_IO_SAFETY.bOTHER_ERR_TSG1;
+GVL_IO_SAFETY.dwGroupErrors.3			:=	GVL_IO_SAFETY.bCOM_ERR_TSG2;
+GVL_IO_SAFETY.dwGroupErrors.4			:=	GVL_IO_SAFETY.bFB_ERR_TSG2;
+GVL_IO_SAFETY.dwGroupErrors.5			:=	GVL_IO_SAFETY.bOTHER_ERR_TSG2;
+
+// Error collection
+GVL_IO_SAFETY.bSAFETY_Error 			:= 	(GVL_IO_SAFETY.dwGroupErrors <> 0);
+// Pass signals to first RT
+GVL_IO_SAFETY.bSAFETY_PermissionOutSS1 				:= GVL_IO_SAFETY.bSafeStopAX5000;
+GVL_IO_SAFETY.bSAFETY_PermissionOutSS2 				:= GVL_IO_SAFETY.bSafeStopOmron;
+GVL_IO_SAFETY.bSAFETY_ServoKierPermitionOutSS1	 	:= GVL_IO_SAFETY.bServoKierownicaEStop;
+GVL_IO_SAFETY.bSAFETY_FalownikKierPermitionOutSS1 	:= GVL_IO_SAFETY.bFalownikKierownicaEStop;
+GVL_IO_SAFETY.bSAFETY_ZaklejarkaKierPermitionOutSS1	:= GVL_IO_SAFETY.bZaklejarkaEStop;
+// Reset procedure
+rtReset(CLK:=GVL_IO_SAFETY.bSAFETY_ResetCMD , Q=> );
+// Delay
+tonDelay(PT:= T#5S);
+// Procedure
+CASE iStep OF
+	
+	0:
+		IF rtReset.Q THEN
+			iStep 						:= iStep + 10;
+			GVL_IO_SAFETY.bSAFETY_ResetBusy := TRUE;
+		END_IF
+	
+	10:	// Reset bledu grupy - jesli jest
+		GVL_IO_SAFETY.bERR_ACK_TSG1		:= GVL_IO_SAFETY.bCOM_ERR_TSG1 OR GVL_IO_SAFETY.bFB_ERR_TSG1 OR GVL_IO_SAFETY.bOTHER_ERR_TSG1;
+		GVL_IO_SAFETY.bERR_ACK_TSG2		:= GVL_IO_SAFETY.bCOM_ERR_TSG2 OR GVL_IO_SAFETY.bFB_ERR_TSG2 OR GVL_IO_SAFETY.bOTHER_ERR_TSG2;
+		bDelayReq 						S= GVL_IO_SAFETY.bERR_ACK_TSG1 OR GVL_IO_SAFETY.bERR_ACK_TSG2;
+		IF NOT GVL_IO_SAFETY.bERR_ACK_TSG1 AND NOT GVL_IO_SAFETY.bERR_ACK_TSG2 THEN
+			IF bDelayReq THEN
+				iStep 					:= iStep + 5;
+			ELSE
+				iStep 					:= iStep + 10;
+			END_IF
+		END_IF	
+	15: // Delay
+		tonDelay.IN 					:= TRUE;
+		IF tonDelay.Q THEN
+			bDelayReq	 				:= FALSE;
+			tonDelay.IN 				:= FALSE;
+			iStep 						:= iStep + 5;
+		END_IF
+	20:
+		GVL_IO_SAFETY.bRestartFBs_TSG1	:= TRUE;
+		iStep 							:= iStep + 10;
+
+	30:
+		GVL_IO_SAFETY.bRestartFBs_TSG1	:= FALSE;
+		iStep 							:= iStep + 10;	
+	40:			
+		GVL_IO_SAFETY.bSAFETY_ResetBusy := FALSE;				
+		iStep := 0;
+END_CASE]]></ST>
+    </Implementation>
+    <LineIds Name="MAIN">
+      <LineId Id="63" Count="4" />
+      <LineId Id="62" Count="0" />
+      <LineId Id="69" Count="0" />
+      <LineId Id="68" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="71" Count="1" />
+      <LineId Id="70" Count="0" />
+      <LineId Id="88" Count="2" />
+      <LineId Id="16" Count="1" />
+      <LineId Id="61" Count="0" />
+      <LineId Id="20" Count="1" />
+      <LineId Id="29" Count="17" />
+      <LineId Id="48" Count="0" />
+      <LineId Id="54" Count="0" />
+      <LineId Id="49" Count="4" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="57" Count="0" />
+      <LineId Id="73" Count="1" />
+      <LineId Id="60" Count="0" />
+      <LineId Id="75" Count="0" />
+      <LineId Id="77" Count="0" />
+      <LineId Id="76" Count="0" />
+      <LineId Id="78" Count="1" />
+      <LineId Id="58" Count="1" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

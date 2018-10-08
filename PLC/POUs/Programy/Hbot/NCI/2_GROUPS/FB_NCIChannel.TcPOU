@@ -1,0 +1,249 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="FB_NCIChannel" Id="{b9f2dd42-a273-4a3e-9624-6116af692e06}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_NCIChannel
+VAR_INPUT
+	nChan: 						UINT;
+END_VAR
+
+VAR_IN_OUT
+	(* Operation Mode *)
+	bModeStandby:				BOOL;
+	bModeAutomatic:				BOOL;
+	bModeManual:				BOOL;
+	bModeMDI:					BOOL;
+	bModeReference:				BOOL;
+
+	(* Special Functions *)
+	bBackwardMotion:			BOOL;
+	bPrgBlockIgnore:			BOOL;
+	bFeedHold:					BOOL;
+	bSingleBlock:				BOOL;
+	bDoSingleBlock:				BOOL;
+
+	(* Operation State *)
+	bStateStop:					BOOL;
+	bStateReset:				BOOL;
+	bStateStart: 				BOOL;
+	bStateError:				BOOL; (*PiotrB*)
+
+	(* Strings *)
+	sProgramName	: 			STRING(1024);
+	sMDIString		: 			STRING(1024);
+END_VAR
+
+VAR
+	ItpReset1: 					ItpResetEx2;	
+	fbRTrigAuto: 				R_TRIG;
+	fbRTrigManual: 				R_TRIG;
+	fbRTrigMDI: 				R_TRIG;
+	fbRTrigReference: 			R_TRIG;
+	fbNciAutomatic: 			FB_NciAutomatic;
+	fbNciMdi: 					FB_NCI_MDI;
+	F_TRIG1: 					F_TRIG;
+	R_TRIG1: 					R_TRIG;
+	nMode: 						WORD;
+	fbSetOpModeSingleStep: 		FB_SetOpModeSingleStep;
+	bSingleBlockAds: 			BOOL;
+	fbConfirmMfunc: 			FB_ConfirmMfunc;
+	nPrg: 						UINT;
+	sTmpFile: 					STRING(255);
+	sTmp: 						STRING;
+
+	fbBlinker: 					FB_Blinker;
+	fbWriteRParams: 			FB_WriteRParams;
+	fbReadRParams:	 			FB_ReadRParams;	
+	
+	fbRTRIGReset:				R_TRIG;
+
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* ==========================================================*)
+(*   FB: FB_NciChannel	                		             *)
+(* ----------------------------------------------------------*)
+(*   Desc: 													 *)
+(*   Auth: MiB / TV                                          *)
+(*   Date: 02.09.2005                                        *)
+(*   Last: 02.04.2013                                        *)
+(*   Rev.: 1.2                                               *)
+(*	        1.1	20.07.2007 read and write of rParameters     *)
+(* ==========================================================*)
+
+IF bStateStop THEN
+	bStateStart := FALSE;
+END_IF
+
+(* RESET *)
+fbRTRIGReset(Clk := bStateReset);
+
+IF fbRTRIGReset.Q THEN
+	bStateStart := FALSE;
+	bStateStop := FALSE;	
+	ItpReset1.bExecute:= TRUE;	
+END_IF
+
+
+
+ItpReset1(sNciToPlc:= arrNCToPLC_NCIChannel_REF[nChan-1]);
+
+
+(* M-Functions *)
+PRG_GetFastMfunctions(nChan:= nChan );
+fbConfirmMfunc(nChan:= nChan , bErr=> , nErrId=> );
+
+(* Override *)
+F_SetOverride(PLCFeedOverride, nChan, bFeedHold);
+
+(* Skip Line *)
+arrPLCToNC_NCIChannel_REF[nChan-1].SkipLine.0 := bPrgBlockIgnore;
+
+
+
+
+(* OpModes *)
+fbRTrigAuto( Clk := bModeAutomatic );
+fbRTrigManual( Clk := bModeManual );
+fbRTrigMDI( Clk := bModeMDI );
+fbRTrigReference( Clk := bModeReference );
+
+
+
+
+	(* ---------------------------------------------
+	"NOT Ready"	// 0
+	"Standby"	// 1 
+	"Automatic"	// 2
+	"MDI"			// 3
+	"Manual"		// 4
+	"Reference" // 5
+	 ------------------------------------------------- *)
+
+IF (fbRTrigAuto.Q) THEN
+	bStateReset		:= TRUE;
+	bModeReference := FALSE;
+	bModeManual 	:= FALSE;
+	bModeMDI 		:= FALSE;
+ 	bModeAutomatic  := TRUE;
+	PLCNciChannelState.Mode[nChan] :=2;
+END_IF
+
+IF (fbRTrigMDI.Q) THEN
+	bStateReset		:= TRUE;
+	bModeReference := FALSE;
+	bModeManual 	:= FALSE;
+	bModeMDI 		:= TRUE;
+  	bModeAutomatic := FALSE;
+	PLCNciChannelState.Mode[nChan] :=3;
+END_IF
+
+IF (fbRTrigManual.Q) THEN
+	bStateReset		:= TRUE;
+	bModeReference := FALSE;
+	bModeManual 	:= TRUE;
+	bModeMDI 		:= FALSE;
+ 	bModeAutomatic := FALSE;
+	PLCNciChannelState.Mode[nChan] :=4;
+END_IF
+
+IF (fbRTrigReference.Q) THEN
+	bStateReset		:= TRUE;
+	bModeReference := TRUE;
+	bModeManual 	:= FALSE;
+	bModeMDI 		:= FALSE;
+ 	bModeAutomatic := FALSE;
+	PLCNciChannelState.Mode[nChan] :=5;
+END_IF
+
+
+
+(* SingleBlock *)
+R_TRIG1(CLK:= bSingleBlock );
+IF (R_TRIG1.Q) THEN
+	bSingleBlockAds := TRUE;
+	nMode := 16#01;				(* SingleStep Interpreter = 16#4000*)  (* Single Step NC Kern= 16#01 *)
+END_IF
+
+F_TRIG1(CLK:= bSingleBlock);
+IF (F_TRIG1.Q) THEN
+	bSingleBlockAds := TRUE;
+	nMode := 16#0;
+END_IF
+
+IF bSingleBlockAds THEN
+	fbSetOpModeSingleStep(
+		nChan:= nChan,
+		bExec:= bSingleBlockAds,
+		nMode := nMode,
+		bErr=> ,
+		bBusy=> ,
+		nErrId=> );
+	IF NOT fbSetOpModeSingleStep.bBusy THEN
+		bSingleBlockAds := FALSE;
+		fbSetOpModeSingleStep(bExec := FALSE);
+	END_IF
+END_IF
+
+IF bModeAutomatic THEN
+	fbNciAutomatic(
+		nChan:= nChan,
+		bStateStop:= bStateStop,
+		bStateStart:= bStateStart,
+		sProgramName:= sProgramName);
+END_IF
+
+IF bModeMDI THEN
+	nPrg := 10001 - nChan;               (* generate programm number for tmp MDI program; 9999.NC = channel1, 9998.NC = channel2, etc *)
+	sTmpFile := 'C:\TwinCAT\CNC\';
+	sTmpFile := CONCAT(sTmpFile, UINT_TO_STRING(nPrg));
+	sTmpFile := CONCAT(sTmpFile,'.nc');
+
+	fbNciMdi(
+		bExec := NOT bStateReset,
+		nChan:= nChan,
+		sMDIString:= sMDIString ,
+		sTmpFileName := sTmpFile,
+		bStateStop:= bStateStop,
+		bStateStart:= bStateStart);
+END_IF
+
+
+(* R-Parameter *)
+
+(* example: read and write RParamter every second
+
+	the paramters that are written to the NCI are defined in global Variables/Global_Nci/nRParamWrite[......
+	the paramters that are read from the NCI are defined in global Variables/Global_Nci/nRParamRead[......
+
+*)
+fbBlinker(Taktzeit:= t#1s);
+
+fbWriteRParams(
+	bExec:= fbBlinker.Ausgang,
+	nChan:= nChan);
+
+fbReadRParams(
+	bExec:= fbBlinker.Ausgang,
+	nChan:= nChan);
+
+
+IF (arrNCToPLC_NCIChannel_REF[nChan-1].ItpState =  NCI_INTERPRETER_IDLE OR arrNCToPLC_NCIChannel_REF[nChan-1].ItpState =  NCI_INTERPRETER_READY ) THEN
+	ItpReset1.bExecute:= FALSE;	
+	bStateReset := FALSE;
+END_IF
+
+//Add PiotrB
+bStateError := arrNCToPLC_NCIChannel_REF[nChan-1].ErrorCode <> 0;
+]]></ST>
+    </Implementation>
+    <LineIds Name="FB_NCIChannel">
+      <LineId Id="3" Count="38" />
+      <LineId Id="47" Count="106" />
+      <LineId Id="167" Count="25" />
+      <LineId Id="251" Count="0" />
+      <LineId Id="249" Count="0" />
+      <LineId Id="248" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

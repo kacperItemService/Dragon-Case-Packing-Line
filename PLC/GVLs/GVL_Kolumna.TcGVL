@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <GVL Name="GVL_Kolumna" Id="{a0f15baa-3d22-435e-a338-755a48c8cc00}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL
+	Segment_1 AT %Q* :BYTE;
+	Segment_2 AT %Q* :BYTE;
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

@@ -1,0 +1,101 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="FB_INV003_MX2_ECT" Id="{b78a0496-8081-4b65-ad8f-5fa973b48e28}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_INV003_MX2_ECT
+VAR_INPUT
+	Output_Frequency_Monitor						:UINT;
+	Enable											:BOOL;
+	Fwd												:BOOL;	
+	Rev												:BOOL;	
+	Fault_Reset										:BOOL;	
+	Frequency_in									:REAL;	
+	Acceleration									:REAL;		
+	Deceleration									:REAL;	
+END_VAR
+VAR_OUTPUT
+	ENO												:BOOL;
+	Frequency_out									:REAL;	
+	During_Fwd										:BOOL;
+	During_Rev										:BOOL;	
+	Fault											:BOOL;		
+	Warning											:BOOL;		
+	Remote											:BOOL;	
+	Freq_Match										:BOOL;	
+	Connection_Error								:BOOL;		
+END_VAR
+VAR
+	tmp_freq_in_real								:REAL;
+	tmp_freq_in_int									:UINT;			
+	tmp_freq_out_real								:REAL;			
+	tmp_freq_out_int								:UINT;			
+	tmp_acc_real									:REAL;				
+	tmp_acc_int										:INT;				
+	tmp_dec_real									:REAL;				
+	tmp_dec_int										:INT;		
+	tmp_Command										:uWORD_BOOL_MX2;			
+	tmp_Status										:uWORD_BOOL_MX2;	
+END_VAR
+VAR_IN_OUT
+	Command												:WORD;	
+	Frequency_Reference									:UINT;	
+	F002_1st_Acceleration								:UDINT;		
+	F003_1st_Deceleration								:UDINT;		
+	Status												:WORD;	
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[///Status extraction///
+	tmp_Status.ch := Status;
+	During_Fwd := tmp_Status.bits[0];
+	During_Rev := tmp_Status.bits[1];
+	Fault := tmp_Status.bits[3];
+	Warning := tmp_Status.bits[7];
+	Remote := tmp_Status.bits[9];
+	Freq_Match := tmp_Status.bits[12];
+	Connection_Error := tmp_Status.bits[15];
+
+///Command extraction///
+IF Enable THEN;
+	tmp_Command.bits[0] := Fwd;
+	tmp_Command.bits[1] := Rev;
+	ENO:=TRUE;
+ELSE
+	tmp_Command.bits[0] := FALSE;
+	tmp_Command.bits[1] := FALSE;
+	ENO:=FALSE;
+END_IF;
+	tmp_Command.bits[7] := Fault_Reset;
+	Command := tmp_Command.ch;
+
+///Frequence form a REAL value///
+IF Frequency_in>0.01 THEN;
+	tmp_freq_in_real:=Frequency_in*100;
+	tmp_freq_in_int:=REAL_TO_UINT(tmp_freq_in_real);
+	Frequency_Reference:=tmp_freq_in_int;
+END_IF;
+
+//Convert Output_Frequency_Monitor to a REAL value//
+	tmp_freq_out_int:=Output_Frequency_Monitor;
+	tmp_freq_out_real:=UINT_TO_REAL(tmp_freq_out_int);
+	Frequency_out:=tmp_freq_out_real/100.0;
+	
+//Acceleration/Deceleration Time  in REAL value//
+IF Acceleration>0.01 THEN;
+	tmp_acc_real:=Acceleration*100;
+	tmp_acc_int:=REAL_TO_INT(tmp_acc_real);
+	F002_1st_Acceleration:=tmp_acc_int;
+END_IF;
+
+IF Deceleration>0.01 THEN;
+	tmp_dec_real:=Deceleration*100;
+	tmp_dec_int:=REAL_TO_INT(tmp_dec_real);
+	F003_1st_Deceleration:=tmp_dec_int;
+END_IF;
+	]]></ST>
+    </Implementation>
+    <LineIds Name="FB_INV003_MX2_ECT">
+      <LineId Id="10" Count="46" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

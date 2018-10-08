@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="FB_Button" Id="{682f9806-5d7c-4ca4-ad4d-ca2d322c2bee}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_Button
+VAR_INPUT
+	bprzyciskIn :BOOL;
+	bAuto		:BOOL;
+	
+END_VAR
+VAR_OUTPUT
+	bprzyciskOut :BOOL;
+END_VAR
+VAR
+	zbocze	:R_TRIG;
+	thne: INT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+zbocze(CLK:=bprzyciskIn);
+IF bAuto = TRUE THEN
+	
+bprzyciskOut:=FALSE;
+	
+END_IF
+
+IF zbocze.Q=TRUE AND bprzyciskOut=TRUE  THEN 
+	
+bprzyciskOut:=FALSE;
+
+ELSIF zbocze.Q=TRUE AND bprzyciskOut=FALSE  THEN
+
+
+bprzyciskOut:=TRUE;
+
+END_IF]]></ST>
+    </Implementation>
+    <LineIds Name="FB_Button">
+      <LineId Id="13" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="44" Count="1" />
+      <LineId Id="41" Count="1" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="27" Count="1" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="19" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,668 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <VisuManager Name="VisualizationManager" Id="{c6d4b1b4-d4bb-41bb-8986-9f8b19fb9573}">
+    <XmlArchive>
+      <Data>
+        <o xml:space="preserve" t="VisualManagerObject">
+          <v n="UseUnicodeStrings" t="UnicodeSupport">Undefined</v>
+          <o n="ViewSettings" t="VisualManagerViewSettings">
+            <n n="StartVisu" />
+            <v n="StartVisu33">"Glowna"</v>
+            <v n="OpenTargetvisu">false</v>
+            <v n="BestFit">false</v>
+            <v n="ClientSizeMode" t="VisualClientSizeMode">AutoDetect</v>
+            <v n="ClientSizeX">2000</v>
+            <v n="ClientSizeY">2000</v>
+            <v n="ExtendedSettings">false</v>
+            <v n="PaintBufferSize">50000</v>
+            <v n="MemorybufferSize">400000</v>
+            <v n="VisuInternal">false</v>
+            <v n="CurrentVisuGlobal">true</v>
+            <v n="FileTransferMode">true</v>
+            <v n="VisuStyle">"Basic style, 3.1.5.0 (Beckhoff Automation GmbH)"</v>
+            <v n="MaxNumOfClients">100</v>
+            <n n="Language" />
+            <v n="NumpadDialog">"VisuDialogs.Numpad"</v>
+            <v n="KeypadDialog">"Keypad"</v>
+            <v n="InputWithLimitsDialog">"VisuDialogs.TextinputWithLimits"</v>
+            <v n="UseInputWithLimits">true</v>
+            <v n="TouchHandlingActive">false</v>
+            <v n="SemiTransparentDrawingActive">true</v>
+            <v n="UpdateColorvariablesAfterActivationDone">true</v>
+            <v n="TransferSvgAndConvertedImages">false</v>
+            <v n="LoginDialog">"VisuUserManagement.VUM_Login"</v>
+            <v n="ChangePasswordDialog">"VisuUserManagement.VUM_ChangePassword"</v>
+            <v n="ChangeConfigDialog">"VisuUserManagement.VUM_UserManagement"</v>
+            <v n="GuidShowChangePasswordDialogFunction">{00000000-0000-0000-0000-000000000000}</v>
+            <v n="GuidShowChangeConfigDialogFunction">{00000000-0000-0000-0000-000000000000}</v>
+            <v n="UseStandardKeyboardHandling">true</v>
+            <v n="PaintDeactiveElementsGrayedOut">true</v>
+            <v n="ConvertImages">false</v>
+            <v n="ConversionType">""</v>
+          </o>
+          <o n="RegisterDesc" t="GenericFbDescription">
+            <d n="FbMethods" t="CaseInsensitiveHashtable" ckt="String" cvt="Guid">
+              <v>FB_Init</v>
+              <v>69033b4f-4274-4277-a027-9a0c72ab0f2e</v>
+              <v>FB_Reinit</v>
+              <v>fe24c991-4965-42b3-a886-86b24a4a15ae</v>
+              <v>FB_Exit</v>
+              <v>cf0f710e-bf34-4177-acf2-602d8ebbc6bd</v>
+            </d>
+            <v n="FbName">"__VisuInitInstantiation_Fb"</v>
+            <v n="FbGuid">{360a4429-c0df-47f6-a1f7-0691c8e98b37}</v>
+          </o>
+          <o n="TargetProperties" t="VisualizationTargetProperties">
+            <o n="AvailableKeys" t="DeviceBasedHotkeysProvider">
+              <v n="Modifiers">7</v>
+              <v n="DevType">4096</v>
+              <v n="DevId">"1002 0001"</v>
+              <v n="DevVersion">"1.0.0.4"</v>
+              <v n="BaseProvider">{cb73a13e-6ccc-4bc6-8859-f5aa98bb116b}</v>
+              <l n="Keys" t="ArrayList" cet="DeviceBasedHotkeyItem">
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">48</v>
+                  <v n="CanonicalName">"0"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">49</v>
+                  <v n="CanonicalName">"1"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">50</v>
+                  <v n="CanonicalName">"2"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">51</v>
+                  <v n="CanonicalName">"3"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">52</v>
+                  <v n="CanonicalName">"4"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">53</v>
+                  <v n="CanonicalName">"5"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">54</v>
+                  <v n="CanonicalName">"6"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">55</v>
+                  <v n="CanonicalName">"7"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">56</v>
+                  <v n="CanonicalName">"8"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">57</v>
+                  <v n="CanonicalName">"9"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">65</v>
+                  <v n="CanonicalName">"A"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">107</v>
+                  <v n="CanonicalName">"ADDITION"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">66</v>
+                  <v n="CanonicalName">"B"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">8</v>
+                  <v n="CanonicalName">"BACKSPACE"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">67</v>
+                  <v n="CanonicalName">"C"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">110</v>
+                  <v n="CanonicalName">"COMMA"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">68</v>
+                  <v n="CanonicalName">"D"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">46</v>
+                  <v n="CanonicalName">"DELETE"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">111</v>
+                  <v n="CanonicalName">"DIVIDE"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">40</v>
+                  <v n="CanonicalName">"DOWN"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">69</v>
+                  <v n="CanonicalName">"E"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">35</v>
+                  <v n="CanonicalName">"END"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">27</v>
+                  <v n="CanonicalName">"ESCAPE"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">70</v>
+                  <v n="CanonicalName">"F"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">112</v>
+                  <v n="CanonicalName">"F1"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">121</v>
+                  <v n="CanonicalName">"F10"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">122</v>
+                  <v n="CanonicalName">"F11"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">123</v>
+                  <v n="CanonicalName">"F12"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">113</v>
+                  <v n="CanonicalName">"F2"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">114</v>
+                  <v n="CanonicalName">"F3"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">115</v>
+                  <v n="CanonicalName">"F4"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">116</v>
+                  <v n="CanonicalName">"F5"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">117</v>
+                  <v n="CanonicalName">"F6"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">118</v>
+                  <v n="CanonicalName">"F7"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">119</v>
+                  <v n="CanonicalName">"F8"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">120</v>
+                  <v n="CanonicalName">"F9"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">71</v>
+                  <v n="CanonicalName">"G"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">72</v>
+                  <v n="CanonicalName">"H"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">36</v>
+                  <v n="CanonicalName">"HOME"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">73</v>
+                  <v n="CanonicalName">"I"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">45</v>
+                  <v n="CanonicalName">"INSERT"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">74</v>
+                  <v n="CanonicalName">"J"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">75</v>
+                  <v n="CanonicalName">"K"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">76</v>
+                  <v n="CanonicalName">"L"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">37</v>
+                  <v n="CanonicalName">"LEFT"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">77</v>
+                  <v n="CanonicalName">"M"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">106</v>
+                  <v n="CanonicalName">"MULTIPLY"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">78</v>
+                  <v n="CanonicalName">"N"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">96</v>
+                  <v n="CanonicalName">"NUM0"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">97</v>
+                  <v n="CanonicalName">"NUM1"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">98</v>
+                  <v n="CanonicalName">"NUM2"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">99</v>
+                  <v n="CanonicalName">"NUM3"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">100</v>
+                  <v n="CanonicalName">"NUM4"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">101</v>
+                  <v n="CanonicalName">"NUM5"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">102</v>
+                  <v n="CanonicalName">"NUM6"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">103</v>
+                  <v n="CanonicalName">"NUM7"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">104</v>
+                  <v n="CanonicalName">"NUM8"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">105</v>
+                  <v n="CanonicalName">"NUM9"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">79</v>
+                  <v n="CanonicalName">"O"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">80</v>
+                  <v n="CanonicalName">"P"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">19</v>
+                  <v n="CanonicalName">"PAUSE"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">42</v>
+                  <v n="CanonicalName">"PRINT"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">81</v>
+                  <v n="CanonicalName">"Q"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">82</v>
+                  <v n="CanonicalName">"R"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">13</v>
+                  <v n="CanonicalName">"RETURN_KEY"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">39</v>
+                  <v n="CanonicalName">"RIGHT"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">83</v>
+                  <v n="CanonicalName">"S"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">32</v>
+                  <v n="CanonicalName">"SPACE"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">109</v>
+                  <v n="CanonicalName">"SUBTRACT"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">84</v>
+                  <v n="CanonicalName">"T"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">9</v>
+                  <v n="CanonicalName">"TAB"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">85</v>
+                  <v n="CanonicalName">"U"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">38</v>
+                  <v n="CanonicalName">"UP"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">86</v>
+                  <v n="CanonicalName">"V"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">87</v>
+                  <v n="CanonicalName">"W"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">88</v>
+                  <v n="CanonicalName">"X"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">89</v>
+                  <v n="CanonicalName">"Y"</v>
+                </o>
+                <o>
+                  <v n="FromBase">true</v>
+                  <v n="KeyCode">90</v>
+                  <v n="CanonicalName">"Z"</v>
+                </o>
+              </l>
+            </o>
+          </o>
+          <o n="ConfiguredHotkeys" t="HotkeyConfiguration">
+            <v n="IdMin">481037385728L</v>
+            <v n="IdMax">549755813887L</v>
+            <v n="Id">481037385728L</v>
+            <v n="IdMask">549754765312L</v>
+            <v n="IdStep">1048576L</v>
+            <l2 n="Inputs" />
+          </o>
+          <o n="DefInpHandlerGuids" t="GenericFbDescription">
+            <d n="FbMethods" t="CaseInsensitiveHashtable" ckt="String" cvt="Guid">
+              <v>ExecuteLooseCapture</v>
+              <v>f643bcdb-1c43-440b-9297-afc9e5f82310</v>
+              <v>ExecuteMouseUp</v>
+              <v>5fae2df3-c963-4fea-987c-67aef8442a66</v>
+              <v>Init</v>
+              <v>7e918f9f-0771-4a3f-bbb4-98a7bf0be74f</v>
+              <v>FB_Exit</v>
+              <v>566661f8-4d05-4ddf-8f07-29f6de630094</v>
+              <v>ExecuteMouseDblClick</v>
+              <v>54a6c621-c06a-431d-bb21-1e63a9ee54b7</v>
+              <v>GetElementInfo</v>
+              <v>2809f4ed-e950-4438-a4d6-cf9de8ff239d</v>
+              <v>ExecuteMouseDown</v>
+              <v>ae1c9880-cbfa-4e4e-b54e-639081198bc9</v>
+              <v>FB_Reinit</v>
+              <v>62db96b8-cf3c-4b11-873e-6a40929b5b3c</v>
+              <v>Initialize</v>
+              <v>a1617311-8666-421a-b8d5-da092a237b73</v>
+              <v>ExecuteMouseMove</v>
+              <v>ce6f954a-9502-4297-aa82-103ea5e84e32</v>
+              <v>ExecuteDialogClosed</v>
+              <v>6c14af15-6c2a-43bc-a5ae-f83c63791bd3</v>
+              <v>ExecuteKeyUp</v>
+              <v>8668eabd-fa65-4075-84f9-0288b94bc542</v>
+              <v>ExecuteKeyDown</v>
+              <v>7a545c43-5708-4fc0-a4f9-a5855cf8e537</v>
+              <v>abstrGetDefaultCursor</v>
+              <v>4d07fce9-30f7-4c4a-bdda-c8f0a9c26e8f</v>
+              <v>ExecuteMouseEnter</v>
+              <v>4e1cd369-a7e4-41d4-bd0b-cffcb3cbb9a6</v>
+              <v>ExecuteMouseLeave</v>
+              <v>558a8c31-8429-411a-ba62-50b2896e264a</v>
+              <v>FB_Init</v>
+              <v>2e796fea-c945-4d65-8077-58617b312f94</v>
+              <v>ExecuteMouseClick</v>
+              <v>c5e6db40-cabf-40bd-8ef6-041cf483eb87</v>
+            </d>
+            <v n="FbName">"NotImportant"</v>
+            <v n="FbGuid">{7fb0e2dc-4895-4d21-939c-f83cee5f68f7}</v>
+          </o>
+          <o n="InstantiationStorage" t="VisualizationInstantiationStorage">
+            <a n="Data" cet="VisualizationInstantiationExplicitEntry">
+              <o>
+                <v n="NumberOfInstances">1</v>
+                <v n="Id">549756862464L</v>
+                <o n="VisuId" t="VisualObjectIdentification">
+                  <v n="LibDispName">"visudialogs, 3.5.10.0 (system)"</v>
+                  <v n="ObjectGuid">{d4404a2a-267d-4897-95ca-35c08aeb5241}</v>
+                  <v n="ReadOnly">true</v>
+                  <v n="ObjectName">"NumpadExtended"</v>
+                </o>
+                <o n="Behaviour" t="VisualizationInstantiationClientBehaviour">
+                  <d2 n="Data" ckt="VisualizationMainApplicationDownloadClientsReference" cvt="VisualizationClientInstantiationBehaviour">
+                    <o>
+                      <a n="ClientGuids" cet="Guid">
+                        <v>d7fa4a32-284c-4b81-a145-08f104a74dd9</v>
+                      </a>
+                    </o>
+                    <v>Activated</v>
+                  </d2>
+                </o>
+              </o>
+              <o>
+                <v n="NumberOfInstances">1</v>
+                <v n="Id">549757911040L</v>
+                <o n="VisuId" t="VisualObjectIdentification">
+                  <v n="LibDispName">"visudialogs, 3.5.10.0 (system)"</v>
+                  <v n="ObjectGuid">{bc02fbc2-8561-42b0-890a-dad1297cb6ed}</v>
+                  <v n="ReadOnly">true</v>
+                  <v n="ObjectName">"Login"</v>
+                </o>
+                <o n="Behaviour" t="VisualizationInstantiationClientBehaviour">
+                  <d2 n="Data" ckt="VisualizationMainApplicationDownloadClientsReference" cvt="VisualizationClientInstantiationBehaviour">
+                    <o>
+                      <a n="ClientGuids" cet="Guid">
+                        <v>d7fa4a32-284c-4b81-a145-08f104a74dd9</v>
+                      </a>
+                    </o>
+                    <v>Activated</v>
+                  </d2>
+                </o>
+              </o>
+            </a>
+            <o n="Ids" t="IdCalculationHelper">
+              <v n="IdMin">549756862464L</v>
+              <v n="IdMax">618475290623L</v>
+              <v n="Id">549758959616L</v>
+              <v n="IdMask">618474242048L</v>
+              <v n="IdStep">1048576L</v>
+            </o>
+            <o n="DefaultHandling" t="VisualizationClientReferencesSet">
+              <d2 n="Data" ckt="VisualizationMainApplicationDownloadClientsReference">
+                <o>
+                  <a n="ClientGuids" cet="Guid">
+                    <v>d7fa4a32-284c-4b81-a145-08f104a74dd9</v>
+                  </a>
+                </o>
+                <n />
+              </d2>
+            </o>
+          </o>
+          <n n="VisuUserManagement" />
+          <v n="UseLocalUserMgmt">true</v>
+          <v n="UseUserMgmtInPlc">true</v>
+          <n n="RemoteUserMgmtPath" />
+          <n n="FontsConfig" />
+          <n n="FontDownloadConfig" />
+          <n n="VisuInitializationCode" />
+          <v n="GuidVisuSettingsPou">{5660fda0-58f9-44ed-b468-f126e787557f}</v>
+          <v n="GuidVisuSettingsPouInit">{14f90991-de5f-4ac0-b337-a66327a9a9ee}</v>
+          <v n="GuidVisuSettingsPouReInit">{725ebebb-5c17-4cbd-8ef0-64436227d06a}</v>
+          <v n="GuidVisuSettingsPouBoolMethod">{a083f82e-95e9-488f-a0f5-94142fc10dd2}</v>
+          <v n="GuidVisuSettingsPouDIntMethod">{65f33c28-ac6e-4b93-96ce-907c8d234df1}</v>
+          <v n="GuidVisuSettingsPouStringMethod">{968d4e58-c535-45e5-aee8-abaeed7de736}</v>
+          <v n="GuidVisuSettingsPouReservedMethod">{3f7125da-f436-4cfc-994d-b9ff67d56acd}</v>
+          <v n="GuidMemManInitPou">{2a880c7c-d6de-4c16-93b0-66f75e5b05df}</v>
+          <v n="GuidMemManInitPouInit">{f42d318e-c6cb-445a-9987-c9f45173e9ec}</v>
+          <v n="GuidMemManInitPouReInit">{f7389bbd-569f-4387-b32b-aa3fdf5744d5}</v>
+          <v n="GuidStartVisuInitPou">{fa61627d-3e86-4b71-bf44-021f0f38fe3a}</v>
+          <v n="GuidStartVisuInitPouInit">{2a28564e-6035-415a-a343-c83d20551312}</v>
+          <v n="GuidStartVisuInitPouReInit">{a701f8fe-73e8-4836-878d-9b818d232be6}</v>
+          <v n="GuidVisuGVL0">{978c5039-b708-4882-9c16-1de15a599309}</v>
+          <v n="GuidVisuGVL1">{5197688f-2104-4bd3-9140-bd1b07ceccd0}</v>
+          <v n="GuidVisuGVL2">{2fdd6535-eb13-4bc0-bd5d-9f0509bf25eb}</v>
+          <v n="GuidVisuGVL_3">{d8c3dab3-6d3f-4132-a5a1-c7f3c35edecf}</v>
+          <v n="GuidReservedPou">{fe851e85-d6f1-468b-9ae8-2d956e3ebbda}</v>
+          <v n="GuidVisuGVL3">{44f9f9ad-eb34-4aef-b4dd-d2c32d1dc23b}</v>
+          <v n="GuidReservedPouInit">{0130c8f4-65c0-4efb-9a32-6e502d66de9e}</v>
+          <v n="GuidVisuGVL4">{30d210c7-f5d7-4148-a447-bbf955149558}</v>
+          <v n="GuidVisuGVL5">{64d8b311-479d-4ebd-8455-c18302d39c88}</v>
+          <v n="GuidLicenseGVL">{031111a8-d45e-41c0-a54a-dbb0e95cac01}</v>
+          <v n="GuidGlobalClientManagerGVL">{d2718dd9-a41b-446e-8c77-d50669942611}</v>
+          <v n="GuidVisuUserMgmtInitPou">{7ccd8fad-f5a2-450b-9f5e-713cfc6be8fa}</v>
+          <v n="GuidVisuUserMgmtInitPouInit">{7c8ba2ad-b723-4797-973a-b9433eb7b11f}</v>
+          <v n="GuidBeforeCompileCommonGVL">{f997ba13-1517-447b-889b-288517350887}</v>
+          <v n="GuidVisuGVL6">{40961725-7337-40e7-ac34-33323d923043}</v>
+          <v n="GuidReservedPouMethod1">{fa5d62dd-c34c-443c-b6b1-3b8214d0dab3}</v>
+          <v n="GuidReservedPouReInit">{5e5c332a-4cdf-4b89-b83e-9c41d404afc7}</v>
+          <v n="GuidReservedPouMethod0">{bb044783-3c2d-458c-aa91-16fc7a3482f8}</v>
+          <v n="GuidReservedPouMethod2">{b2ec1861-405e-43ea-a6cb-1b19633cc3b2}</v>
+        </o>
+      </Data>
+      <TypeList>
+        <Type n="ArrayList">System.Collections.ArrayList</Type>
+        <Type n="Boolean">System.Boolean</Type>
+        <Type n="CaseInsensitiveHashtable">{7df88604-7ac5-4e36-91c4-55e4fdad3e68}</Type>
+        <Type n="DeviceBasedHotkeyItem">{11a86981-4b02-4f98-b432-96e385cb41b7}</Type>
+        <Type n="DeviceBasedHotkeysProvider">{c91fc5aa-1e38-43b2-9a05-c52cc5d7f5b6}</Type>
+        <Type n="GenericFbDescription">{40d6dd8d-dfd0-493a-8e29-c9a35e1e6539}</Type>
+        <Type n="Guid">System.Guid</Type>
+        <Type n="HotkeyConfiguration">{6b108d46-58af-4e41-a3f4-174d8f160cc4}</Type>
+        <Type n="IdCalculationHelper">{2e25ebe8-bd76-4922-82a8-9e4b7ca5f741}</Type>
+        <Type n="Int32">System.Int32</Type>
+        <Type n="Int64">System.Int64</Type>
+        <Type n="String">System.String</Type>
+        <Type n="UnicodeSupport">{19611221-ebd3-4607-86d2-9822fbe84c30}</Type>
+        <Type n="VisualClientSizeMode">{c37fe731-4f69-4d98-82fe-4f9aefbe200d}</Type>
+        <Type n="VisualizationClientInstantiationBehaviour">{2abb5429-ae01-4f1e-b2ef-8c7b0de49c60}</Type>
+        <Type n="VisualizationClientReferencesSet">{f348a7f0-9602-490e-8c1b-295c0602e7a6}</Type>
+        <Type n="VisualizationInstantiationClientBehaviour">{05f24a1d-3ae6-4a1f-b981-af176aa64fd0}</Type>
+        <Type n="VisualizationInstantiationExplicitEntry">{28102c5e-89a3-48b7-8c0c-c747111b6ab8}</Type>
+        <Type n="VisualizationInstantiationStorage">{c09fe9ce-40ed-4120-834d-355161aee99b}</Type>
+        <Type n="VisualizationMainApplicationDownloadClientsReference">{e559c373-06c0-4fb4-b835-72326b331748}</Type>
+        <Type n="VisualizationTargetProperties">{997fedbb-1888-4256-b61c-2933d8056bfd}</Type>
+        <Type n="VisualManagerObject">{4d3fdb8f-ab50-4c35-9d3a-d4bb9bb9a628}</Type>
+        <Type n="VisualManagerViewSettings">{ec9b2ec6-92a2-4856-be72-7866fb274c64}</Type>
+        <Type n="VisualObjectIdentification">{393e8279-4352-49c8-bc4c-3007620081da}</Type>
+      </TypeList>
+    </XmlArchive>
+    <TargetVisu Name="TargetVisualization" Id="{d7fa4a32-284c-4b81-a145-08f104a74dd9}">
+      <XmlArchive>
+        <Data>
+          <o xml:space="preserve" t="TargetVisualizationObject">
+            <o n="ViewSettings" t="TargetVisualizationViewSettings">
+              <v n="StartVisu">"HMI"</v>
+              <n n="HtmFileName" />
+              <v n="UpdateRate">100</v>
+              <v n="CommBufferSize">50000</v>
+              <v n="BestFit">false</v>
+              <v n="ClientSizeMode" t="VisualClientSizeMode">AutoDetect</v>
+              <v n="ClientSizeX">2000</v>
+              <v n="ClientSizeY">2000</v>
+              <v n="Antialiasing">true</v>
+              <v n="ClientOperationType" t="eDefaultInputSetting">Touchscreen</v>
+              <v n="ScaleTypeIsotropic">false</v>
+              <v n="HideCursor">false</v>
+              <v n="TouchActivate">true</v>
+            </o>
+          </o>
+        </Data>
+        <TypeList>
+          <Type n="Boolean">System.Boolean</Type>
+          <Type n="eDefaultInputSetting">{bd122c9a-5824-461f-8b56-d89816d314bf}</Type>
+          <Type n="Int32">System.Int32</Type>
+          <Type n="String">System.String</Type>
+          <Type n="TargetVisualizationObject">{bc63f5fa-d286-4786-994e-7b27e4f97bd5}</Type>
+          <Type n="TargetVisualizationViewSettings">{cb5403ec-4e3b-4965-9be8-913e6068f7cb}</Type>
+          <Type n="VisualClientSizeMode">{c37fe731-4f69-4d98-82fe-4f9aefbe200d}</Type>
+        </TypeList>
+      </XmlArchive>
+    </TargetVisu>
+  </VisuManager>
+</TcPlcObject>

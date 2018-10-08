@@ -1,0 +1,367 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="PRG_Kierownica" Id="{6c1bf59c-bded-4d1c-9a64-5a9755c496a7}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM PRG_Kierownica
+VAR
+	
+
+	F_Kierownica: FB_MX2;
+	
+	b_FK_CCW: BOOL;
+	b_FK_CW: BOOL;
+	b_FK_Reset: BOOL;
+	
+	//serwo 
+	
+	S_K_Power :MC_Power;
+	S_K_Move :MC_MoveAbsolute;
+	S_K_Jog :MC_Jog;
+	S_K_Reset :mc_reset;
+	fb_Home_Kierownica :MC_Home;
+	
+	bEnable: BOOL;
+	bExecute: BOOL;
+	Position: LREAL;
+	Predkosc: LREAL;
+	A_Error: BOOL;
+	A_Error_ID: UDINT;
+	bJog_F: BOOL;
+	bJog_B: BOOL;
+	J_Vel: LREAL;
+	Reset: BOOL;
+	ui_FKCzestotliwosc: INT;
+	
+	bHomeExe: BOOL;
+	FB_Auto_Kierownica: FB_Kierownica;
+	Pozycja_Kierownica: LREAL;
+	bSDone: BOOL;
+	bSBusy: BOOL;
+	bReady: BOOL;
+	
+	//liczniki
+	licznik1_rzedow: FB_Licznik;
+	licznik2_rzedow: FB_Licznik;
+	licznik3_rzedow: FB_Licznik;
+	licznik4_rzedow: FB_Licznik;
+	licznik5_rzedow: FB_Licznik;
+	licznik_suma: INT; 
+	// POMOCNICZE ZMIENNE
+	ii : INT;
+	TESTOWO: BOOL;
+	predko: LREAL;
+	pozycjaKier: LREAL;
+	Error_ind: BOOL;
+	Error_numb: INT;
+	bStop: BOOL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//falownik kierwonicy 
+A_K_Falownik();
+//serwo kierwoniczy 
+A_Serwo();
+A_Auto_Kierownica();
+//A_Liczenie_butelek();
+
+IF GVL_HMI.bAuto=FALSE THEN			
+	J_Vel:=100;
+	
+	IF Pozycja_Kierownica>= 122 AND GVL_HMI.bHmiJogF=TRUE THEN
+		bJog_F:=0;
+		pozycjaKier:=122;
+		ELSE
+		bJog_F:=GVL_HMI.bHmiJogF;
+	END_IF
+		
+	IF Pozycja_Kierownica<= -115 AND GVL_HMI.bHmiJogB=TRUE THEN
+		bJog_B:=0;
+		pozycjaKier:=-115;
+		ELSE
+		bJog_B:=GVL_HMI.bHmiJogB;
+	END_IF
+	
+END_IF
+]]></ST>
+    </Implementation>
+    <Action Name="A_Auto_Kierownica" Id="{830f6540-8d9c-402a-ba24-f41bf07aa96a}">
+      <Implementation>
+        <ST><![CDATA[FB_Auto_Kierownica(
+	b_czujnik_wejsciowy:=GVL_IO_K.b4B8 , 
+	b_czujnik_K1:=GVL_IO_K.b4B1 , 
+	b_czujnik_K2:=GVL_IO_K.b4B2 , 
+	b_czujnik_K3:=GVL_IO_K.b4B3 , 
+	b_czujnik_K4:=GVL_IO_K.b4B4 , 
+	b_czujnik_K5:=GVL_IO_K.b4B5 , 
+	b_Kon2:=GVL_IO_K.b4B6 , 
+	b_Kon1:=GVL_IO_K.b4B7 ,
+	Zasilanie:=GVL_HMI.bEnableKierownica,
+	automat:= gvl_hmi.bAuto AND GVL_HMI.bEnableKierownica,
+	b_Start:= , 
+	b_Start1:= GVL_HMI.A_Start, 
+	b_Stop:= GVL_HMI.A_Stop, 
+	bS_Ready:=bReady , 
+	bS_Run:=bSBusy , 
+	bS_Done:=bSDone , 
+	LR_Pozycja_Zadana:= , 
+	b_Pobral:= GVL_GLOBAL.Ploter_pobral , 
+	int_Licznik_zadana:=GVL_RECIPE.Il_rzedow, 
+	int_Kieszen_zadana:=GVL_RECIPE.Il_kolumn , 
+	LR_EPozycja=>pozycjaKier , 
+	LR_Predkosc=> predko, 
+	bS_Enable=> , //???
+	bS_Exe=>bExecute , 
+	b_Odbierz=> GVL_GLOBAL.Zabierz_Z_Kierownicy , // tutaj sygnał do pobrania oraz sprawdzenia stanu (ilosci butelek)
+	b_Hamulec1=>GVL_IO_K.bK1, 
+	b_Hamulec2=>GVL_IO_K.bK2, 
+	Kier_CCw=>gvl_global.b_FK_CCW,
+	Kier_Cw=>);
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_K_Falownik" Id="{1d02001c-c5cf-4a1b-9bf4-1a5461371616}">
+      <Implementation>
+        <ST><![CDATA[F_Kierownica
+	(w_Status:=GVL_Omron.wOmron_Kier_Status,
+	ui_CzestotliwoscI:=ui_FKCzestotliwosc,
+	b_CCW:=b_FK_CCW,
+	b_CW:=b_FK_CW,
+	b_Reset:=b_FK_Reset,
+	w_ControlW=>GVL_Omron.wOmron_Kier_Control,
+ 	ui_CzestotliwoscO=>GVL_Omron.iOmron_Kier_SeVelo,);
+
+//automat manual kierownica 
+GVL_IO.Vacuostat;
+
+	//IF GVL_HMI.bManual=TRUE THEN
+IF GVL_HMI.bAuto=FALSE AND GVL_GLOBAL.falownik_podajnik_kier_cewka=TRUE AND GVL_HMI.bEnableKierownica=TRUE THEN
+	Predkosc:=200;
+	b_FK_CCW:=TRUE;
+	b_FK_CW:=0;
+	ui_FKCzestotliwosc:=1000;
+ELSIF GVL_HMI.bAuto=FALSE OR GVL_IO.b1K3 THEN
+		
+	Predkosc:=0;
+		b_FK_CCW:=FALSE;
+		b_FK_CW:=FALSE;	
+ELSIF GVL_HMI.bAuto=TRUE AND GVL_HMI.bEnableKierownica=TRUE THEN
+		Predkosc:=200;
+		predko:=200;
+		ui_FKCzestotliwosc:=4000;
+		b_FK_CCW:=GVL_GLOBAL.b_FK_CCW;
+		b_FK_CW:=0;
+END_IF
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_Liczenie_butelek" Id="{3c0e2d0e-74ba-440e-b4fd-6613649c023e}">
+      <Implementation>
+        <ST><![CDATA[licznik1_rzedow(c_inkrement:=GVL_IO_K.b4B1,czas:=T#0.2S,c_stan=>GVL_GLOBAL.stan_licz[1]);
+licznik2_rzedow(c_inkrement:=GVL_IO_K.b4B2,czas:=T#0.2S,c_stan=>GVL_GLOBAL.stan_licz[2]);
+licznik3_rzedow(c_inkrement:=GVL_IO_K.b4B3,czas:=T#0.2S,c_stan=>GVL_GLOBAL.stan_licz[3]);
+licznik4_rzedow(c_inkrement:=GVL_IO_K.b4B4,czas:=T#0.2S,c_stan=>GVL_GLOBAL.stan_licz[4]);
+licznik5_rzedow(c_inkrement:=GVL_IO_K.b4B5,czas:=T#0.2S,c_stan=>GVL_GLOBAL.stan_licz[5]);
+
+
+licznik_suma:=GVL_GLOBAL.stan_licz[1]+GVL_GLOBAL.stan_licz[2]+GVL_GLOBAL.stan_licz[3]+GVL_GLOBAL.stan_licz[4]+GVL_GLOBAL.stan_licz[5];
+
+IF GVL_GLOBAL.Zabierz_Z_Kierownicy=TRUE  AND GVL_HMI.Wymus_pobranie=FALSE THEN 
+		
+ 			IF GVL_Recipe.Il_kolumn*GVL_Recipe.Il_rzedow=licznik_suma THEN
+			GVL_GLOBAL.reset_licznik:= TRUE;
+			ELSE
+			GVL_GLOBAL.Error_pakowaniA:=TRUE;
+			GVL_GLOBAL.Error_numb_kier:=311; // 311 błąd liczenia kierownica
+			GVL_GLOBAL.Zabierz_Z_Kierownicy:=FALSE; // Cofamy zgode na pobranie
+			END_IF
+			
+END_IF
+
+IF GVL_HMI.ErrorResetKier:=TRUE AND GVL_GLOBAL.Error_numb_kier=311 THEN 
+	licznik_suma:=0;
+	GVL_GLOBAL.Error_pakowania:=FALSE;
+	GVL_GLOBAL.Error_numb_kier:=0;
+END_IF
+
+IF GVL_HMI.Wymus_pobranie=TRUE THEN
+	GVL_GLOBAL.Zabierz_Z_Kierownicy:=TRUE;
+	GVL_GLOBAL.reset_licznik:= TRUE;
+END_IF]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_Serwo" Id="{840f272e-56de-4502-b372-b1a4a90b26a7}">
+      <Implementation>
+        <ST><![CDATA[	
+	//obsługa serwa
+	
+S_K_Power(
+	Axis:=GVL_AXIS.stAxis2 , 
+	Enable:=GVL_AXIS.bEnable , 
+	Enable_Positive:=GVL_AXIS.bEnable , 
+	Enable_Negative:=GVL_AXIS.bEnable , 
+	Override:=100.0 , 
+	BufferMode:= , 
+	Options:= , 
+	Status=>bReady , 
+	Busy=> , 
+	Active=> , 
+	Error=> , 
+	ErrorID=> );
+	
+	S_K_Reset(
+	Axis:= GVL_AXIS.stAxis2, 
+	Execute:=GVL_HMI.ErrorResetKier , 
+	Done=> , 
+	Busy=> , 
+	Error=> , 
+	ErrorID=> );
+		
+	S_K_Jog(
+	Axis:= GVL_AXIS.stAxis2, 
+	JogForward:= bJog_F , 
+	JogBackwards:=bJog_B , 
+	Mode:= , 
+	Position:= , 
+	Velocity:= GVL_HMI.J_Vel, 
+	Acceleration:= , 
+	Deceleration:= , 
+	Jerk:= , 
+	Done=> , 
+	Busy=> , 
+	Active=> , 
+	CommandAborted=> , 
+	Error=> , 
+	ErrorID=> );
+	
+	S_K_Move(
+	Axis:=GVL_AXIS.stAxis2 , 
+	Execute:= bExecute,//bExecute, 
+	Position:=pozycjaKier ,//Position , 
+	Velocity:=predko ,//Predkosc , 
+	Acceleration:= , 
+	Deceleration:= , 
+	Jerk:= , 
+	BufferMode:= , 
+	Options:= , 
+	Done=>bSDone , 
+	Busy=>bSBusy , 
+	Active=> , 
+	CommandAborted=> , 
+	Error=>A_Error , 
+	ErrorID=>A_Error_ID);
+ Pozycja_Kierownica:=GVL_AXIS.stAxis2.NcToPlc.ActPos;
+ 
+ //home serwa 
+ 
+ 
+
+	 fb_Home_Kierownica(
+	Axis:= GVL_AXIS.stAxis2, 
+	Execute:= bHomeExe, 
+	Position:=0 , 
+	HomingMode:=MC_Direct , 
+	BufferMode:= , 
+	Options:= , 
+	bCalibrationCam:= , 
+	Done=> , 
+	Busy=> , 
+	Active=> , 
+	CommandAborted=> , 
+	Error=> , 
+	ErrorID=> );
+	
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="ACT_AutomaticMode" Id="{f6a119a4-234d-4f91-9f74-c7aff4b9d7dd}">
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="ACT_ManualMode" Id="{cfb50352-b365-42de-8f18-a700f7bcff24}">
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Action>
+    <LineIds Name="PRG_Kierownica">
+      <LineId Id="40" Count="0" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="41" Count="0" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="74" Count="0" />
+      <LineId Id="113" Count="0" />
+      <LineId Id="179" Count="0" />
+      <LineId Id="227" Count="1" />
+      <LineId Id="293" Count="0" />
+      <LineId Id="231" Count="0" />
+      <LineId Id="235" Count="0" />
+      <LineId Id="304" Count="0" />
+      <LineId Id="294" Count="3" />
+      <LineId Id="237" Count="1" />
+      <LineId Id="305" Count="0" />
+      <LineId Id="298" Count="1" />
+      <LineId Id="292" Count="0" />
+      <LineId Id="300" Count="0" />
+      <LineId Id="114" Count="0" />
+      <LineId Id="301" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_Kierownica.A_Auto_Kierownica">
+      <LineId Id="2" Count="8" />
+      <LineId Id="30" Count="1" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="11" Count="14" />
+      <LineId Id="1" Count="0" />
+      <LineId Id="27" Count="1" />
+      <LineId Id="26" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_Kierownica.A_K_Falownik">
+      <LineId Id="2" Count="8" />
+      <LineId Id="12" Count="15" />
+      <LineId Id="30" Count="2" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="1" Count="0" />
+      <LineId Id="36" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_Kierownica.A_Liczenie_butelek">
+      <LineId Id="6" Count="0" />
+      <LineId Id="2" Count="3" />
+      <LineId Id="11" Count="1" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="46" Count="0" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="23" Count="1" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="51" Count="0" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="49" Count="0" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="43" Count="1" />
+      <LineId Id="37" Count="0" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="40" Count="0" />
+      <LineId Id="50" Count="0" />
+      <LineId Id="41" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_Kierownica.A_Serwo">
+      <LineId Id="2" Count="57" />
+      <LineId Id="80" Count="0" />
+      <LineId Id="61" Count="4" />
+      <LineId Id="67" Count="12" />
+      <LineId Id="66" Count="0" />
+      <LineId Id="81" Count="0" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_Kierownica.ACT_AutomaticMode">
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_Kierownica.ACT_ManualMode">
+      <LineId Id="1" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

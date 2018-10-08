@@ -1,0 +1,396 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="FB_Kierownica" Id="{79133a7a-fc9c-4f08-adb7-e5236d4321f3}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_Kierownica
+VAR_INPUT
+	
+			b_czujnik_wejsciowy 	:BOOL;
+			b_czujnik_K1 			:BOOL;
+			b_czujnik_K2 			:BOOL;
+			b_czujnik_K3 			:BOOL;
+			b_czujnik_K4 			:BOOL;
+			b_czujnik_K5 			:BOOL;
+			b_Kon2 					:BOOL;
+			b_Kon1 					:BOOL;
+			Zasilanie				:BOOL;
+			b_Start					:BOOL;
+			b_Start1				:BOOL;
+			b_Stop					:BOOL;
+			bS_Ready				:BOOL;
+			bS_Run					:BOOL;
+			bS_Done					:BOOL;
+			LR_Pozycja_Zadana				:ARRAY[1..5] OF LREAL;
+			b_Pobral 				:BOOL;
+			int_Licznik_zadana      :INT;
+			int_Kieszen_zadana 		:INT;
+			automat					:BOOL;
+END_VAR
+VAR_OUTPUT
+	
+			LR_EPozycja				:LREAL;
+			LR_Predkosc				:LREAL;
+			bS_Enable				:BOOL;
+			bS_Exe					:BOOL;
+			b_Odbierz				:BOOL;
+			b_Hamulec1 				:BOOL;
+			b_Hamulec2 				:BOOL;
+			Kier_CCW				:BOOL;
+			Kier_CW					:BOOL;
+END_VAR
+VAR
+	
+			int_Kieszen				:INT :=1;
+			int_Licznik				:INT; //liczenie ktora butelka w kasecie
+			int_LicznikCheck		:ARRAY[1..5] OF INT; //liczenie ktora butelka w kasecie
+			czas					:ARRAY[0..100] OF TON;
+			Seq						:INT;
+			Seq1						:INT;
+			zaladowal				:BOOL;
+	i: INT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[LR_Pozycja_Zadana[1]:=-115;	
+LR_Pozycja_Zadana[2]:=-53;
+LR_Pozycja_Zadana[3]:=7;
+LR_Pozycja_Zadana[4]:=63;
+LR_Pozycja_Zadana[5]:=122;
+
+
+CASE seq OF
+	
+
+	0:
+		//int_Kieszen:=1;
+		
+	IF (b_Start=TRUE OR b_Start1=TRUE)  AND bS_Ready=TRUE AND Zasilanie=TRUE  THEN
+		b_Hamulec1:=TRUE;
+		b_Hamulec2:=TRUE;
+		
+		IF bS_Ready=FALSE THEN 
+			
+			bS_Enable:=TRUE;
+		END_IF
+		
+		
+		IF bS_Ready=TRUE THEN
+			seq:=5;
+		END_IF
+	
+	
+	END_IF
+	
+	
+	5:
+	
+	
+	
+	LR_EPozycja:=LR_Pozycja_Zadana[int_Kieszen];
+	LR_Predkosc:=350;
+	b_Start:=FALSE;
+
+	IF  b_Kon1=TRUE AND b_Kon2=TRUE THEN
+	bS_Exe:=TRUE;
+	END_IF
+	
+	IF bS_Run=TRUE THEN
+	seq:=10;
+
+	END_IF
+	
+	10:
+	IF bS_Done=TRUE THEN
+	bS_Exe:=FALSE;
+	
+	IF b_Odbierz=FALSE	THEN 
+		b_Hamulec1:=FALSE;
+		b_Hamulec2:=FALSE;
+		
+		END_IF
+	seq:=0;
+	
+	END_IF
+	
+
+
+	
+	
+END_CASE
+CASE seq1 OF
+0:
+
+			b_Start:=TRUE;
+			seq1:=3;
+
+3:
+			//IF Czas[0].Q=FALSE THEN
+				
+			seq1:=5;
+			
+			//END_IF
+			//int_Licznik	:=0;//zerowanie kieszeni 
+			
+			
+5:
+
+			IF Czas[0].Q=TRUE THEN
+				
+			seq1:=10;
+			
+			END_IF
+			
+10://inkremetnowanie licznika przejchala butelka 
+			
+			int_Licznik:=int_Licznik+1; 
+			seq1:=15;
+15:	
+			IF int_Licznik=int_Licznik_zadana AND int_Kieszen<int_Kieszen_zadana+1 THEN
+			int_Kieszen:=int_Kieszen+1;
+			int_Licznik:=0;
+			
+			seq1:=25;	
+			
+			
+			END_IF
+		
+	
+			IF int_Kieszen=int_Kieszen_zadana+1 THEN
+					
+			GVL_GLOBAL.reset_licznik:=TRUE; ///moje
+			
+				b_Odbierz:=TRUE;
+				int_Kieszen:=1;
+				seq1:=25;	
+			END_IF
+
+			
+			IF Czas[6].Q=TRUE THEN
+			
+						seq1:=3;
+			
+			END_IF
+		
+			
+
+			
+			
+25:(*blokowanie silownika odblokowane dopiero jak przestawi sie kierownica na nastepną pozycję *)
+		b_Hamulec1:=TRUE;
+		b_Hamulec2:=TRUE;
+		seq1:=30;	
+			
+30:(*startowanie serwa i czekanie jak pojedzie*)
+		IF b_Kon2=TRUE AND b_Kon1=TRUE AND Czas[7].Q=TRUE THEN
+			
+		b_Start:=TRUE;
+		seq1:=35;	
+		END_IF
+
+35:(*czekanie aż serwo wykona ruch jak wykona to skocz do 0:*)
+		b_Start:=FALSE;
+		
+		IF bS_Done=TRUE  THEN
+		seq1:=40;
+		END_IF
+40:(**)
+
+
+		IF b_Odbierz=FALSE	THEN 
+		b_Hamulec1:=FALSE;
+		b_Hamulec2:=FALSE;
+		seq1:=3;
+		END_IF
+END_CASE
+
+
+
+
+
+Czas[0](IN:=b_czujnik_wejsciowy, PT:=T#20MS);
+Czas[1](IN:=b_czujnik_K1, PT:=T#100MS);
+Czas[2](IN:=b_czujnik_K2, PT:=T#100MS);
+Czas[3](IN:=b_czujnik_K3, PT:=T#100MS);
+Czas[4](IN:=b_czujnik_K4, PT:=T#100MS);
+Czas[5](IN:=b_czujnik_K5, PT:=T#100MS);
+Czas[6](IN:=b_czujnik_wejsciowy=FALSE, PT:=T#25MS);
+Czas[7](IN:=seq1=30, PT:=T#500MS);
+IF b_Stop=TRUE OR Zasilanie=FALSE OR automat=FALSE THEN
+		
+	seq:=0;
+	Kier_CCW:=FALSE;
+	Kier_CW:=FALSE;
+	END_IF
+IF b_Start1=TRUE AND Zasilanie=TRUE THEN	
+	
+	Kier_CCW:=TRUE;
+	Kier_CW:=FALSE;
+	END_IF
+	IF b_pobral=TRUE THEN
+		
+	
+	
+	FOR i:=1 TO 5 BY 1 DO 
+		
+	int_LicznikCheck[i]:=0;
+	END_FOR
+ 
+	
+	
+	END_IF
+	
+	IF b_Pobral=TRUE THEN
+			
+			b_Odbierz:=FALSE;
+					
+			END_IF
+	
+	]]></ST>
+    </Implementation>
+    <LineIds Name="FB_Kierownica">
+      <LineId Id="66" Count="1" />
+      <LineId Id="69" Count="0" />
+      <LineId Id="71" Count="1" />
+      <LineId Id="361" Count="0" />
+      <LineId Id="360" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="36" Count="1" />
+      <LineId Id="114" Count="1" />
+      <LineId Id="47" Count="0" />
+      <LineId Id="51" Count="0" />
+      <LineId Id="254" Count="0" />
+      <LineId Id="452" Count="0" />
+      <LineId Id="307" Count="0" />
+      <LineId Id="312" Count="0" />
+      <LineId Id="310" Count="1" />
+      <LineId Id="304" Count="2" />
+      <LineId Id="308" Count="1" />
+      <LineId Id="53" Count="1" />
+      <LineId Id="52" Count="0" />
+      <LineId Id="48" Count="0" />
+      <LineId Id="39" Count="2" />
+      <LineId Id="74" Count="1" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="61" Count="0" />
+      <LineId Id="106" Count="0" />
+      <LineId Id="454" Count="0" />
+      <LineId Id="108" Count="0" />
+      <LineId Id="111" Count="1" />
+      <LineId Id="76" Count="2" />
+      <LineId Id="455" Count="0" />
+      <LineId Id="79" Count="0" />
+      <LineId Id="62" Count="0" />
+      <LineId Id="43" Count="1" />
+      <LineId Id="81" Count="0" />
+      <LineId Id="457" Count="0" />
+      <LineId Id="258" Count="3" />
+      <LineId Id="119" Count="0" />
+      <LineId Id="84" Count="0" />
+      <LineId Id="83" Count="0" />
+      <LineId Id="82" Count="0" />
+      <LineId Id="45" Count="1" />
+      <LineId Id="123" Count="2" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="143" Count="1" />
+      <LineId Id="256" Count="0" />
+      <LineId Id="255" Count="0" />
+      <LineId Id="257" Count="0" />
+      <LineId Id="147" Count="0" />
+      <LineId Id="146" Count="0" />
+      <LineId Id="219" Count="3" />
+      <LineId Id="149" Count="1" />
+      <LineId Id="155" Count="0" />
+      <LineId Id="218" Count="0" />
+      <LineId Id="148" Count="0" />
+      <LineId Id="156" Count="0" />
+      <LineId Id="154" Count="0" />
+      <LineId Id="157" Count="0" />
+      <LineId Id="159" Count="1" />
+      <LineId Id="158" Count="0" />
+      <LineId Id="161" Count="0" />
+      <LineId Id="153" Count="0" />
+      <LineId Id="152" Count="0" />
+      <LineId Id="162" Count="2" />
+      <LineId Id="168" Count="1" />
+      <LineId Id="186" Count="0" />
+      <LineId Id="172" Count="0" />
+      <LineId Id="226" Count="0" />
+      <LineId Id="225" Count="0" />
+      <LineId Id="171" Count="0" />
+      <LineId Id="170" Count="0" />
+      <LineId Id="197" Count="0" />
+      <LineId Id="406" Count="0" />
+      <LineId Id="178" Count="0" />
+      <LineId Id="190" Count="0" />
+      <LineId Id="362" Count="1" />
+      <LineId Id="195" Count="1" />
+      <LineId Id="181" Count="0" />
+      <LineId Id="180" Count="0" />
+      <LineId Id="184" Count="0" />
+      <LineId Id="215" Count="0" />
+      <LineId Id="212" Count="0" />
+      <LineId Id="216" Count="1" />
+      <LineId Id="214" Count="0" />
+      <LineId Id="213" Count="0" />
+      <LineId Id="211" Count="0" />
+      <LineId Id="185" Count="0" />
+      <LineId Id="174" Count="0" />
+      <LineId Id="206" Count="0" />
+      <LineId Id="223" Count="1" />
+      <LineId Id="166" Count="0" />
+      <LineId Id="234" Count="1" />
+      <LineId Id="165" Count="0" />
+      <LineId Id="151" Count="0" />
+      <LineId Id="228" Count="0" />
+      <LineId Id="236" Count="0" />
+      <LineId Id="238" Count="0" />
+      <LineId Id="355" Count="0" />
+      <LineId Id="237" Count="0" />
+      <LineId Id="229" Count="0" />
+      <LineId Id="227" Count="0" />
+      <LineId Id="231" Count="0" />
+      <LineId Id="356" Count="0" />
+      <LineId Id="240" Count="0" />
+      <LineId Id="230" Count="0" />
+      <LineId Id="232" Count="1" />
+      <LineId Id="248" Count="1" />
+      <LineId Id="247" Count="0" />
+      <LineId Id="250" Count="0" />
+      <LineId Id="253" Count="0" />
+      <LineId Id="252" Count="0" />
+      <LineId Id="251" Count="0" />
+      <LineId Id="145" Count="0" />
+      <LineId Id="101" Count="0" />
+      <LineId Id="100" Count="0" />
+      <LineId Id="99" Count="0" />
+      <LineId Id="98" Count="0" />
+      <LineId Id="93" Count="0" />
+      <LineId Id="85" Count="1" />
+      <LineId Id="56" Count="0" />
+      <LineId Id="87" Count="0" />
+      <LineId Id="89" Count="1" />
+      <LineId Id="92" Count="0" />
+      <LineId Id="210" Count="0" />
+      <LineId Id="57" Count="3" />
+      <LineId Id="453" Count="0" />
+      <LineId Id="55" Count="0" />
+      <LineId Id="459" Count="0" />
+      <LineId Id="461" Count="2" />
+      <LineId Id="128" Count="2" />
+      <LineId Id="135" Count="1" />
+      <LineId Id="132" Count="0" />
+      <LineId Id="139" Count="0" />
+      <LineId Id="141" Count="0" />
+      <LineId Id="140" Count="0" />
+      <LineId Id="137" Count="0" />
+      <LineId Id="133" Count="1" />
+      <LineId Id="131" Count="0" />
+      <LineId Id="241" Count="0" />
+      <LineId Id="243" Count="1" />
+      <LineId Id="246" Count="0" />
+      <LineId Id="245" Count="0" />
+      <LineId Id="242" Count="0" />
+      <LineId Id="96" Count="1" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

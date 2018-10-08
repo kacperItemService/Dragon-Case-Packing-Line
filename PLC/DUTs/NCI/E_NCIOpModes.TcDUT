@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <DUT Name="E_NCIOpModes" Id="{77ebd211-8d86-42d9-a9d3-959852d14b16}">
+    <Declaration><![CDATA[TYPE E_NCIOpModes :
+(
+	Standby := 1,
+	Automatic := 2,
+	MDI := 3,
+	Manual :=4,
+	Homing :=5
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

@@ -1,0 +1,264 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="FB_NCI_MDI" Id="{1664bfdb-7f09-4591-b8b7-2e7fd72bd211}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_NCI_MDI
+VAR_INPUT
+	sMDIString: 		STRING(1024);
+	sTmpFileName:		STRING(255);
+	nChan: 				UINT;
+	bExec:				BOOL;
+END_VAR
+VAR_OUTPUT
+	nErrId: 				UDINT;
+	bErr:					BOOL;
+END_VAR
+VAR
+	nState: 				UINT;
+	hFile: 				UINT;
+	fbFileOpen: 		FB_FileOpen;
+	fbFilePuts: 		FB_FilePuts;
+	fbFileClose: 		FB_FileClose;
+
+	fbLoadStart: 		FB_LoadStart;
+	fbItpStartStop: 	ItpStartStopEx;
+	fbItpEStop:			FB_EStop;
+	fbItpIsEStop:		ItpIsEStop;
+	nGroup:				UDINT;
+	fbADSREAD: 			ADSREAD;
+	fbStepOnAfterEStop: FB_StepOnAfterEStop;
+
+	fbRtrigInit: 		R_TRIG;
+	nItpState: 			UDINT;
+	bCommandStart: 	BOOL;
+	bCommandStop: 		BOOL;
+END_VAR
+
+VAR_IN_OUT
+	bStateStop: 		BOOL;
+	bStateStart: 		BOOL;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* ==========================================================*)
+(*   FB: FB_NciMdi		              		                 *)
+(* ----------------------------------------------------------*)
+(*   Desc: create file from sMDIString and handle start/stop *)
+(*   Auth: MiB / TV                                          *)
+(*   Date: 02.09.2005                                        *)
+(*   Last: 02.04.2013                                        *)
+(*   Rev.: 1.2	                                             *)
+(*			  20.12.2005 CL added continuing of MDI processafter*)
+(*							 stop							 *)
+(* ==========================================================*)
+
+
+(* rising edge detection Init *)
+fbRtrigInit(Clk := bExec);
+
+IF bStateStart THEN
+	bCommandStart := TRUE;
+END_IF
+
+IF bStateStop THEN
+	bCommandStop := TRUE;
+	bCommandStart := FALSE;
+END_IF
+
+bStateStart := FALSE;
+bStateStop := FALSE;
+
+
+CASE nState OF
+
+16#0: (* init *)
+	IF fbRtrigInit.Q THEN
+		bErr := FALSE;
+		nErrId := 0;
+		nState := 16#5;
+	END_IF
+
+16#5: (* Read Group ID *)
+		fbADSREAD(
+			NETID:= ,
+			PORT:= 	501,  			(* NCI Channel *)
+			IDXGRP:= 16#2000+nChan, (* Spezifikation für Kanal-Parameter *)
+			IDXOFFS:=16#21 ,			(* 0x00000021  Read  every  UINT32  1   Gruppen-ID (nur eindeutig für 3D- und FIFO-Kanal   *)
+			LEN:= SIZEOF(nGroup),
+			DESTADDR:=ADR(nGroup) ,
+			READ:= TRUE,
+			TMOUT:= T#200ms,
+			BUSY=> ,
+			ERR=> ,
+			ERRID=> );
+
+		IF fbADSREAD.ERR THEN
+			fbADSREAD(READ := FALSE);
+			bErr := TRUE;
+			nErrId := fbADSREAD.ERRID;
+			nState := 16#999;
+		END_IF
+
+		IF (NOT fbADSREAD.ERR) AND (NOT fbADSREAD.BUSY) THEN
+			fbADSREAD(READ := FALSE);
+			nState := 16#10;
+		END_IF;
+
+16#10: (* wait for start *)
+	IF bCommandStart THEN
+		nState := 16#20;
+		bCommandStart := FALSE;
+		IF  sTmpFileName='' THEN
+			sTmpFileName := 'C:\TwinCAT\CNC\9999.nc'; (* standard filename for MDI *)
+		END_IF
+	END_IF;
+
+
+16#20:	(* create file *)
+   fbFileOpen(
+		sNetId:= '',
+		sPathName:= sTmpFileName,
+		nMode:= FOPEN_MODEWRITE OR FOPEN_MODETEXT,
+		ePath:= PATH_GENERIC,
+		bExecute:= TRUE,
+		tTimeout:= T#1s,
+		hFile=> hFile);
+	IF NOT fbFileOpen.bBusy THEN
+		fbFileOpen(bExecute := FALSE);
+		IF fbFileOpen.bError THEN
+			nErrId := fbFileOpen.nErrId;
+			nState := 16#999;
+		ELSE
+			nState := 16#30;
+		END_IF
+	END_IF
+
+16#30: (* put MDI String into file *)
+	fbFilePuts(
+		sNetId:= '',
+		hFile:= hFile,
+		sLine:= sMDIString,
+		bExecute:= TRUE,
+		tTimeout:= t#1s);
+	IF NOT fbFilePuts.bBusy THEN
+		fbFilePuts(bExecute := FALSE);
+		IF fbFilePuts.bError THEN
+			nErrId := fbFilePuts.nErrId;
+			nState := 16#999;
+		ELSE
+			nState := 16#40;
+		END_IF
+	END_IF
+
+16#40:  (* append @714 (= Dekodierstop) *)
+	fbFilePuts(
+		sNetId:= '',
+		hFile:= hFile,
+		sLine:= '$0A@714$0A',
+		bExecute:= TRUE,
+		tTimeout:= t#1s);
+	IF NOT fbFilePuts.bBusy THEN
+		fbFilePuts(bExecute := FALSE);
+		IF fbFilePuts.bError THEN
+			nErrId := fbFilePuts.nErrId;
+			nState := 16#999;
+		ELSE
+			nState := 16#50;
+		END_IF
+	END_IF
+
+16#50:	(* close file *)
+	fbFileClose(
+		sNetId:= '',
+		hFile:= hFile,
+		bExecute:= TRUE,
+		tTimeout:= t#1s);
+	IF NOT fbFileClose.bBusy THEN
+		fbFileClose(bExecute := FALSE);
+		IF fbFileClose.bError THEN
+			nErrId := fbFileClose.nErrId;
+			nState := 16#999;
+		ELSE
+			nState := 16#60;
+		END_IF
+	END_IF
+
+16#60: (* load and start program *)
+	fbLoadStart(
+		bExec:= TRUE,
+		sPrg:= sTmpFileName,
+		nChan:= nChan);
+	IF NOT fbLoadStart.bBusy THEN
+		fbLoadStart(bExec := FALSE);
+		IF fbLoadStart.bErr THEN
+			nErrId := fbLoadStart.nErrId;
+			nState := 16#999;
+		ELSE
+			nState := 16#70;
+		END_IF
+	END_IF
+
+16#70: (* wait for end of program and handle stop *)
+		IF (bCommandStop) THEN
+			(*fbItpStartStop(
+				bStart:= FALSE,
+				bStop:= TRUE,
+				nChnId:= nChan,
+				tTimeOut:= T#250ms);
+			IF NOT fbItpStartStop.bBusy THEN
+				fbItpStartStop(bStop := FALSE, bStart := FALSE);
+				bCommandStop := FALSE;
+			END_IF*)
+			fbItpEStop(
+				bExec:= TRUE,
+				nChan:= nChan);
+			IF NOT fbItpEStop.bBusy THEN
+				fbItpEStop(bExec := FALSE);
+				bCommandStop := FALSE;
+			END_IF
+		END_IF
+
+		fbItpIsEStop(
+   		bExecute:=   TRUE,
+   		nGrpId:=     nGroup,
+   		tTimeOut:=   t#250ms);
+		IF NOT fbItpIsEStop.bBusy THEN
+			IF fbItpIsEStop.bEStop THEN
+				nState := 16#80;
+			END_IF
+			fbItpIsEStop(bExecute:= FALSE);
+		END_IF
+
+		nItpState := ItpGetStateInterpreter( arrNCToPLC_NCIChannel_REF[nChan-1] );
+		IF nItpState = NCI_INTERPRETER_IDLE OR nItpState = NCI_INTERPRETER_READY OR nItpState = NCI_INTERPRETER_ABORTED THEN
+			nState := 16#10;
+		END_IF
+
+16#80: (* waiting for continue *)
+		IF bCommandStart THEN
+			fbStepOnAfterEStop(
+				bExec:= TRUE,
+				nChan:= nChan);
+			IF NOT fbStepOnAfterEStop.bBusy THEN
+				fbStepOnAfterEStop(bExec := FALSE);
+				bCommandStart := FALSE;
+				nState:= 16#70;
+			END_IF
+		END_IF
+
+		bCommandStop := FALSE; (* we are in stop already *)
+		nItpState := ItpGetStateInterpreter( arrNCToPLC_NCIChannel_REF[nChan-1] );
+		IF nItpState = NCI_INTERPRETER_IDLE OR nItpState = NCI_INTERPRETER_READY OR nItpState = NCI_INTERPRETER_ABORTED THEN
+			nState := 16#10;
+		END_IF
+
+16#999:   (* error *)
+		bErr := TRUE;
+	   nState := 16#0;   (* init *)
+
+END_CASE]]></ST>
+    </Implementation>
+    <LineIds Name="FB_NCI_MDI">
+      <LineId Id="3" Count="215" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

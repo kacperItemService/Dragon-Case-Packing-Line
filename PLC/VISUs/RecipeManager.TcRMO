@@ -1,0 +1,407 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <RecipeManager Name="RecipeManager" Id="{68657458-00de-42f5-9a6b-991918d267b3}">
+    <XmlArchive>
+      <Data>
+        <o xml:space="preserve" t="RecipeManObject">
+          <o n="LMGuids" t="LanguageModelGuidHelper">
+            <d n="NamesAndGuids" t="Hashtable" ckt="String" cvt="Guid">
+              <v>GVL_RECIPEMANAGEMENT_3300</v>
+              <v>2ced2f64-f0ed-45c5-b743-5f246aed83a5</v>
+              <v>RECIPEFACTORY</v>
+              <v>88e03117-f91f-4545-b790-544d00ff0bd5</v>
+              <v>RECIPEMANAGEMENTINIT</v>
+              <v>29fb083c-19c1-4b51-82bd-d3d3dfadc26d</v>
+              <v>RECIPEFACTORYFREERECIPE</v>
+              <v>30e3d67d-dac2-4889-8376-af5621f5eae0</v>
+              <v>RECIPEFACTORYFB_INIT</v>
+              <v>9fe6e5a3-34c3-46b1-9ee6-8f88757ea2cd</v>
+              <v>RECIPEFACTORYCREATERECIPE</v>
+              <v>ec7c9e12-525e-412f-a85b-dd3014d10f0c</v>
+              <v>RECIPEMANAGEMENTINITFB_INIT</v>
+              <v>2d1d1c09-df71-412d-abf8-9e18aa1d7d49</v>
+              <v>RECIPEMANAGEMENTINITINITIALIZE</v>
+              <v>ef77298a-0a93-4db2-b78b-cd25ece30a4b</v>
+              <v>RECIPEMANAGEMENTINITFB_REINIT</v>
+              <v>72882a43-e20d-4b83-b0de-92b2df24422c</v>
+            </d>
+          </o>
+          <o n="StorageSettings" t="RecipeManagerStorageSettings">
+            <v n="StorageType">1U</v>
+            <v n="LoadType">0U</v>
+            <v n="FileExtension">".txtrecipe"</v>
+            <v n="FilePath">"C:\TwinCAT\3.1\Target\Recipe"</v>
+            <v n="TokenSeparator">":="</v>
+            <v n="ColumnList">"0|1|4"</v>
+            <v n="AutoSaveRecipes">true</v>
+          </o>
+          <v n="RecipesInPlc">true</v>
+          <v n="RecipesInPlcAssigned">false</v>
+        </o>
+      </Data>
+      <TypeList>
+        <Type n="Boolean">System.Boolean</Type>
+        <Type n="Guid">System.Guid</Type>
+        <Type n="Hashtable">System.Collections.Hashtable</Type>
+        <Type n="LanguageModelGuidHelper">{3bce4913-f2c1-4b54-84e8-6d7ec1809176}</Type>
+        <Type n="RecipeManagerStorageSettings">{9af4bea6-fc90-45e0-8fd7-eb50506b56da}</Type>
+        <Type n="RecipeManObject">{09ecc42e-586d-4a08-932f-5bdcac20bb55}</Type>
+        <Type n="String">System.String</Type>
+        <Type n="UInt32">System.UInt32</Type>
+      </TypeList>
+    </XmlArchive>
+    <RecipeDefinition Name="Recipes" Id="{58e09c0c-6032-4828-a0fd-6a07cffcec43}">
+      <XmlArchive>
+        <Data>
+          <o xml:space="preserve" t="RecipeDefinitionObject">
+            <v n="UniqueIdGenerator">"15"</v>
+            <o n="Recipes" t="RecipeList">
+              <l n="Recipes" t="ArrayList" cet="Recipe">
+                <o>
+                  <l n="Values" t="ArrayList" cet="RecipeValue">
+                    <o>
+                      <v n="Type" t="TypeClass">LReal</v>
+                      <v n="Value">"40"</v>
+                    </o>
+                    <o>
+                      <v n="Type" t="TypeClass">LReal</v>
+                      <v n="Value">"80"</v>
+                    </o>
+                    <o>
+                      <v n="Type" t="TypeClass">LReal</v>
+                      <v n="Value">"120"</v>
+                    </o>
+                    <o>
+                      <v n="Type" t="TypeClass">LReal</v>
+                      <v n="Value">"222"</v>
+                    </o>
+                    <o>
+                      <v n="Type" t="TypeClass">Int</v>
+                      <v n="Value">"4"</v>
+                    </o>
+                    <o>
+                      <v n="Type" t="TypeClass">Int</v>
+                      <v n="Value">"5"</v>
+                    </o>
+                    <o>
+                      <v n="Type" t="TypeClass">LReal</v>
+                      <v n="Value">"800"</v>
+                    </o>
+                    <o>
+                      <v n="Type" t="TypeClass">LReal</v>
+                      <v n="Value">"800"</v>
+                    </o>
+                    <o>
+                      <v n="Type" t="TypeClass">LReal</v>
+                      <v n="Value">"50"</v>
+                    </o>
+                    <o>
+                      <v n="Type" t="TypeClass">LReal</v>
+                      <v n="Value">"50"</v>
+                    </o>
+                    <o>
+                      <v n="Type" t="TypeClass">LReal</v>
+                      <v n="Value">"80"</v>
+                    </o>
+                    <o>
+                      <v n="Type" t="TypeClass">LReal</v>
+                      <v n="Value">"0"</v>
+                    </o>
+                    <o>
+                      <v n="Type" t="TypeClass">LReal</v>
+                      <v n="Value">"0"</v>
+                    </o>
+                  </l>
+                  <v n="Name">"karton25x05"</v>
+                  <v n="Id">1</v>
+                </o>
+                <o>
+                  <l n="Values" t="ArrayList" cet="RecipeValue">
+                    <o>
+                      <v n="Type" t="TypeClass">LReal</v>
+                      <v n="Value">"100"</v>
+                    </o>
+                    <o>
+                      <v n="Type" t="TypeClass">LReal</v>
+                      <v n="Value">"50"</v>
+                    </o>
+                    <o>
+                      <v n="Type" t="TypeClass">LReal</v>
+                      <v n="Value">"100"</v>
+                    </o>
+                    <o>
+                      <v n="Type" t="TypeClass">LReal</v>
+                      <v n="Value">"112"</v>
+                    </o>
+                    <o>
+                      <v n="Type" t="TypeClass">Int</v>
+                      <v n="Value">"4"</v>
+                    </o>
+                    <o>
+                      <v n="Type" t="TypeClass">Int</v>
+                      <v n="Value">"5"</v>
+                    </o>
+                    <o>
+                      <v n="Type" t="TypeClass">LReal</v>
+                      <v n="Value">"800"</v>
+                    </o>
+                    <o>
+                      <v n="Type" t="TypeClass">LReal</v>
+                      <v n="Value">"800"</v>
+                    </o>
+                    <o>
+                      <v n="Type" t="TypeClass">LReal</v>
+                      <v n="Value">"50"</v>
+                    </o>
+                    <o>
+                      <v n="Type" t="TypeClass">LReal</v>
+                      <v n="Value">"50"</v>
+                    </o>
+                    <o>
+                      <v n="Type" t="TypeClass">LReal</v>
+                      <v n="Value">"80"</v>
+                    </o>
+                    <o>
+                      <v n="Type" t="TypeClass">LReal</v>
+                      <v n="Value">"0"</v>
+                    </o>
+                    <o>
+                      <v n="Type" t="TypeClass">LReal</v>
+                      <v n="Value">"0"</v>
+                    </o>
+                  </l>
+                  <v n="Name">"karton20x05"</v>
+                  <v n="Id">5</v>
+                </o>
+              </l>
+            </o>
+            <o n="RecipeVariables" t="RecipeVariableList">
+              <l n="Variables" t="ArrayList" cet="RecipeVariable">
+                <o>
+                  <v n="VarName">"GVL_Recipe.dl_kartonu"</v>
+                  <v n="VarType" t="TypeClass">LReal</v>
+                  <v n="VarTypeAsString">"LREAL"</v>
+                  <v n="Name">"Długość kartonu"</v>
+                  <o n="Boundaries" t="RecipeVariableBoundaries">
+                    <v n="Type" t="TypeClass">LReal</v>
+                    <v n="LowerBound">""</v>
+                    <v n="UpperBound">""</v>
+                  </o>
+                  <v n="Id">2</v>
+                  <v n="Comment">""</v>
+                  <v n="VarUserDefTypeAsString">"LREAL"</v>
+                </o>
+                <o>
+                  <v n="VarName">"GVL_Recipe.wys_kartonu"</v>
+                  <v n="VarType" t="TypeClass">LReal</v>
+                  <v n="VarTypeAsString">"LREAL"</v>
+                  <v n="Name">"Wysokośc kartonu"</v>
+                  <o n="Boundaries" t="RecipeVariableBoundaries">
+                    <v n="Type" t="TypeClass">LReal</v>
+                    <v n="LowerBound">""</v>
+                    <v n="UpperBound">""</v>
+                  </o>
+                  <v n="Id">3</v>
+                  <v n="Comment">""</v>
+                  <v n="VarUserDefTypeAsString">"LREAL"</v>
+                </o>
+                <o>
+                  <v n="VarName">"GVL_Recipe.szer_kartonu"</v>
+                  <v n="VarType" t="TypeClass">LReal</v>
+                  <v n="VarTypeAsString">"LREAL"</v>
+                  <v n="Name">"Szerokość kartonu"</v>
+                  <o n="Boundaries" t="RecipeVariableBoundaries">
+                    <v n="Type" t="TypeClass">LReal</v>
+                    <v n="LowerBound">""</v>
+                    <v n="UpperBound">""</v>
+                  </o>
+                  <v n="Id">4</v>
+                  <v n="Comment">""</v>
+                  <v n="VarUserDefTypeAsString">"LREAL"</v>
+                </o>
+                <o>
+                  <v n="VarName">"GVL_Recipe.Poz_X_Odlozenie"</v>
+                  <v n="VarType" t="TypeClass">LReal</v>
+                  <v n="VarTypeAsString">"LREAL"</v>
+                  <v n="Name">"X Odłożenia"</v>
+                  <o n="Boundaries" t="RecipeVariableBoundaries">
+                    <v n="Type" t="TypeClass">LReal</v>
+                    <v n="LowerBound">""</v>
+                    <v n="UpperBound">""</v>
+                  </o>
+                  <v n="Id">6</v>
+                  <v n="Comment">""</v>
+                  <v n="VarUserDefTypeAsString">"LREAL"</v>
+                </o>
+                <o>
+                  <v n="VarName">"GVL_Recipe.Il_kolumn"</v>
+                  <v n="VarType" t="TypeClass">Int</v>
+                  <v n="VarTypeAsString">"INT"</v>
+                  <v n="Name">"Ilość torów"</v>
+                  <o n="Boundaries" t="RecipeVariableBoundaries">
+                    <v n="Type" t="TypeClass">Int</v>
+                    <v n="LowerBound">""</v>
+                    <v n="UpperBound">""</v>
+                  </o>
+                  <v n="Id">7</v>
+                  <v n="Comment">""</v>
+                  <v n="VarUserDefTypeAsString">"INT"</v>
+                </o>
+                <o>
+                  <v n="VarName">"GVL_Recipe.Il_rzedow"</v>
+                  <v n="VarType" t="TypeClass">Int</v>
+                  <v n="VarTypeAsString">"INT"</v>
+                  <v n="Name">"Ilość rzędów na torze"</v>
+                  <o n="Boundaries" t="RecipeVariableBoundaries">
+                    <v n="Type" t="TypeClass">Int</v>
+                    <v n="LowerBound">""</v>
+                    <v n="UpperBound">""</v>
+                  </o>
+                  <v n="Id">8</v>
+                  <v n="Comment">""</v>
+                  <v n="VarUserDefTypeAsString">"INT"</v>
+                </o>
+                <o>
+                  <v n="VarName">"GVL_Recipe.Predk_mag_odlozenie"</v>
+                  <v n="VarType" t="TypeClass">LReal</v>
+                  <v n="VarTypeAsString">"LREAL"</v>
+                  <v n="Name">"Prędkość mag. odłożenie"</v>
+                  <o n="Boundaries" t="RecipeVariableBoundaries">
+                    <v n="Type" t="TypeClass">LReal</v>
+                    <v n="LowerBound">""</v>
+                    <v n="UpperBound">""</v>
+                  </o>
+                  <v n="Id">9</v>
+                  <v n="Comment">""</v>
+                  <v n="VarUserDefTypeAsString">"LREAL"</v>
+                </o>
+                <o>
+                  <v n="VarName">"GVL_Recipe.Predk_mag_pobranie"</v>
+                  <v n="VarType" t="TypeClass">LReal</v>
+                  <v n="VarTypeAsString">"LREAL"</v>
+                  <v n="Name">"Prędkość mag. pobranie"</v>
+                  <o n="Boundaries" t="RecipeVariableBoundaries">
+                    <v n="Type" t="TypeClass">LReal</v>
+                    <v n="LowerBound">""</v>
+                    <v n="UpperBound">""</v>
+                  </o>
+                  <v n="Id">10</v>
+                  <v n="Comment">""</v>
+                  <v n="VarUserDefTypeAsString">"LREAL"</v>
+                </o>
+                <o>
+                  <v n="VarName">"GVL_Recipe.Predk_plot_odlozenie"</v>
+                  <v n="VarType" t="TypeClass">LReal</v>
+                  <v n="VarTypeAsString">"LREAL"</v>
+                  <v n="Name">"Prędkość ploter odłożenie"</v>
+                  <o n="Boundaries" t="RecipeVariableBoundaries">
+                    <v n="Type" t="TypeClass">LReal</v>
+                    <v n="LowerBound">""</v>
+                    <v n="UpperBound">""</v>
+                  </o>
+                  <v n="Id">11</v>
+                  <v n="Comment">""</v>
+                  <v n="VarUserDefTypeAsString">"LREAL"</v>
+                </o>
+                <o>
+                  <v n="VarName">"GVL_Recipe.Predk_plot_pobranie	"</v>
+                  <v n="VarType" t="TypeClass">LReal</v>
+                  <v n="VarTypeAsString">"LREAL"</v>
+                  <v n="Name">"Prędkość ploter pobranie"</v>
+                  <o n="Boundaries" t="RecipeVariableBoundaries">
+                    <v n="Type" t="TypeClass">LReal</v>
+                    <v n="LowerBound">""</v>
+                    <v n="UpperBound">""</v>
+                  </o>
+                  <v n="Id">12</v>
+                  <v n="Comment">""</v>
+                  <v n="VarUserDefTypeAsString">"LREAL"</v>
+                </o>
+                <o>
+                  <v n="VarName">"GVL_Recipe.Predk_plot_ruch"</v>
+                  <v n="VarType" t="TypeClass">LReal</v>
+                  <v n="VarTypeAsString">"LREAL"</v>
+                  <v n="Name">"Prędkość ruchu ploter"</v>
+                  <o n="Boundaries" t="RecipeVariableBoundaries">
+                    <v n="Type" t="TypeClass">LReal</v>
+                    <v n="LowerBound">""</v>
+                    <v n="UpperBound">""</v>
+                  </o>
+                  <v n="Id">13</v>
+                  <v n="Comment">""</v>
+                  <v n="VarUserDefTypeAsString">"LREAL"</v>
+                </o>
+                <o>
+                  <v n="VarName">"GVL_Recipe.Poz_Z_Odlozenie	"</v>
+                  <v n="VarType" t="TypeClass">LReal</v>
+                  <v n="VarTypeAsString">"LREAL"</v>
+                  <v n="Name">"Wysokość odłożenia do kartonu"</v>
+                  <o n="Boundaries" t="RecipeVariableBoundaries">
+                    <v n="Type" t="TypeClass">LReal</v>
+                    <v n="LowerBound">""</v>
+                    <v n="UpperBound">""</v>
+                  </o>
+                  <v n="Id">14</v>
+                  <v n="Comment">""</v>
+                  <v n="VarUserDefTypeAsString">"LREAL"</v>
+                </o>
+                <o>
+                  <v n="VarName">"GVL_Recipe.Poz_Z_Pobranie"</v>
+                  <v n="VarType" t="TypeClass">LReal</v>
+                  <v n="VarTypeAsString">"LREAL"</v>
+                  <v n="Name">"Wysokość pobrania z kierownicy"</v>
+                  <o n="Boundaries" t="RecipeVariableBoundaries">
+                    <v n="Type" t="TypeClass">LReal</v>
+                    <v n="LowerBound">""</v>
+                    <v n="UpperBound">""</v>
+                  </o>
+                  <v n="Id">15</v>
+                  <v n="Comment">""</v>
+                  <v n="VarUserDefTypeAsString">"LREAL"</v>
+                </o>
+              </l>
+            </o>
+            <o n="LMGuids" t="LanguageModelGuidHelper">
+              <d n="NamesAndGuids" t="Hashtable" ckt="String" cvt="Guid">
+                <v>VALUESINIT</v>
+                <v>ed642d84-014c-47da-8afd-80115dabc8c9</v>
+                <v>FILLDESCRIPTION</v>
+                <v>8a01ec3b-64dd-478e-99bb-4d075a65dd9e</v>
+                <v>NAMESET</v>
+                <v>3918d753-c1f0-4126-b0ba-33d718a18590</v>
+                <v>PRVFILLDATASERVERSTRUCTURES</v>
+                <v>ec2c8a96-70a6-43ea-9833-a3e933212a03</v>
+                <v>REC_DS_PRG__2637CC9ECEF446F281EECC61A3145F19</v>
+                <v>74d98f6e-2f5b-4b94-9d5c-bcd6ab5f3c07</v>
+                <v>NAME</v>
+                <v>fb20ee8c-5516-43e7-b0b5-a19b65801cfb</v>
+                <v>UPDATEFROMDESCRIPTION</v>
+                <v>158b525e-ea6c-448e-9db1-dc64c6ed4eb7</v>
+                <v>WRITE</v>
+                <v>a87b942b-9820-4f93-8bce-4414d910b650</v>
+                <v>READ</v>
+                <v>31ca3b68-f350-4c14-9e59-19535a22c71d</v>
+              </d>
+            </o>
+          </o>
+        </Data>
+        <TypeList>
+          <Type n="ArrayList">System.Collections.ArrayList</Type>
+          <Type n="Guid">System.Guid</Type>
+          <Type n="Hashtable">System.Collections.Hashtable</Type>
+          <Type n="Int32">System.Int32</Type>
+          <Type n="LanguageModelGuidHelper">{3bce4913-f2c1-4b54-84e8-6d7ec1809176}</Type>
+          <Type n="Recipe">{53080c72-c79f-4271-9865-791f591dcef8}</Type>
+          <Type n="RecipeDefinitionObject">{6b3dfb6a-1865-4356-a39b-1fe0ef89651c}</Type>
+          <Type n="RecipeList">{361612e3-b6f9-4397-98a8-756875b9e479}</Type>
+          <Type n="RecipeValue">{57d4d5a5-2244-4adb-b7c3-3e65da497dcc}</Type>
+          <Type n="RecipeVariable">{53eb36d9-3360-453b-901e-ca88bd8f0cba}</Type>
+          <Type n="RecipeVariableBoundaries">{27f9af88-23e7-4a13-82aa-c97c4e06a71a}</Type>
+          <Type n="RecipeVariableList">{97841042-ff4f-47b5-923e-538f1387df5a}</Type>
+          <Type n="String">System.String</Type>
+          <Type n="TypeClass">{16f7aa24-038f-444e-9d81-b001bc091d35}</Type>
+        </TypeList>
+      </XmlArchive>
+    </RecipeDefinition>
+  </RecipeManager>
+</TcPlcObject>

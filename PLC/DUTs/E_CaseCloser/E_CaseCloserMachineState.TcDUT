@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <DUT Name="E_CaseCloserMachineState" Id="{c58c4baa-44cf-4b30-8b8a-f8d4d9df5bab}">
+    <Declaration><![CDATA[{attribute 'strict'}
+{attribute 'qualified_only'}
+TYPE E_CaseCloserMachineState :
+(
+	eIdle					:= 0,
+	eAborting				:= 10,
+	eAborted				:= 20,
+	eStopping				:= 30,
+	eStopped				:= 40,
+	eStarting				:= 50,
+	eRunning				:= 60,
+	eReseting				:= 70,
+	eRestarting				:= 80,
+	eError					:= 1000	
+);
+END_TYPE]]></Declaration>
+  </DUT>
+</TcPlcObject>

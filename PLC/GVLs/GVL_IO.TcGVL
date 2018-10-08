@@ -1,0 +1,75 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <GVL Name="GVL_IO" Id="{79cc0b98-1945-4a78-a1b3-ca64f0142678}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL	
+	
+		//zmienne systemowe
+
+		Zmienna_P_On : BOOL :=TRUE;		
+		//wyjścia
+		S_Zeb 		AT%Q* :BOOL	;
+		S_Kl_1		AT%Q* :BOOL	;
+		S_Kl_2		AT%Q* :BOOL	;
+		P_Vac		AT%Q* :BOOL	;
+		S_skos		AT%Q* :BOOL	;
+		S_Wypych	AT%Q* :BOOL	;
+		S_Fal  		AT%Q* :BOOL	;
+		S_Ssawki 	AT%Q* :BOOL	;
+		IOLinkCh1T	AT%Q* :BOOL	;
+		IOLinkCh3T	AT%Q* :BOOL	;	
+		//wejscia
+		Wyp_wys	AT%I* :BOOL	;
+		Wyp_cof AT%I* :BOOL	;	
+		Vacuostat AT%I* :BOOL	;		// tutaj jest dodatkowo czujnik.podciś... na trojniku
+		Skos_wyp AT%I*	: BOOL;
+		Skos_cof AT%I* :BOOL	;
+		Presostat AT%I* :BOOL	;		// tutaj dod. presostat5... czujnik cisnienia...kontrola ciśnienia
+		Kl_1_wyp AT%I* :BOOL;
+		Kl_1_cof AT%I* :BOOL	;
+		Kl_2_wyp AT%I* :BOOL	;
+		Kl_2_cof AT%I* :BOOL	;
+		Zeb_Wyp AT%I* :BOOL	;
+		Zeb_Cof AT%I*: BOOL;
+		SI_DI AT%I* :UDINT	;
+		Cz_M_D  AT%I* :BOOL	; 				//czujnik magazynu dociskowy 
+		
+		bRygiel  AT%I* :BOOL	; 
+		bRygie2  AT%I* :BOOL	; 
+		bRygie3  AT%I* :BOOL	; 
+		bBezpiecznik1 AT%I* :BOOL	; 
+		bBezpiecznik2 AT%I* :BOOL	; 
+		bBezpiecznik3 AT%I* :BOOL	; 
+		bStart AT%I* :BOOL	; 
+		bStop AT%I* :BOOL	; 
+		bStartGlobal AT%I* :BOOL	; 
+		
+		//wejscia E1008 kartoniarka 
+		b1K1 AT%I* :BOOL	; //PRZYCISK start
+		b1K2 AT%I* :BOOL	; 
+		b1K3 AT%I* :BOOL	; //PRZYCISK stop
+		b1K4 AT%I* :BOOL	; 
+		b1K5 AT%I* :BOOL	; 
+		b1K6 AT%I* :BOOL	;
+		b1K7 AT%I* :BOOL	; 
+		b1K8 AT%I* :BOOL	; //PRZYCISK reset 
+		//wyjscia E2008 kartoniarka 
+		
+		K1K1 AT%Q* :BOOL	; 		//tylnie łapki
+		K1K2 AT%Q* :BOOL	;  //lampka reset 
+		K1K3 AT%Q* :BOOL	; //przednie łapki
+		K1K4 AT%Q* :BOOL	; //podpych
+		K1K5 AT%Q* :BOOL	; //lampka start
+		K1K6 AT%Q* :BOOL	;
+		K1K7 AT%Q* :BOOL	; //lampka stop
+		K1K8 AT%Q* :BOOL	; 
+		
+		//magazyn kartońów
+		
+		bCzujnik_Trzymacz1 AT%I* :BOOL;
+		bCzujnik_Trzymacz2 AT%I* :BOOL;
+		
+	
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

@@ -1,0 +1,174 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="PRG_KinTrans" Id="{2ab0c24b-22bd-42d4-926c-35ed6a223b56}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM PRG_KinTrans
+VAR_INPUT
+	bBuildKinGroup					: BOOL; 
+	bCleanKinGroup					: BOOL; 
+	bResetKinGroup					: BOOL; 
+END_VAR
+
+VAR
+	//Kinematic Tranformation Variables 
+	fbKinConfigGroup				: FB_KinConfigGroup;
+	fbKinResetGroup 				: FB_KinResetGroup;
+
+	stKinAxes						: ST_KinAxes;
+	in_stKinToPlc	AT %I*			: NcToPlc_NciChannel_Ref;
+	out_stPlcToKin	AT %Q*			: PLCTONC_NCICHANNEL_REF;
+
+	iKinState						: INT;		// Kinematics case Steps
+	bAllAxesReady					: BOOL;
+	
+	rtKinGroup						: R_TRIG;	// Configuration of kinemtic trigger
+	rtKinRegroup					: R_TRIG;	// Diasabling of kinemtic trigger
+	rtKinReset						: R_TRIG;	// Reseting of kinemtic trigger
+
+
+END_VAR
+
+VAR_OUTPUT
+	bKinBusy						: BOOL;
+	bKinDone						: BOOL;
+	bKinBuilt						: BOOL;		// Cartesian mode Enabled - check
+	bKinClined						: BOOL;  	// Disable Cartesian -  command	
+	//Errors	
+	bKinError						: BOOL;		// Kinematic Configuration Error 
+	udiKinErrorID					: UDINT;		// Kinematic Configuration Error 	
+	eKinStatus						: E_KinStatus;(*KinStatus_Error,         
+													KinStatus_Empty,         
+													KinStatus_Unknown,    
+													KinStatus_StartPending, 
+													KinStatus_Ready,       
+													KinStatus_InvalidItfVersion := 16#4000*)
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[stKinAxes.nAxisIdsMcs[1]	:= P_Hbot_V3.Axis_MCS_X.NcToPlc.AxisId;
+stKinAxes.nAxisIdsMcs[2]	:= P_Hbot_V3.Axis_MCS_Y.NcToPlc.AxisId;
+stKinAxes.nAxisIdsAcs[1]	:= P_Hbot_V3.Axis_ACS_X.NcToPlc.AxisId;
+stKinAxes.nAxisIdsAcs[2]	:= P_Hbot_V3.Axis_ACS_Y.NcToPlc.AxisId;
+
+bAllAxesReady:= P_Hbot_V3.stMcAxisOnline_MCS_X.stStatus.bAxisReady AND 
+				P_Hbot_V3.stMcAxisOnline_MCS_Y.stStatus.bAxisReady AND 
+				P_Hbot_V3.stMcAxisOnline_ACS_X.stStatus.bAxisReady AND 
+				P_Hbot_V3.stMcAxisOnline_ACS_Y.stStatus.bAxisReady;
+
+
+// Rising edge singnal - enabling kinematic
+	rtKinGroup(CLK:= bAllAxesReady AND bBuildKinGroup);
+// Rising edge singnal - disabling kinematic
+	rtKinRegroup(CLK:= bCleanKinGroup);
+	rtKinReset(CLK:= bResetKinGroup);
+// Checking actual kinematic status
+	eKinStatus := F_KinGetChnOperationState(stKinRefIn:= in_stKinToPlc);
+	
+CASE iKinState OF 
+	0:	
+		IF rtKinGroup.Q THEN
+			iKinState := iKinState + 10;
+		ELSIF rtKinregroup.Q  THEN
+			iKinState := iKinState + 20; 
+		ELSIF rtKinReset.Q  THEN
+			iKinState := iKinState + 30; 
+		END_IF
+		
+		fbKinConfigGroup(stAxesList				:= stKinAxes, 
+						stKinRefIn				:= in_stKinToPlc, 
+						bBusy					=> bKinBusy, 
+						bDone					=> bKinDone,
+						bError					=> bKinError, 
+						nErrorId				=> udiKinErrorID);
+		
+	10:
+		bKinError := FALSE;
+		fbKinConfigGroup(bExecute			:= TRUE , 
+					bCartesianMode			:= TRUE, 
+					stAxesList				:= stKinAxes, 
+					stKinRefIn				:= in_stKinToPlc, 
+					bBusy					=> bKinBusy, 
+					bDone					=> bKinDone,
+					bError					=> bKinError, 
+					nErrorId				=> udiKinErrorID);
+		IF NOT fbKinConfigGroup.bBusy THEN
+			IF fbKinConfigGroup.bError THEN
+				iKinState := 999;
+				bKinError := TRUE;
+			ELSE
+				bKinBuilt := TRUE;
+				bKinClined							:= FALSE;
+				iKinState := 0;
+			END_IF
+			fbKinConfigGroup(bExecute				:= FALSE , 
+							stAxesList				:= stKinAxes, 
+							stKinRefIn				:= in_stKinToPlc);
+		END_IF
+	20:
+		bKinError := FALSE;
+		fbKinConfigGroup(bExecute			:= TRUE , 
+					bCartesianMode			:= FALSE, 
+					stAxesList				:= stKinAxes, 
+					stKinRefIn				:= in_stKinToPlc, 
+					bBusy					=> bKinBusy, 
+					bDone					=> bKinDone,
+					bError					=> bKinError, 
+					nErrorId				=> udiKinErrorID);
+		IF NOT fbKinConfigGroup.bBusy THEN
+			IF fbKinConfigGroup.bError THEN
+				iKinState := 999;
+				bKinError := TRUE;
+			ELSE
+				bKinBuilt							:= FALSE;
+				bKinClined							:= TRUE;
+				iKinState := 0;
+			END_IF
+			fbKinConfigGroup(bExecute				:= FALSE , 
+				stAxesList				:= stKinAxes, 
+				stKinRefIn				:= in_stKinToPlc);
+		END_IF
+	30:
+		fbKinResetGroup(bExecute			:= TRUE , 
+						nItpChannelId		:= in_stKinToPlc.ChnId, 
+						stKinRefIn			:= in_stKinToPlc , 
+						stAxesList			:= stKinAxes , 
+						bBusy				=> bKinBusy , 
+						bDone				=> bKinDone , 
+						bError				=> bKinError , 
+						nErrorId			=> udiKinErrorID );	
+		
+		IF NOT fbKinResetGroup.bBusy THEN
+			IF fbKinResetGroup.bError THEN
+				iKinState := 999;
+				bKinError := TRUE;
+			ELSE
+				iKinState := 0;
+			END_IF
+			fbKinResetGroup(bExecute	:= FALSE , 
+							nItpChannelId			:= in_stKinToPlc.ChnId, 
+							stKinRefIn				:= in_stKinToPlc , 
+							stAxesList				:= stKinAxes );	
+		END_IF
+	999:
+		iKinState := 0;
+END_CASE
+
+
+
+
+]]></ST>
+    </Implementation>
+    <LineIds Name="PRG_KinTrans">
+      <LineId Id="31" Count="5" />
+      <LineId Id="172" Count="1" />
+      <LineId Id="175" Count="0" />
+      <LineId Id="174" Count="0" />
+      <LineId Id="37" Count="41" />
+      <LineId Id="218" Count="0" />
+      <LineId Id="79" Count="5" />
+      <LineId Id="90" Count="15" />
+      <LineId Id="217" Count="0" />
+      <LineId Id="106" Count="34" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

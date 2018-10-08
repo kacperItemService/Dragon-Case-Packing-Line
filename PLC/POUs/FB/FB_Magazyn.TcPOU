@@ -1,0 +1,152 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="FB_Magazyn" Id="{f5b7219c-c787-42b9-a31d-32a3e07c9792}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_Magazyn
+VAR_INPUT
+	xPodjedz :BOOL;
+	xWydajKarton :BOOL;
+	xKartonPobrany :BOOL;
+	xCzPodjazd :BOOL;
+	xCzTrzymacz1 :BOOL;
+	xCzTrzymacz2 :BOOL;
+	bStop 		:BOOL;
+	
+END_VAR
+VAR_OUTPUT
+	xSilPodpych :BOOL;
+	xSilTrzymacz1 :BOOL;
+	xSilTrzymacz2 :BOOL;
+	xWydalemKarton :BOOL;
+	xBlad					:ARRAY[0..100]  OF BOOL;
+	
+END_VAR
+
+VAR
+	czas					: ARRAY[0..100] OF TON;
+	seq						: INT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[CASE seq OF 
+	
+0:(*inicjalizacja*)
+	xSilPodpych:=FALSE;
+	xSilTrzymacz1:=TRUE;
+	xSilTrzymacz2:=FALSE;
+	xWydalemKarton:=FALSE;	
+	IF xPodjedz=TRUE THEN	
+	seq:=5; 	
+	END_IF
+5:(*wlacza silownik podjazdu czeka sekunde *)
+
+	xSilPodpych:=TRUE;
+	xSilTrzymacz1:=TRUE;
+	xSilTrzymacz2:=FALSE;
+	IF czas[0].Q=TRUE THEN 
+		seq:=10;
+	END_IF
+10:(*cofa silownik podjazdu *)
+	xSilTrzymacz1:=FALSE;
+	xSilTrzymacz2:=FALSE;
+	IF xWydajKarton=TRUE THEN
+		seq:=15;
+	END_IF
+15:(*opóźnienie popychu*)
+IF czas[3].Q=TRUE THEN
+	xSilPodpych:=FALSE;
+	seq:=16;
+END_IF
+	
+16:(*wydaje karton done zrobione *) 
+	xSilPodpych:=FALSE;
+	xSilTrzymacz1:=FALSE;
+	xSilTrzymacz2:=TRUE;	
+	IF xCzTrzymacz1=TRUE THEN
+		xWydalemKarton:=TRUE;
+		seq:=20;
+	END_IF	
+	
+20:(*opoznienie trzymacza 2 *)
+	
+	xWydalemKarton:=FALSE;
+	IF czas[1].Q=TRUE  AND xKartonPobrany=TRUE  THEN
+	xSilTrzymacz1:=TRUE;
+	xSilTrzymacz2:=FALSE;
+	seq:=25;
+	END_IF
+25:(*popychacz z opóźnieniem*)
+IF czas[2].Q=TRUE THEN
+	xSilPodpych:=TRUE; 
+	seq:=5;
+END_IF
+
+
+	
+END_CASE
+			czas[0](IN:=seq=5,PT:=T#3S);
+			czas[1](IN:=seq=20,PT:=T#1S);
+			czas[2](IN:=seq=25,PT:=T#1S);
+			czas[3](IN:=seq=15,PT:=T#1S);
+			
+			//jak stop to zeruj seq
+				
+		IF bStop THEN	
+			seq:=0;
+		END_IF]]></ST>
+    </Implementation>
+    <LineIds Name="FB_Magazyn">
+      <LineId Id="9" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="194" Count="0" />
+      <LineId Id="204" Count="2" />
+      <LineId Id="246" Count="0" />
+      <LineId Id="207" Count="0" />
+      <LineId Id="213" Count="0" />
+      <LineId Id="211" Count="0" />
+      <LineId Id="195" Count="0" />
+      <LineId Id="215" Count="2" />
+      <LineId Id="214" Count="0" />
+      <LineId Id="218" Count="2" />
+      <LineId Id="222" Count="0" />
+      <LineId Id="228" Count="0" />
+      <LineId Id="226" Count="0" />
+      <LineId Id="230" Count="0" />
+      <LineId Id="232" Count="1" />
+      <LineId Id="263" Count="0" />
+      <LineId Id="265" Count="1" />
+      <LineId Id="268" Count="0" />
+      <LineId Id="267" Count="0" />
+      <LineId Id="264" Count="0" />
+      <LineId Id="229" Count="0" />
+      <LineId Id="235" Count="1" />
+      <LineId Id="225" Count="0" />
+      <LineId Id="238" Count="0" />
+      <LineId Id="245" Count="0" />
+      <LineId Id="240" Count="0" />
+      <LineId Id="255" Count="0" />
+      <LineId Id="294" Count="0" />
+      <LineId Id="247" Count="0" />
+      <LineId Id="256" Count="0" />
+      <LineId Id="293" Count="0" />
+      <LineId Id="249" Count="0" />
+      <LineId Id="251" Count="0" />
+      <LineId Id="295" Count="0" />
+      <LineId Id="254" Count="0" />
+      <LineId Id="252" Count="0" />
+      <LineId Id="250" Count="0" />
+      <LineId Id="258" Count="1" />
+      <LineId Id="261" Count="0" />
+      <LineId Id="260" Count="0" />
+      <LineId Id="257" Count="0" />
+      <LineId Id="248" Count="0" />
+      <LineId Id="241" Count="0" />
+      <LineId Id="192" Count="0" />
+      <LineId Id="50" Count="0" />
+      <LineId Id="103" Count="1" />
+      <LineId Id="269" Count="0" />
+      <LineId Id="297" Count="1" />
+      <LineId Id="306" Count="2" />
+      <LineId Id="304" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

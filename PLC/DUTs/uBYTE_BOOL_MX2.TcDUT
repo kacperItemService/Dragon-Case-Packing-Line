@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <DUT Name="uBYTE_BOOL_MX2" Id="{9cf0847c-2853-4b3f-9247-3b46e1c3489c}">
+    <Declaration><![CDATA[TYPE uBYTE_BOOL_MX2 :
+UNION
+	bits 			:ARRAY[0..7] OF BOOL;
+	value			:BYTE;
+END_UNION
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

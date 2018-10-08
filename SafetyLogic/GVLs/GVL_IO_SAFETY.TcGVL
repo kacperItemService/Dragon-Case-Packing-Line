@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.10">
+  <GVL Name="GVL_IO_SAFETY" Id="{e4e83e44-51b2-4e00-957f-0ef351a336c6}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL
+// ==============================================
+// ======= Safety Group - inputs/outputs ========
+	bFB_ERR_TSG1 				AT %I*	: BOOL;
+	bCOM_ERR_TSG1 				AT %I*	: BOOL;	
+	bOTHER_ERR_TSG1 			AT %I*	: BOOL;					// EL6910
+	bRUN_STOP_TSG1 				AT %Q*	: BOOL 		:= TRUE;
+	bERR_ACK_TSG1 				AT %Q*	: BOOL;
+
+	bFB_ERR_TSG2 				AT %I*	: BOOL;
+	bCOM_ERR_TSG2 				AT %I*	: BOOL;	
+	bOTHER_ERR_TSG2 			AT %I*	: BOOL;					// EL6910
+	bRUN_STOP_TSG2 				AT %Q*	: BOOL 		:= TRUE;
+	bERR_ACK_TSG2 				AT %Q*	: BOOL;
+
+	
+	
+	bRestartFBs_TSG1			AT %Q*	: BOOL; 				// Restart FB w grupie 1
+	
+	bSafeStopOmron				AT%I*	: BOOL;
+	bSafeStopAX5000				AT%I*	: BOOL;
+	bSafeStopKierownicatoPLC	AT%I*	: BOOL;
+// ======== Communication with second RT ========
+	bSAFETY_Error				AT %Q*	: BOOL;
+	bSAFETY_ResetCMD 			AT %I*	: BOOL;
+	bSAFETY_ResetBusy			AT %Q*	: BOOL;
+	bSAFETY_PermissionOutSS1	AT %Q*	: BOOL; 				// Sygnal NC - TRUE - pozwolenie na prace
+	bSAFETY_PermissionOutSS2	AT %Q*	: BOOL; 				// Sygnal NC - TRUE - pozwolenie na prace
+	bSAFETY_ServoKierPermitionOutSS1		AT%Q* 	: BOOL;
+	bSAFETY_FalownikKierPermitionOutSS1		AT%Q* 	: BOOL;
+	bSAFETY_ZaklejarkaKierPermitionOutSS1	AT%Q* 	: BOOL;
+
+// ======== Error and states collection =========
+	dwGroupErrors				AT %Q*	: DWORD;				// Group Error collection - Communication, FB, Other...
+
+	bServoKierownicaEStop		AT%I* 	: BOOL;
+	bFalownikKierownicaEStop	AT%I* 	: BOOL;
+	bZaklejarkaEStop			AT%I* 	: BOOL;
+
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

@@ -1,0 +1,83 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <GVL Name="GVL_HMI" Id="{5e7d46b2-803e-488e-8512-eb265466080d}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL
+		bManual				:BOOL;
+		bAuto				:BOOL;
+		bReset				:BOOL;
+		Error_ind			:BOOL;
+		bAutoWybor			:BOOL;
+		bEnableKartoniarka	:BOOL;
+		bEnableZaklejarka	:BOOL;
+		bEnablePloter		:BOOL;
+		bEnableKierownica	:BOOL;
+		bHmiJogF			:BOOL;
+		bHmiJogB			:BOOL;
+		bHmiJogKF			:BOOL;
+		bHmiJogKB			:BOOL;
+		bHmiJogZakCw		:BOOL;
+		bHmiJogZakCCW		:BOOL;
+		bHmiMagCw			:BOOL;
+		bHmiMagCcw			:BOOL;
+		bHmiPlotCw			:BOOL;
+		bHmiPlotCCw			:BOOL;
+		strona				:INT;
+		strona_1			:INT;
+		iFreqKartoniarkaMan :INT;
+		iFreqKierownicaMan :INT;
+		b_CCW_Manual_Ka_F1	 :BOOL	;// ccw manual falownik 1 
+		b_CW_Manual_Ka_F1	 :BOOL	;// cw manual falownik 1 
+		b_CCW_Manual_FMKart	 :BOOL	;// ccw manual falownik kartoniarka  magazyn
+		b_CW_Manual_FMKart	 :BOOL	;// cw manual falownik kartoniarka  magazyn
+		b_CCW_Manual_Pl_F	 :BOOL	;// ccw manual falownik ploter podajnik
+		b_CW_Manual_Pl_F	 :BOOL	;// cw manual falownik ploter podajnik
+		b_CCW_Manual_Kier_F	 :BOOL	;// ccw manual kierwonica podajnik
+		b_CW_Manual_Kier_F	 :BOOL	;// cw manual kierwonica podajnik
+		Nastepny_Karton 	 :BOOL	;// cw manual kierwonica podajnik
+		A_Start				 : BOOL;
+		A_Stop				 : BOOL;
+		bDojkiM				 : BOOL;// dojki tryb manualny 
+		iWydajnosc			:INT;//wydajnosc linii 
+		INT_idError			:INT;
+		J_Vel				: LREAL;
+		J_VelK				: LREAL;
+		zaladowalem:BOOL;
+		b_Zmienna_test_in	:BOOL;
+		b_zmienna_test_out :BOOL;
+		//kartoniarka
+		przycisk_zaw_ssawki: BOOL;
+		przycisk_zaw_zeby: BOOL;
+		przycisk_zaw_skos: BOOL;
+		przycisk_zaw_klap_krot: BOOL;
+		przycisk_zaw_klap_dlug: BOOL;
+		przycisk_zaw_wypychacz: BOOL;
+		przycisk_falownik_pasow: BOOL;
+		przycisk_falownik_CW_CCW: BOOL;
+		//ploter
+		przycisk_zaw_chwyt1: BOOL;
+		przycisk_zaw_chwyt2: BOOL;
+		przycisk_zaw_prawidlo: BOOL;
+		przycisk_zaw_prawdidlo_dol: BOOL;
+		przycisk_zaw_hamulec: BOOL;
+		przycisk_falownik_rolek: BOOL;
+		//kierownica
+		przycisk_zaw_ham1_kier: BOOL;
+		przycisk_zaw_ham2_kier: BOOL;
+		przycisk_serwo_kier: BOOL;
+		przycisk_zaw_hamulec_kier: BOOL;
+		przycisk_falownik_podajnik_kier: BOOL;
+		ErrorResetKier: BOOL;
+		Wymus_pobranie: BOOL;
+		//zaklejarka
+		przycisk_sil_zamykacz_zaklejarka: BOOL;
+		przycisk_tasmy_zaklejarka: BOOL;
+END_VAR
+VAR_GLOBAL PERSISTENT
+	Bit_Startu: BOOL := TRUE;
+END_VAR
+VAR_GLOBAL
+		zaladuj:BOOL;
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

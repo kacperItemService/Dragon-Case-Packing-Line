@@ -1,0 +1,223 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="FB_MX2_POS" Id="{9d10991c-4baa-4805-af4f-b33717c3bcc9}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_MX2_POS
+VAR
+				
+			FB_SetPos 				:MC_SetPosition;
+			
+			FB_MoveAbs				:MC_MoveAbsolute;
+			FB_Jog					:MC_Jog;
+			FB_McStop				:MC_Stop;
+			Done					:BOOL;
+			Busy					:BOOL;
+			Er						:ARRAY[0..100] OF BOOL;
+			A_Pos					:LREAL;
+	fbMc_Power: MC_Power;
+END_VAR
+
+VAR_IN_OUT
+	Ax								: AXIS_REF;
+END_VAR
+
+VAR_INPUT
+	Enc								: LREAL;
+	ExecuteEn						: BOOL;
+	En1								: BOOL;
+	JogPlus							: BOOL;
+	JogMinus						: BOOL;
+	Stop_Ex							: BOOL;
+	Position						: LREAL;
+	Velocity						: LREAL;
+	ACC								: LREAL;
+	DCC								: LREAL;
+END_VAR
+
+VAR_OUTPUT
+	A_PosMx2						: LREAL;
+	A_V								: LREAL;
+	Error							: BOOL;
+	bDonePos						: BOOL;
+	Prawo							: BOOL;
+	Lewo							: BOOL;	
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF JogPlus=FALSE AND JogMinus=FALSE  THEN //AND Busy=FALSE
+	
+
+FB_SetPos(
+	Axis:=AX , 
+	Execute:=TRUE , 
+	Position:=Enc , 
+	Mode:= , 
+	Options:= , 
+	Done=> , 
+	Busy=> , 
+	Error=>Er[0] , 
+	ErrorID=> );
+	
+	
+FB_SetPos(
+	Axis:=AX , 
+	Execute:=FALSE , 
+	Position:=Enc , 
+	Mode:= , 
+	Options:= , 
+	Done=> , 
+	Busy=> , 
+	Error=>Er[1] , 
+	ErrorID=> );
+END_IF
+
+FB_Jog(
+	Axis:=AX , 
+	JogForward:=JogPlus , 
+	JogBackwards:=JogMinus , 
+	Mode:=MC_JOGMODE_CONTINOUS , 
+	Position:= , 
+	Velocity:=Velocity , 
+	Acceleration:=ACC , 
+	Deceleration:=DCC , 
+	Jerk:= , 
+	Done=> , 
+	Busy=> , 
+	Active=> , 
+	CommandAborted=> , 
+	Error=>Er[2] , 
+	ErrorID=> );
+	
+	
+FB_MoveAbs(
+	Axis:=AX , 
+	Execute:=ExecuteEn , 
+	Position:=Position , 
+	Velocity:=Velocity , 
+	Acceleration:=ACC , 
+	Deceleration:=DCC , 
+	Jerk:= , 
+	BufferMode:=MC_Aborting , 
+	Options:= , 
+	Done=> , 
+	Busy=>Busy , 
+	Active=> , 
+	CommandAborted=> , 
+	Error=>Er[3] , 
+	ErrorID=> );	
+	
+FB_McStop(
+	Axis:=AX , 
+	Execute:=Stop_Ex , 
+	Deceleration:=DCC , 
+	Jerk:= , 
+	Options:= , 
+	Done=> , 
+	Busy=> , 
+	Active=> , 
+	CommandAborted=> , 
+	Error=> Er[4], 
+	ErrorID=> );
+	
+	A_PosMx2:=Ax.NcToPlc.ActPos;
+		
+	Error:=Er[0]=TRUE OR Er[1]=TRUE OR Er[2]=TRUE OR Er[3]=TRUE OR Er[4]=TRUE;
+	
+	
+	IF  Ax.NcToPlc.ActVelo<700.0 AND   Ax.NcToPlc.ActVelo>0 AND Ax.NcToPlc.ActVelo <>0.0 THEN
+		
+		
+	A_V:=700;
+	LEWO:=FALSE;
+	PRAWO:=TRUE;
+	ELSIF Ax.NcToPlc.ActVelo>700.0 AND   Ax.NcToPlc.ActVelo>0 AND Ax.NcToPlc.ActVelo <>0.0 THEN
+		
+	A_V:=Ax.NcToPlc.ActVelo;
+	LEWO:=FALSE;
+	PRAWO:=TRUE;
+	
+	ELSIF Ax.NcToPlc.ActVelo =0 THEN
+		
+		LEWO:=FALSE;
+		PRAWO:=FALSE;
+	
+	END_IF
+	
+	IF  Ax.NcToPlc.ActVelo>-700.0 AND   Ax.NcToPlc.ActVelo<0 AND Ax.NcToPlc.ActVelo <>0.0 THEN
+		
+		
+	A_V:=700;
+	LEWO:=TRUE;
+	PRAWO:=FALSE;
+	ELSIF Ax.NcToPlc.ActVelo<-700.0 AND Ax.NcToPlc.ActVelo <>0.0 THEN
+		
+	A_V:=Ax.NcToPlc.ActVelo;
+	LEWO:=TRUE;
+	PRAWO:=FALSE;
+	
+	ELSIF Ax.NcToPlc.ActVelo =0 THEN
+		
+		LEWO:=FALSE;
+		PRAWO:=FALSE;
+	
+	END_IF
+	
+
+	
+	IF Ax.NcToPlc.ActPos<Position+10.0 AND Ax.NcToPlc.ActPos>Position-10.0 THEN
+	bDonePos:=TRUE;
+ELSE
+	bDonePos:=FALSE;	
+END_IF;
+
+fbMc_Power(
+	Axis:=AX , 
+	Enable:=TRUE , 
+	Enable_Positive:=TRUE , 
+	Enable_Negative:=TRUE , 
+	Override:= , 
+	BufferMode:= , 
+	Options:= , 
+	Status=> , 
+	Busy=> , 
+	Active=> , 
+	Error=> , 
+	ErrorID=> );
+	]]></ST>
+    </Implementation>
+    <LineIds Name="FB_MX2_POS">
+      <LineId Id="1067" Count="2" />
+      <LineId Id="1044" Count="8" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="1053" Count="1" />
+      <LineId Id="1056" Count="10" />
+      <LineId Id="1071" Count="15" />
+      <LineId Id="1070" Count="0" />
+      <LineId Id="1087" Count="16" />
+      <LineId Id="1055" Count="0" />
+      <LineId Id="1104" Count="0" />
+      <LineId Id="1106" Count="10" />
+      <LineId Id="1105" Count="0" />
+      <LineId Id="1117" Count="0" />
+      <LineId Id="1119" Count="0" />
+      <LineId Id="1129" Count="0" />
+      <LineId Id="1118" Count="0" />
+      <LineId Id="1132" Count="3" />
+      <LineId Id="1120" Count="0" />
+      <LineId Id="1124" Count="0" />
+      <LineId Id="1251" Count="0" />
+      <LineId Id="1125" Count="3" />
+      <LineId Id="1250" Count="0" />
+      <LineId Id="1122" Count="0" />
+      <LineId Id="1252" Count="4" />
+      <LineId Id="1123" Count="0" />
+      <LineId Id="1121" Count="0" />
+      <LineId Id="1197" Count="0" />
+      <LineId Id="1299" Count="17" />
+      <LineId Id="1298" Count="0" />
+      <LineId Id="1138" Count="1" />
+      <LineId Id="1141" Count="4" />
+      <LineId Id="1284" Count="13" />
+      <LineId Id="1140" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

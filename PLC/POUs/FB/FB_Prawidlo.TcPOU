@@ -1,0 +1,199 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="FB_Prawidlo" Id="{8b2179ba-161d-4516-9526-cc35fecb993d}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM FB_Prawidlo
+VAR
+			//internals
+			
+			i_seq :INT;
+			Czas :ARRAY[0..100] OF TON;
+			wyzwolenie         :R_TRIG;
+END_VAR
+
+VAR_INPUT			
+			//in
+			b_Start AT %I* :BOOL;
+			b_Stop AT %I* :BOOL;
+			bKon_Hamulec1 AT%I* :BOOL	; //kontraktron hamulec 1
+			bKon_Hamulec2 AT%I* :BOOL	; //kontraktron hamulec 2
+			bKonPodajnik1 AT%I* :BOOL	; //kontraktron podajnik 1
+			bKonPodajnik2 AT%I* :BOOL	; //kontraktron podajnik 2
+			bCzHamulec AT%I* :BOOL	; //czujnik hamulec 
+			bZaladowany AT%I* :BOOL	; //czujnik hamulec 
+END_VAR
+ //OUT	
+VAR_OUTPUT
+
+			 bZaworPodnosnik1 AT%Q* :BOOL	;	// cewka podnośnik 1
+			 bZaworPodnosnik2 AT%Q* :BOOL	;	// cewka podnośnik 2
+			 bZaworHamulec AT%Q* :BOOL	;	// cewka hamulec
+	 		 bZgodaNaRuch AT%Q* :BOOL	;	// cewka hamulec
+			 bLaduj AT%Q* :BOOL	;	// czeka na ladunek 
+END_VAR
+	
+
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[CASE i_seq OF 
+	
+0:(*inicjalizacja i info o starcie *)
+
+
+	bZaworPodnosnik1	:=TRUE;
+	bZaworPodnosnik2	:=FALSE;
+	bZaworHamulec		:=FALSE;
+	bZgodaNaRuch 		:=FALSE;
+	bLaduj				:=FALSE;
+		 
+		 IF b_Start=TRUE  THEN
+		
+		 
+		 i_seq:=5;
+		 
+		END_IF
+
+5:(*jeśli start to podnieś prawidlo do gory wystaw bita że można wydać pudełko  *)
+
+		
+			 bZgodaNaRuch		:=TRUE;
+			 bZaworHamulec		:=TRUE;
+			 
+		 IF bKon_Hamulec1=TRUE THEN	 
+			 i_seq:=10;
+		 END_IF
+		 
+10:(*jeśli zgoda na ruch to czeka na czujnik  *)	 
+
+	IF Czas[0].Q=TRUE THEN
+		
+		bZaworPodnosnik1	:=FALSE;
+		bZaworPodnosnik2	:=TRUE;
+	
+		i_seq:=15;
+	
+	
+	END_IF
+
+15:(*czeka na załadunek *)	 
+
+	IF bKonPodajnik1=TRUE THEN
+		
+	
+		bLaduj				:=TRUE;
+		i_seq:=20;
+	END_IF
+
+20:(*zaladowywuje *)	 
+
+	IF wyzwolenie.Q=TRUE THEN
+		bZaworPodnosnik1	:=TRUE;
+		bZaworPodnosnik2	:=FALSE;
+	i_seq:=25;
+	
+	END_IF
+25:(*zwalnia hamulec i wraca do punktu wyjścia  *)
+
+	IF czas[1].Q=TRUE THEN
+	bZaworHamulec		:=FALSE;	
+	bLaduj				:=FALSE;
+	i_seq:=30;		
+	
+	END_IF
+	
+30:
+
+	IF czas[2].Q=TRUE AND bCzHamulec=FALSE  THEN
+
+	i_seq:=5;	
+	
+	END_IF
+
+	
+	
+
+END_CASE
+
+Czas[0](IN:=bCzHamulec, PT:=T#200MS);
+Czas[1](IN:=i_seq=25, PT:=T#1S);
+Czas[2](IN:=i_seq=30, PT:=T#2S);
+
+		IF b_Stop=TRUE THEN
+			
+		i_seq:=0;
+		
+		END_IF
+		wyzwolenie(CLK:=bZaladowany);]]></ST>
+    </Implementation>
+    <LineIds Name="FB_Prawidlo">
+      <LineId Id="5" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="63" Count="1" />
+      <LineId Id="62" Count="0" />
+      <LineId Id="61" Count="0" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="65" Count="0" />
+      <LineId Id="90" Count="0" />
+      <LineId Id="60" Count="0" />
+      <LineId Id="52" Count="3" />
+      <LineId Id="66" Count="0" />
+      <LineId Id="43" Count="1" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="45" Count="1" />
+      <LineId Id="48" Count="0" />
+      <LineId Id="50" Count="0" />
+      <LineId Id="154" Count="1" />
+      <LineId Id="51" Count="0" />
+      <LineId Id="49" Count="0" />
+      <LineId Id="72" Count="0" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="68" Count="0" />
+      <LineId Id="67" Count="0" />
+      <LineId Id="69" Count="0" />
+      <LineId Id="82" Count="1" />
+      <LineId Id="89" Count="0" />
+      <LineId Id="86" Count="0" />
+      <LineId Id="85" Count="0" />
+      <LineId Id="71" Count="0" />
+      <LineId Id="70" Count="0" />
+      <LineId Id="88" Count="0" />
+      <LineId Id="28" Count="0" />
+      <LineId Id="93" Count="2" />
+      <LineId Id="97" Count="2" />
+      <LineId Id="96" Count="0" />
+      <LineId Id="92" Count="0" />
+      <LineId Id="91" Count="0" />
+      <LineId Id="113" Count="0" />
+      <LineId Id="101" Count="1" />
+      <LineId Id="112" Count="0" />
+      <LineId Id="104" Count="1" />
+      <LineId Id="103" Count="0" />
+      <LineId Id="100" Count="0" />
+      <LineId Id="153" Count="0" />
+      <LineId Id="147" Count="0" />
+      <LineId Id="152" Count="0" />
+      <LineId Id="233" Count="0" />
+      <LineId Id="150" Count="0" />
+      <LineId Id="162" Count="0" />
+      <LineId Id="151" Count="0" />
+      <LineId Id="156" Count="1" />
+      <LineId Id="163" Count="4" />
+      <LineId Id="160" Count="1" />
+      <LineId Id="159" Count="0" />
+      <LineId Id="158" Count="0" />
+      <LineId Id="146" Count="0" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="77" Count="0" />
+      <LineId Id="76" Count="0" />
+      <LineId Id="149" Count="0" />
+      <LineId Id="168" Count="0" />
+      <LineId Id="107" Count="0" />
+      <LineId Id="106" Count="0" />
+      <LineId Id="108" Count="0" />
+      <LineId Id="111" Count="0" />
+      <LineId Id="110" Count="0" />
+      <LineId Id="109" Count="0" />
+      <LineId Id="200" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

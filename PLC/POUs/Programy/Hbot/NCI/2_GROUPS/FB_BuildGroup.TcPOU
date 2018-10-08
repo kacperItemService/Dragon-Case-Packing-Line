@@ -1,0 +1,142 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="FB_BuildGroup" Id="{8628449c-6552-467c-981d-d795211419ed}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_BuildGroup
+VAR_INPUT
+	bExec: 			BOOL;
+	nChan:			UINT;
+	nXAxisId:		DWORD;
+	nYAxisId:		DWORD;
+	nZAxisId:		DWORD;
+	nQ1AxisId:		DWORD;
+	nQ2AxisId:		DWORD;
+	nQ3AxisId:		DWORD;
+	nQ4AxisId:		DWORD;
+	nQ5AxisId:		DWORD;
+END_VAR
+
+VAR_OUTPUT
+	nGroup:			UDINT;
+	bBusy: 			BOOL;
+	bErr: 			BOOL;
+	nErrId:			UDINT:=0;
+END_VAR
+VAR
+	nState: 			UINT:=0;
+	ADSREAD1: 		ADSREAD;
+	fbClearGrp: 	CfgReconfigGroup;
+	fbBuildGrp: 	CfgBuildExt3DGroup;
+	fbRtrig: 		R_TRIG;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* ==========================================================*)
+(*   FB: FB_BuildGroup			                             *)
+(* ----------------------------------------------------------*)
+(*   Desc: Build 3-d Group                                   *)
+(*   Auth: MiB                                               *)
+(*   Date: 02.09.2005                                        *)
+(*   Last: 02.04.2013                                        *)
+(*   Rev.: 1.1                                               *)
+(* ==========================================================*)
+
+
+fbRtrig(Clk := bExec);
+
+CASE nState OF
+16#0: (* init *)
+		IF fbRtrig.Q THEN
+			bBusy	:= TRUE;
+			bErr	:= FALSE;
+			nErrId	:= 0;
+			nState := 16#10;
+		END_IF
+
+
+16#10: (* Read Group ID *)
+		ADSREAD1(
+			NETID:= ,
+			PORT:= 	501,  			(* NCI Channel *)
+			IDXGRP:= 16#2000+nChan, (* Spezifikation für Kanal-Parameter *)
+			IDXOFFS:=16#21 ,			(* 0x00000021  Read  every  UINT32  1   Gruppen-ID (nur eindeutig für 3D- und FIFO-Kanal   *)
+			LEN:= SIZEOF(nGroup),
+			DESTADDR:=ADR(nGroup) ,
+			READ:= TRUE,
+			TMOUT:= T#200ms,
+			BUSY=> ,
+			ERR=> ,
+			ERRID=> );
+
+		IF ADSREAD1.ERR THEN
+			bErr := TRUE;
+			nErrId := ADSREAD1.ERRID;
+			nState := 16#999;
+		END_IF
+
+		IF (NOT ADSREAD1.ERR) AND (NOT ADSREAD1.BUSY) THEN
+			ADSREAD1(READ := FALSE);
+			nState := 16#20;
+		END_IF;
+
+16#20: (* clear old interpolation Group *)
+
+	fbClearGrp(
+		bExecute:= TRUE,
+		nGroupId:= nGroup,
+		tTimeOut:= T#200ms);
+
+	IF NOT fbClearGrp.bBusy THEN
+		fbClearGrp(bExecute:= FALSE);
+		IF NOT fbClearGrp.bErr THEN
+			nState	:= 16#30;
+		ELSE
+			(* an error occured *)
+			bErr		:= TRUE;
+			nErrId	:= fbClearGrp.nErrId;
+			nState	:= 16#999;
+		END_IF
+	END_IF
+
+16#30: (* build new interploation group *)
+	fbBuildGrp(
+		bExecute	:= TRUE ,
+		nGroupId	:= nGroup,
+		nXAxisId	:= nXAxisId,
+		nYAxisId	:= nYAxisId,
+		nZAxisId :=	nZAxisId,
+		nQ1AxisId:= nQ1AxisId,
+		nQ2AxisId:= nQ2AxisId,
+		nQ3AxisId:= nQ3AxisId,
+		nQ4AxisId:= nQ4AxisId,
+		nQ5AxisId:= nQ5AxisId,
+		tTimeOut:= T#200ms);
+
+
+	IF NOT fbBuildGrp.bBusy THEN
+		fbBuildGrp( bExecute := FALSE );
+		IF NOT fbBuildGrp.bErr THEN
+			nState	:= 16#40;
+		ELSE
+			(* an error occured *)
+			bErr		:= TRUE;
+			nErrId	:= fbBuildGrp.nErrId;
+			nState	:= 16#999;
+		END_IF
+	END_IF
+
+16#40: (* end *)
+	bBusy := FALSE;
+	nState := 0;
+
+
+16#999:	(* Error *)
+		bBusy := FALSE;
+		nState := 0;
+
+END_CASE]]></ST>
+    </Implementation>
+    <LineIds Name="FB_BuildGroup">
+      <LineId Id="3" Count="102" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

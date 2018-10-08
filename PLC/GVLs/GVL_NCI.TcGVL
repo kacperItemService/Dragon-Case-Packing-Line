@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <GVL Name="GVL_NCI" Id="{30623441-3f2f-4a58-8e6f-32a4cf89c96f}">
+    <Declaration><![CDATA[VAR_GLOBAL
+	arrNCToPLC_NCIChannel_REF		AT %I*: ARRAY [1..nMaxNumberOfNciChannels] OF NCTOPLC_NCICHANNEL_REF;
+	arrPLCToNC_NCIChannel_REF		AT %Q*: ARRAY [1..nMaxNumberOfNciChannels] OF PLCTONC_NCICHANNEL_REF;
+	
+	arrAxisCalibrationCam :			ARRAY [1..nMaxNumberOfAxis] OF BOOL;
+	bMFunc:	 						ARRAY [1..nMaxNumberOfNciChannels,0..159] OF BOOL; (* M-Functions to acknowledge for every channel *)
+	bQuitMFunc:						ARRAY [1..nMaxNumberOfNciChannels,0..159] OF BOOL; (* Array to acknolewdge M-Funktion *)
+	bFastMFunc: 					ARRAY [1..nMaxNumberOfNciChannels,0..159] OF BOOL; (* fast M-Functions for every channel *)
+	nGroup: 						ARRAY [1..nMaxNumberOfNciChannels] OF UDINT;  (* which logical GroupId belongs to the channel *)
+	bGroup1: 						BOOL:=FALSE;
+	nRParamRead:					ARRAY [1..nMaxNumberOfNciChannels, nStartIndexReadRParam..nEndIndexReadRParam] OF LREAL;	(* elements of RParam are read every second *)
+	nRParamWrite:					ARRAY [1..nMaxNumberOfNciChannels, nStartIndexWriteRParam..nEndIndexWriteRParm] OF LREAL;	(* elements of RParam are write every second *)
+END_VAR
+
+(* after changing this, it is neccessary to create new links to axis and channel variables in TwinCAT SystemManager *)
+VAR_GLOBAL CONSTANT
+	nChan					:	UINT :=2;
+	nMaxNumberOfAxis: 				UINT := 2;
+	nMaxNumberOfNciChannels:		UINT := 1;  	(* channel 1 always is PTP channel, here are the maximum numbers of NCI channels is configured *)
+	
+	nStartIndexReadRParam:			UINT := 0;		(* Index for nRParamRead *)
+	nEndIndexReadRParam:			UINT := 9;
+	nStartIndexWriteRParam:			UINT := 10;		(* Index for nRParamWrite *)
+	nEndIndexWriteRParm:			UINT := 29;
+
+   	MaxNciTool:						INT := 5;(* Max.Anzahl Werkzeuge in der NCI-Verwaltung *)
+END_VAR
+]]></Declaration>
+  </GVL>
+</TcPlcObject>

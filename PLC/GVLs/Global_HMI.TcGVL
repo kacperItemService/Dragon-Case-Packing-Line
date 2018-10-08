@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <GVL Name="Global_HMI" Id="{1c39e83f-5d4d-4d84-8dc1-823d7102e09e}">
+    <Declaration><![CDATA[VAR_GLOBAL
+	PLCAxisEnable				: BOOL;			(* HMI -> PLC *)
+	PLCMachineMode				: ARRAY[0..5] OF ST_MachineMode;
+	PLCNciChannelState      	: ST_NCIChannelState;                                 (* PLC -> HMI *)
+			/// HMI -> PLC 
+	PLCChannelSignals			: ST_ChannelSignals;
+	PLCDeleteFailure			: BOOL;			(* HMI -> PLC *)
+	PLCReset					: BOOL;			(* HMI -> PLC *)
+	PLCFeedOverride				: UINT := 100;			(* HMI -> PLC *)
+	PLCSpindleOverride			: UINT := 100;			(* HMI -> PLC *)	
+	PLCSelectedChannel			: INT:=2;				
+	
+	// Spindle variables
+	sActiveSpindleVal			: STRING;
+	sCmdSpindleVal				: STRING;
+	sSpindleCurrentPos			: STRING;
+	
+	// Variables for the modules "InformPlc" 
+	bToggle						: BOOL;
+	sActualForm					: STRING[255];
+	nUserLevel					: INT;
+	sUserName					: STRING[255];
+	bExitApp					: BOOL;
+	nUserId						: UINT;
+			
+	
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

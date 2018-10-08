@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <DUT Name="E_LineMachineCommand" Id="{ed4e1a30-40dc-4b59-9130-9965c0e0ecde}">
+    <Declaration><![CDATA[{attribute 'strict'}
+{attribute 'qualified_only'}
+TYPE E_LineMachineCommand :
+(
+	eAbort	  				:= 10,
+	eStop	  				:= 20,
+	eRun	  				:= 30,
+	eReset	  				:= 40,
+	eRestart 				:= 50,
+	ePause					:= 60
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

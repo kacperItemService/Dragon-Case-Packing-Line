@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="FB_ConfirmMFunc" Id="{bdc47f03-8f7e-41d2-86f3-b0d791f256b7}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_ConfirmMFunc
+VAR_INPUT
+	nChan: 		UINT;
+END_VAR
+VAR_OUTPUT
+	bErr: 		BOOL;
+	nErrId: 	UDINT;
+END_VAR
+VAR
+	fbConfirm: 	ItpConfirmHsk;
+	bConfirm:	BOOL := FALSE;
+	nAktMfunc:	INT :=  -1;
+	TON1: 		TON;
+	i: UINT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* ==========================================================*)
+(*     FB: FB_ConfirmMfunc			                         *)
+(* ----------------------------------------------------------*)
+(*   Desc:                                                   *)
+(*   Auth: MiB / TV                                          *)
+(*   Date: 25.04.2006                                        *)
+(*   Last: 02.04.2013                                        *)
+(*   Rev.: 2.1                                              *)
+(* ==========================================================*)
+
+
+
+(* check for m function and store information in bMFunc Array *)
+
+	IF ItpIsHskMFunc(arrNCToPLC_NCIChannel_REF[nChan-1] ) THEN
+		nAktMfunc := ItpGetHskMFunc(arrNCToPLC_NCIChannel_REF[nChan-1]);
+		bMFunc[nChan-1, nAktMfunc] := TRUE;
+	ELSE
+		nAktMfunc := -1;
+		bConfirm := FALSE;
+		FOR i := 0 TO 159 DO
+			bMFunc[nChan-1, i] := FALSE;
+			bQuitMFunc[nChan-1, i] := FALSE;
+		END_FOR
+	END_IF
+
+
+(* confirm m function, if bit in array bQuitMFunc is set *)
+	IF (nAktMfunc <> -1) THEN
+		IF bQuitMFunc[nChan-1, nAktMfunc] THEN
+			bConfirm := TRUE;
+		END_IF
+		bQuitMFunc[nChan-1,nAktMfunc] := FALSE;
+	END_IF
+
+
+fbConfirm(
+		bExecute := bConfirm,
+		sNciToPlc:= arrNCToPLC_NCIChannel_REF[nChan-1],
+		sPlcToNci:= arrPLCToNC_NCIChannel_REF[nChan-1]
+			);
+
+]]></ST>
+    </Implementation>
+    <LineIds Name="FB_ConfirmMFunc">
+      <LineId Id="3" Count="41" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

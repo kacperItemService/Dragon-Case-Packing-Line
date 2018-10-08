@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="FB_Licznik" Id="{b13c0a78-42f7-4647-8575-bf0d98eda879}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_Licznik 
+VAR_INPUT
+	c_inkrement : BOOL; // sygnal z czujnika
+	czas : TIME; // określamy czas, który funkcja czeka po wykryciu butelki,... aby wyeliminowac drgania styków itd. 
+END_VAR
+VAR_OUTPUT
+	c_stan: INT;
+END_VAR
+VAR
+	timer1: TON;
+	timer2: TON;
+	zbocze	:R_TRIG;
+	c_stanpomoc: INT;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[c_stanpomoc:=c_stan;
+
+//WHILE c_inkrement:= TRUE DO 					///to może być nie potrzbne 
+	timer1(IN := c_inkrement, PT :=T#0.1S);
+	zbocze(CLK := timer1.IN);
+	IF zbocze.Q THEN
+		c_stan:=c_stan+1;
+	END_IF		
+//END_WHILE
+
+IF c_stan>c_stanpomoc THEN
+	timer2(IN := TRUE, PT := czas);
+	zbocze(CLK := timer2.IN);
+END_IF
+c_stanpomoc:=c_stan;
+
+IF GVL_GLOBAL.reset_licznik:= TRUE THEN
+	c_stan:=0;
+END_IF
+]]></ST>
+    </Implementation>
+    <LineIds Name="FB_Licznik">
+      <LineId Id="85" Count="0" />
+      <LineId Id="104" Count="0" />
+      <LineId Id="68" Count="0" />
+      <LineId Id="77" Count="0" />
+      <LineId Id="84" Count="0" />
+      <LineId Id="78" Count="0" />
+      <LineId Id="80" Count="1" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="95" Count="0" />
+      <LineId Id="82" Count="0" />
+      <LineId Id="89" Count="0" />
+      <LineId Id="91" Count="0" />
+      <LineId Id="88" Count="0" />
+      <LineId Id="93" Count="0" />
+      <LineId Id="97" Count="0" />
+      <LineId Id="94" Count="0" />
+      <LineId Id="98" Count="1" />
+      <LineId Id="102" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,94 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <GVL Name="GVL_GLOBAL" Id="{65829e69-f3dc-4657-8f9f-b9670caa526d}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL
+	
+	bZaladowanyPrawidlo			:BOOL;//ploter zaladowal prawidlo
+	bZgodaNaRuchPrawidlo        :BOOL;//zgoda na jazde plotera 
+	bLadujPrawidlo				:BOOL;//zgoda na zaladowanie butelek do kartonu
+	bEnableKartoniarka :BOOL;
+	bEnablePloter :BOOL;
+	bEnableZaklejarka :BOOL;
+	bEnableKierownica :BOOL;
+	Zabierz_Z_Kierownicy:BOOL;
+	Ploter_pobral :BOOL;
+	odloz_do_kartonu:BOOL;
+	
+	//kartoniarka manual
+	zaw_ssawki_cewka: BOOL;
+	zaw_zeby_cewka: BOOL;
+	zaw_skos_cewka: BOOL;
+	zaw_klap_krot_cewka: BOOL;
+	zaw_klap_dlug_cewka: BOOL;
+	zaw_wypychacz_cewka: BOOL;
+	falownik_pasow_cewka: BOOL;
+	falownik_cewka_CW_CCW: BOOL;
+	
+	//kartoniarka automat
+	zaw_ssawki_auto: BOOL;
+	S_skos: BOOL;
+	S_KL_Dl: BOOL;
+	S_KL1_K: BOOL;
+	S_KL2_K: BOOL;
+	S_Wy: BOOL;
+	F1_CW: BOOL; // tutaj bylo falownik_pasow_auto
+	F1_CCW: BOOL;// tego nie bylo 
+	
+	Error_ind_kart: BOOL;
+	Error_numb_kart: INT;
+	Error_reset_kart: BOOL;
+	
+	//ploter manual
+	zaw_chwyt1_cewka: BOOL;
+	zaw_chwyt2_cewka: BOOL;
+	zaw_prawidlo_cewka: BOOL;
+	zaw_prawidlo_dol_cewka: BOOL;
+	zaw_hamulec_cewka: BOOL;
+	falownik_rolek_cewka: BOOL;
+	bPlotJogF :BOOL;
+	bPlotJogB :BOOL;
+	//ploter automat
+	zaw_chwyt1_auto: BOOL;
+	zaw_chwyt2_auto: BOOL;
+	zaw_prawidlo_auto: BOOL;
+	zaw_prawidlo_dol_auto: BOOL;
+	zaw_hamulec_auto: BOOL;
+	falownik_rolek_auto: BOOL;
+	
+	
+	//kierownica manual
+	zaw_ham1_kier_cewka: BOOL;
+	zaw_ham2_kier_cewka: BOOL;
+	serwo_kier_cewka: BOOL;
+	zaw_hamulec_kier_cewka: BOOL;
+	falownik_podajnik_kier_cewka: BOOL;
+	
+	//kierownica automat
+	zaw_ham1_kier_auto: BOOL;
+	zaw_ham2_kier_auto: BOOL;
+	serwo_kier_auto: BOOL;
+	zaw_hamulec_kier_auto: BOOL;
+	falownik_podajnik_kier_auto: BOOL;
+	b_FK_CW: BOOL;
+	b_FK_CCW: BOOL;
+	
+	reset_licznik: BOOL;
+	stan_licz: ARRAY[1..5] OF INT;
+	Error_pakowania: BOOL;
+	Error_numb_kier: INT;
+	
+
+
+	
+	//zaklejarka manual
+	sil_zamykacz_zaklejarka_cewka: BOOL;
+	tasmy_zaklejarka_cewka: BOOL;
+	//zaklejarka automat
+	zamykacz_zaklejarka_auto: BOOL;
+	bFZaklejarka_CCW: BOOL;
+
+	
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

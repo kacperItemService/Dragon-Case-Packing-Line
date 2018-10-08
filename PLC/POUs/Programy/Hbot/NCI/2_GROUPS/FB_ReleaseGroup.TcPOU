@@ -1,0 +1,106 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="FB_ReleaseGroup" Id="{d57f4f46-3a1e-4194-98e0-465cfb036edc}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_ReleaseGroup
+VAR_INPUT
+	bExec: 			BOOL;
+	nChan:			UINT;
+END_VAR
+
+VAR_OUTPUT
+	bBusy: 			BOOL;
+	bErr: 			BOOL;
+	nErrId:			UDINT:=0;
+END_VAR
+VAR
+	nState: 			UINT:=0;
+	fbAdsRead: 		ADSREAD;
+	nGroup:			UDINT;
+	fbClearGrp: 	CfgReconfigGroup;
+	fbRtrig: 		R_TRIG;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* ==========================================================*)
+(*   FB: FB_ReleaseGroup		                             *)
+(* ----------------------------------------------------------*)
+(*   Desc: Release all axis from group		                 *)
+(*   Auth: MiB / TV                                          *)
+(*   Date: 02.09.2005                                        *)
+(*   Last: 02.04.2013                                        *)
+(*   Rev.: 1.2                                               *)
+(* ==========================================================*)
+
+fbRtrig(Clk := bExec);
+
+
+CASE nState OF
+16#0: (* init *)
+		IF fbRtrig.Q THEN
+			bBusy	:= TRUE;
+			bErr	:= FALSE;
+			nErrId	:= 0;
+			nState := 16#10;
+		END_IF
+
+
+16#10: (* Read Group ID *)
+		fbAdsRead(
+			NETID:= ,
+			PORT:= 	501,  			(* NCI Channel *)
+			IDXGRP:= 16#2000+nChan, (* Spezifikation für Kanal-Parameter *)
+			IDXOFFS:=16#21 ,			(* 0x00000021  Read  every  UINT32  1   Gruppen-ID (nur eindeutig für 3D- und FIFO-Kanal   *)
+			LEN:= SIZEOF(nGroup),
+			DESTADDR:=ADR(nGroup) ,
+			READ:= TRUE,
+			TMOUT:= T#200ms,
+			BUSY=> ,
+			ERR=> ,
+			ERRID=> );
+		IF NOT fbAdsRead.BUSY THEN
+			fbAdsRead( READ := FALSE );
+			IF fbAdsRead.ERR THEN
+				bErr := TRUE;
+				nErrId := fbAdsRead.ERRID;
+				nState := 16#999;
+			ELSE
+				nState := 16#20;
+			END_IF
+		END_IF
+
+16#20: (* clear old interpolation Group *)
+
+	fbClearGrp(
+		bExecute:= TRUE,
+		nGroupId:= nGroup,
+		tTimeOut:= T#200ms);
+
+	IF NOT fbClearGrp.bBusy THEN
+		fbClearGrp(bExecute:= FALSE);
+		IF NOT fbClearGrp.bErr THEN
+			nState	:= 16#30;
+		ELSE
+			(* an error occured *)
+			bErr		:= TRUE;
+			nErrId	:= fbClearGrp.nErrId;
+			nState	:= 16#999;
+		END_IF
+	END_IF
+
+
+16#30: (* end *)
+	bBusy := FALSE;
+	nState := 0;
+
+
+16#999:	(* Error *)
+		bBusy := FALSE;
+		nState := 0;
+END_CASE
+]]></ST>
+    </Implementation>
+    <LineIds Name="FB_ReleaseGroup">
+      <LineId Id="3" Count="75" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

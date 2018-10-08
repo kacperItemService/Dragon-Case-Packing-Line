@@ -1,0 +1,143 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="PRG_CaseMachineMode" Id="{1ffc17e5-6230-484b-9497-f81ceba8e78e}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM PRG_CaseMachineMode
+VAR
+	//	GVL_Machine - HMI handling
+	bHMIModeRequest_Automatic			: BOOL;
+	bHMIModeRequest_Manual				: BOOL;
+	
+	bHMICommandRequest_Run				: BOOL;
+	bHMICommandRequest_Stop				: BOOL;
+	bHMICommandRequest_Reset			: BOOL;
+	bHMICommandRequest_Restart			: BOOL;
+	bHMICommandRequest_Abort			: BOOL;
+	
+	// Rising edge detection
+	rtButtonAutomatic					: R_TRIG;
+	rtButtonManual						: R_TRIG;
+	rtButtonMaintenance					: R_TRIG;
+	rtButtonStart						: R_TRIG;
+	rtButtonReset						: R_TRIG;
+	rtButtonStop						: R_TRIG;
+	// State change permissions
+	bAllowChangeToManual				: BOOL;
+	bAllowChangeToMaintenance			: BOOL;
+	bAllowChangeToAutomatic				: BOOL;
+	rtButtonEnable: R_TRIG;
+	bHMICommandRequest_Enable: BOOL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// Triggers
+rtButtonAutomatic(CLK:= bHMIModeRequest_Automatic );
+rtButtonManual(CLK:= bHMIModeRequest_Manual );
+rtButtonStart(CLK:= bHMICommandRequest_Run);
+rtButtonStop(CLK:= bHMICommandRequest_Stop);
+rtButtonReset(CLK:= bHMICommandRequest_Reset);
+
+
+//przepisanie zmiennych
+bHMICommandRequest_Run										:= GVL_IO.B1K1;
+bHMICommandRequest_Stop										:= GVL_IO.B1K3;
+bHMICommandRequest_Reset									:= GVL_IO.B1K8;
+bHMIModeRequest_Automatic									:= GVL_IO.di_Auto;
+bHMICommandRequest_Enable									:= GVL_HMI.bEnableKartoniarka;
+
+// SAFETY niezaleznie
+IF NOT GVL_SafetyFrom_RT2.bSAFETY_PermissionSS1 OR bHMICommandRequest_Abort THEN
+	GVL_MachineMaintenance.eCommand							:= E_MachineCommand.eAbort;
+	GVL_MachineMaintenance.eState							:= E_MachineState.eAborted;
+END_IF
+
+//uruchomienie automatu 
+
+
+// przełączynik trybu auto/manual
+IF GVL_HMI.bAuto THEN
+	bHMIModeRequest_Automatic 								:= TRUE;
+	bHMIModeRequest_Manual 									:= FALSE;
+ELSE
+	bHMIModeRequest_Automatic 								:= FALSE;
+	bHMIModeRequest_Manual 									:= TRUE;
+END_IF
+
+CASE GVL_MachineMaintenance.eMode OF 
+
+	E_MachineMode.eAutomatic:
+
+		// Zmiana trybu tylko gdy maszyna nie jest w Running
+		IF GVL_MachineMaintenance.eState <> E_MachineState.eRunning THEN
+			IF rtButtonMaintenance.Q THEN
+				GVL_Machine.eCommand						:= E_MachineCommand.eRestart;
+				GVL_Machine.eMode							:= E_MachineMode.eMaintenance;
+			END_IF
+		END_IF
+		
+		IF GVL_MachineMaintenance.eState <> E_MachineState.eRunning THEN
+			IF rtButtonManual.Q THEN
+				GVL_MachineMaintenance.eCommand				:= E_MachineCommand.eRestart;
+				GVL_MachineMaintenance.eMode				:= E_MachineMode.eManual;
+			END_IF
+		END_IF
+		//==============================================
+		IF rtButtonStart.Q THEN 
+			GVL_MachineMaintenance.eCommand					:= E_MachineCommand.eRun;
+		END_IF
+
+		IF rtButtonReset.Q AND GVL.bRestartRequired THEN
+			GVL_MachineMaintenance.eCommand					:= E_MachineCommand.eRestart;
+		END_IF
+		
+		IF rtButtonReset.Q AND NOT GVL.bRestartRequired THEN
+			GVL_MachineMaintenance.eCommand					:= E_MachineCommand.eReset;
+		END_IF
+		
+		IF GVL.bGeneralError OR GVL.bGeneralFatalError OR rtButtonStop.Q THEN
+			GVL_MachineMaintenance.eCommand					:= E_MachineCommand.eStop ;
+		END_IF
+		
+	E_MachineMode.eMaintenance, E_MachineMode.eManual:
+	
+		// Reset, Restart, Error - not used
+		
+		// Zmiana trybu tylko gdy maszyna nie jest w Running
+		IF GVL_MachineMaintenance.eState <> E_MachineState.eRunning  THEN
+			IF rtButtonAutomatic.Q AND bHMICommandRequest_Enable THEN
+				GVL_MachineMaintenance.eCommand				:= E_MachineCommand.eRestart;
+				GVL_MachineMaintenance.eMode				:= E_MachineMode.eAutomatic;
+			END_IF
+		END_IF
+		
+		//==============================================
+		IF rtButtonStart.Q THEN 
+			GVL_MachineMaintenance.eCommand 				:= E_MachineCommand.eRun;
+		END_IF
+
+		IF rtButtonReset.Q AND GVL.bRestartRequired THEN
+			GVL_MachineMaintenance.eCommand					:= E_MachineCommand.eRestart;
+		END_IF
+		
+		IF rtButtonReset.Q AND NOT GVL.bRestartRequired THEN
+			GVL_MachineMaintenance.eCommand					:= E_MachineCommand.eReset;
+		END_IF
+		
+		IF rtButtonStop.Q THEN
+			GVL_MachineMaintenance.eCommand					:= E_MachineCommand.eStop ;
+		END_IF
+
+END_CASE	]]></ST>
+    </Implementation>
+    <LineIds Name="PRG_CaseMachineMode">
+      <LineId Id="6" Count="2" />
+      <LineId Id="10" Count="3" />
+      <LineId Id="131" Count="0" />
+      <LineId Id="14" Count="5" />
+      <LineId Id="132" Count="0" />
+      <LineId Id="20" Count="21" />
+      <LineId Id="123" Count="5" />
+      <LineId Id="48" Count="53" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

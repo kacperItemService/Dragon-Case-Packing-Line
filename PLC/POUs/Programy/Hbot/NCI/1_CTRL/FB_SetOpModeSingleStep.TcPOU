@@ -1,0 +1,87 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="FB_SetOpModeSingleStep" Id="{2d2a4c7d-a810-43fb-b0f0-43ecbe79f7ed}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_SetOpModeSingleStep
+VAR_INPUT
+	nChan: 		UINT;
+	bExec: 		BOOL;
+	nMode: 		WORD;
+END_VAR
+VAR_OUTPUT
+	bErr:		BOOL;
+	bBusy: 		BOOL;
+	nErrId: 	UDINT;
+END_VAR
+VAR
+	nState: 		UINT;
+	fbRtrig: 	R_TRIG;
+	fbAdsWrite: ADSWRITE;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* ==========================================================*)
+(*     FB: FB_SetOpMode 			                         *)
+(* ----------------------------------------------------------*)
+(*   Desc:                                                   *)
+(*   Auth: MiB / TV                                          *)
+(*   Date: 02.09.2005                                        *)
+(*   Last: 02.04.2013                                        *)
+(*   Rev.: 1.1                                               *)
+(* ==========================================================*)
+
+
+fbRtrig(Clk := bExec);
+
+
+CASE nState OF
+16#0: (* init *)
+		IF fbRtrig.Q THEN
+			bBusy	:= TRUE;
+			bErr	:= FALSE;
+			nErrId	:= 0;
+			nState := 16#10;
+		END_IF
+
+16#10: (* single block *)
+		fbAdsWrite(
+			NETID:= ,
+			PORT:= 501,						(* NCI *)
+			IDXGRP:= 16#2200 + nChan,  (* Spezifikation für Kanal-Funktionen  *)
+			IDXOFFS:= 16#5 ,				(* Setze Interpreter Betriebsart			*)
+			LEN:= SIZEOF(nMode),
+			SRCADDR:= ADR(nMode),
+			WRITE:= TRUE,
+			TMOUT:= T#200ms,
+			BUSY=> ,
+			ERR=> ,
+			ERRID=> );
+		IF NOT fbAdsWrite.BUSY THEN
+			fbAdsWrite(WRITE := FALSE);
+			IF fbAdsWrite.ERR THEN
+				bErr := TRUE;
+				nErrId := fbAdsWrite.ERRID;
+				nState := 16#999;
+			ELSE
+				nState := 16#20;
+			END_IF
+		END_IF
+
+16#20: (* ready *)
+		bBusy := FALSE;
+		bErr	:= FALSE;
+		nErrId	:= 0;
+		nState := 0;
+
+16#999:	(* Error *)
+		bBusy := FALSE;
+		nState := 0;
+
+
+END_CASE]]></ST>
+    </Implementation>
+    <LineIds Name="FB_SetOpModeSingleStep">
+      <LineId Id="3" Count="57" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

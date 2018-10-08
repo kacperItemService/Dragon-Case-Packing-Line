@@ -1,0 +1,54 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="FB_WriteRParams" Id="{3bd32262-243b-4bc5-8f26-5b59b1d61cc4}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_WriteRParams
+VAR_INPUT
+	bExec: 						BOOL;
+	bBusy: 						BOOL;
+	nChan: 						UINT;
+END_VAR
+VAR_OUTPUT
+	nErrId: 					UDINT;
+	bErr: 						BOOL;
+END_VAR
+VAR
+	fbWriteRParams: 			ItpWriteRParams;
+	nIndex: 					DINT;
+	nCount: 					DINT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* ==========================================================*)
+(*   PRG: FB_WriteRParams			        		            	 *)
+(* ----------------------------------------------------------*)
+(*   Desc:  writes the R-Parameter from global					 *)
+(*				array nRParamWrite to the NCI 					    *)
+(*   Auth: MiB                                               *)
+(*   Date: 20.07.2007                               	       *)
+(*   Rev.: 1.0                                               *)
+(* ==========================================================*)
+
+
+nIndex := nStartIndexWriteRParam;
+nCount := (nEndIndexWriteRParm - nStartIndexWriteRParam) + 1;
+
+
+fbWriteRParams(
+	bExecute:= bExec,
+	nChnId:= nChan ,
+	pAddr:= ADR(nRParamWrite[nChan - 1, nStartIndexWriteRParam]),
+	nIndex:= nIndex,
+	nCount:= nCount,
+	tTimeOut:= t#2s,
+	bBusy=> bBusy,
+	bErr=> bErr,
+	nErrId=>nErrId );
+
+]]></ST>
+    </Implementation>
+    <LineIds Name="FB_WriteRParams">
+      <LineId Id="3" Count="25" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

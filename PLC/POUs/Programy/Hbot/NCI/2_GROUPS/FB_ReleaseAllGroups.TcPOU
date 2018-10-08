@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="FB_ReleaseAllGroups" Id="{e3365a5c-9f96-4bc4-80f1-c5e059e253bf}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_ReleaseAllGroups
+VAR_INPUT
+	bExec: 				BOOL;
+END_VAR
+VAR_OUTPUT
+	bBusy: 				BOOL;
+	bErr: 				BOOL;
+	nErrId:				UDINT:=0;
+END_VAR
+VAR
+	nState: 				UINT;
+	i: 					UINT;
+	fbReleaseGroup:	FB_ReleaseGroup;
+	nChan: 				UINT;
+	bInterIdle: 		BOOL;
+	nItpState: 			UDINT;
+	fbRtrig: 			R_TRIG;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* ==========================================================*)
+(*   FB: FB_ReleaseAllGroups	                             *)
+(* ----------------------------------------------------------*)
+(*   Desc: Release all axis from all groups                  *)
+(*   Auth: MiB  / TV                                         *)
+(*   Date: 02.09.2005                                        *)
+(*   Last: 02.04.2013                                        *)
+(*   Rev.: 1.1                                               *)
+(* ==========================================================*)
+
+fbRtrig(Clk := bExec);
+
+CASE nState OF
+16#0: (* init *)
+		IF fbRtrig.Q THEN
+			bBusy	:= TRUE;
+			bErr	:= FALSE;
+			nErrId	:= 0;
+			nState := 16#10;
+			nChan := 2;       (* first NCI channel is channel 2 *)
+			bInterIdle := TRUE;
+		END_IF
+
+16#10: (* check if channels in IDLE state *)
+		FOR  i:=1 TO nMaxNumberOfNciChannels DO
+			nItpState := arrNCToPLC_NCIChannel_REF[i].ItpState;
+			IF (nItpState <> NCI_INTERPRETER_IDLE) THEN
+				bInterIdle := FALSE;
+			END_IF
+		END_FOR
+		IF NOT bInterIdle THEN  (* cannot start releasing groups, while interpreter is not in IDLE mode *)
+			nState := 16#999;
+			nErrId := 16#10;
+		ELSE
+			nState := 16#20;   (* release groups *)
+		END_IF
+
+
+16#20: (* Realease all groups in all Channels > 1*)
+		fbReleaseGroup(
+					bExec:=TRUE ,
+					nChan:=nChan,
+					bBusy=> ,
+					bErr=> ,
+					nErrId=> );
+		IF NOT fbReleaseGroup.bBusy THEN
+			fbReleaseGroup( bExec := FALSE );
+			nChan := nChan + 1;
+			IF (fbReleaseGroup.bErr) THEN
+				(* an error occured *)
+				nErrId	:= fbReleaseGroup.nErrId;
+				nState	:= 16#999;
+			ELSE
+				IF (nChan-1) > nMaxNumberOfNciChannels THEN
+					nState := 16#30;
+				END_IF
+			END_IF
+		END_IF
+
+
+16#30:	(* Ready *)
+
+	bBusy := FALSE;
+	nState := 0;
+
+16#999:  (* Error *)
+	bBusy := FALSE;
+	bErr		:= TRUE;
+	nState := 0;
+		;
+END_CASE
+
+
+
+
+
+
+]]></ST>
+    </Implementation>
+    <LineIds Name="FB_ReleaseAllGroups">
+      <LineId Id="3" Count="76" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

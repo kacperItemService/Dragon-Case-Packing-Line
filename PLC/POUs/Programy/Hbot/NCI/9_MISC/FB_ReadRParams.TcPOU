@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="FB_ReadRParams" Id="{172ea13e-bef0-44d4-a43f-b5e8dfb3c97c}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_ReadRParams
+VAR_INPUT
+	bExec: 						BOOL;
+	bBusy: 						BOOL;
+	nChan: 						UINT;
+END_VAR
+VAR_OUTPUT
+	nErrId: 					UDINT;
+	bErr: 						BOOL;
+END_VAR
+VAR
+	fbReadRParams: 				ItpReadRParams;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* ==========================================================*)
+(*   PRG: FB_ReadRParams			        		            	 *)
+(* ----------------------------------------------------------*)
+(*   Desc:  reads the R-Parameter from the NCI and 			 *)
+(*				store ist in global array nRParamRead 			    *)
+(*   Auth: MiB                                               *)
+(*   Date: 20.07.2007                               	       *)
+(*   Rev.: 1.0                                               *)
+(* ==========================================================*)
+
+
+fbReadRParams(
+	bExecute:= bExec,
+	nChnId:= nChan,
+	pAddr:= ADR(nRParamRead[nChan - 1, nStartIndexReadRParam]),
+	nIndex:= nStartIndexReadRParam,
+	nCount:= (nEndIndexReadRParam - nStartIndexReadRParam) + 1,
+	tTimeOut:= t#2s,
+	bBusy=> bBusy,
+	bErr=> bErr,
+	nErrId=>nErrId );
+
+]]></ST>
+    </Implementation>
+    <LineIds Name="FB_ReadRParams">
+      <LineId Id="3" Count="21" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

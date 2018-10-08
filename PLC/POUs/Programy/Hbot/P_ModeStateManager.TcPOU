@@ -1,0 +1,222 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="P_ModeStateManager" Id="{bbac15c0-b65a-450f-84c9-d78a3c906803}" SpecialFunc="None">
+    <Declaration><![CDATA[//==================================================================================================
+//							Beckhoff Automation Poland
+//									03.01.2018
+//	Zarzadzeni trybami pracy i komendami - Satate Machine
+// 	v1.1	|| TC v 3.1.4022.4		|| - Aktualizacja - dodano test Abort z HMI 
+// 	v1.0	|| TC v 3.1.4022.4		|| - Pierwsza wersja
+//==================================================================================================
+PROGRAM P_ModeStateManager
+VAR
+	//	GVL_Machine - HMI handling
+	bHMIModeRequest_Automatic			: BOOL;
+	bHMIModeRequest_Manual				: BOOL;
+	bHMIModeRequest_Maintenance			: BOOL;
+	
+	bHMICommandRequest_Run				: BOOL;
+	bHMICommandRequest_Stop				: BOOL;
+	bHMICommandRequest_Reset			: BOOL;
+	bHMICommandRequest_Restart			: BOOL;
+	bHMICommandRequest_Abort			: BOOL;
+	// Rising edge detection
+	rtButtonAutomatic					: R_TRIG;
+	rtButtonManual						: R_TRIG;
+	rtButtonMaintenance					: R_TRIG;
+	rtButtonStart						: R_TRIG;
+	rtButtonReset						: R_TRIG;
+	rtButtonStop						: R_TRIG;
+
+	// State change permissions
+	bAllowChangeToManual				: BOOL;
+	bAllowChangeToMaintenance			: BOOL;
+	bAllowChangeToAutomatic				: BOOL;
+	czas 								: ARRAY[0..100] OF TON;
+	rtbAuto								: R_TRIG;
+	bM_Start							: BOOL;
+	seq									: INT;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// Triggers
+rtButtonAutomatic(CLK:= bHMIModeRequest_Automatic );
+rtButtonManual(CLK:= bHMIModeRequest_Manual );
+rtButtonMaintenance(CLK:= bHMIModeRequest_Maintenance );
+rtButtonStart(CLK:= bHMICommandRequest_Run);
+rtButtonStop(CLK:= bHMICommandRequest_Stop);
+rtButtonReset(CLK:= bHMICommandRequest_Reset);
+
+
+//przepisanie zmiennych
+bHMICommandRequest_Run:=GVL_IO.B1K1;
+bHMICommandRequest_Stop:=GVL_IO.B1K3;
+bHMICommandRequest_Reset :=GVL_IO.B1K8;
+bHMIModeRequest_Automatic :=GVL_HMI.bAutoWybor;
+
+// SAFETY niezaleznie
+IF NOT GVL_SafetyFrom_RT2.bSAFETY_PermissionSS1 OR bHMICommandRequest_Abort THEN
+	GVL_Machine.eCommand						:= E_MachineCommand.eAbort;
+	GVL_Machine.eState							:= E_MachineState.eAborted;
+END_IF
+
+//uruchomienie automatu 
+
+rtbAuto(CLK:=GVL_HMI.bAuto);
+// przełączynik trybu auto/manual
+IF GVL_HMI.bAuto THEN
+	bHMIModeRequest_Automatic := TRUE;
+	bHMIModeRequest_Manual := FALSE;
+ELSE
+	bHMIModeRequest_Automatic := FALSE;
+	bHMIModeRequest_Manual := TRUE;
+END_IF
+
+CASE GVL_Machine.eMode OF 
+
+	E_MachineMode.eAutomatic:
+
+		// Zmiana trybu tylko gdy maszyna nie jest w Running
+		IF GVL_Machine.eState <> E_MachineState.eRunning THEN
+			IF rtButtonMaintenance.Q THEN
+				GVL_Machine.eCommand			:= E_MachineCommand.eRestart;
+				GVL_Machine.eMode				:= E_MachineMode.eMaintenance;
+			END_IF
+		END_IF
+		
+		IF GVL_Machine.eState <> E_MachineState.eRunning THEN
+			IF rtButtonManual.Q THEN
+				GVL_Machine.eCommand			:= E_MachineCommand.eRestart;
+				GVL_Machine.eMode				:= E_MachineMode.eManual;
+			END_IF
+		END_IF
+		//==============================================
+		IF rtButtonStart.Q THEN 
+			GVL_Machine.eCommand 	:= E_MachineCommand.eRun;
+		END_IF
+
+		IF rtButtonReset.Q AND GVL.bRestartRequired THEN
+			GVL_Machine.eCommand	:= E_MachineCommand.eRestart;
+		END_IF
+		
+		IF rtButtonReset.Q AND NOT GVL.bRestartRequired THEN
+			GVL_Machine.eCommand	:= E_MachineCommand.eReset;
+		END_IF
+		
+		IF GVL.bGeneralError OR GVL.bGeneralFatalError OR rtButtonStop.Q THEN
+			GVL_Machine.eCommand	:= E_MachineCommand.eStop ;
+		END_IF
+		
+	E_MachineMode.eMaintenance, E_MachineMode.eManual:
+	
+		// Reset, Restart, Error - not used
+		
+		// Zmiana trybu tylko gdy maszyna nie jest w Running
+		IF GVL_Machine.eState <> E_MachineState.eRunning THEN
+			IF rtButtonAutomatic.Q (* OR sth *) THEN
+				GVL_Machine.eCommand			:= E_MachineCommand.eRestart;
+				GVL_Machine.eMode				:= E_MachineMode.eAutomatic;
+			END_IF
+		END_IF
+		
+		//==============================================
+		IF rtButtonStart.Q THEN 
+			GVL_Machine.eCommand 	:= E_MachineCommand.eRun;
+		END_IF
+
+		IF rtButtonReset.Q AND GVL.bRestartRequired THEN
+			GVL_Machine.eCommand	:= E_MachineCommand.eRestart;
+		END_IF
+		
+		IF rtButtonReset.Q AND NOT GVL.bRestartRequired THEN
+			GVL_Machine.eCommand	:= E_MachineCommand.eReset;
+		END_IF
+		
+		IF rtButtonStop.Q THEN
+			GVL_Machine.eCommand	:= E_MachineCommand.eStop ;
+		END_IF
+
+END_CASE	]]></ST>
+    </Implementation>
+    <Action Name="Act_CollectMachineState" Id="{35dbdadd-8e9d-4826-9020-b6db73a59fd4}">
+      <Implementation>
+        <ST><![CDATA[// Action to decide global machine state
+GVL_Machine.eState; // := 
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="Act_ModeChangeSelector" Id="{93e687b8-71f2-4f96-a92e-dc8cc9cabd1b}">
+      <Implementation>
+        <ST><![CDATA[bAllowChangeToManual 				:= NOT (P_Hbot_v3.eMachineState <> E_MachineState.eRunning); //
+bAllowChangeToMaintenance;
+bAllowChangeToAutomatic;
+]]></ST>
+      </Implementation>
+    </Action>
+    <LineIds Name="P_ModeStateManager">
+      <LineId Id="237" Count="0" />
+      <LineId Id="239" Count="1" />
+      <LineId Id="3" Count="0" />
+      <LineId Id="202" Count="0" />
+      <LineId Id="4" Count="0" />
+      <LineId Id="329" Count="0" />
+      <LineId Id="673" Count="0" />
+      <LineId Id="599" Count="0" />
+      <LineId Id="598" Count="0" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="597" Count="0" />
+      <LineId Id="601" Count="0" />
+      <LineId Id="636" Count="0" />
+      <LineId Id="600" Count="0" />
+      <LineId Id="9" Count="4" />
+      <LineId Id="397" Count="0" />
+      <LineId Id="396" Count="0" />
+      <LineId Id="539" Count="0" />
+      <LineId Id="399" Count="0" />
+      <LineId Id="540" Count="0" />
+      <LineId Id="578" Count="0" />
+      <LineId Id="576" Count="0" />
+      <LineId Id="584" Count="0" />
+      <LineId Id="579" Count="0" />
+      <LineId Id="582" Count="1" />
+      <LineId Id="581" Count="0" />
+      <LineId Id="577" Count="0" />
+      <LineId Id="15" Count="5" />
+      <LineId Id="28" Count="2" />
+      <LineId Id="32" Count="1" />
+      <LineId Id="365" Count="0" />
+      <LineId Id="360" Count="4" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="275" Count="0" />
+      <LineId Id="278" Count="1" />
+      <LineId Id="277" Count="0" />
+      <LineId Id="276" Count="0" />
+      <LineId Id="269" Count="2" />
+      <LineId Id="274" Count="0" />
+      <LineId Id="272" Count="1" />
+      <LineId Id="266" Count="1" />
+      <LineId Id="167" Count="1" />
+      <LineId Id="81" Count="0" />
+      <LineId Id="95" Count="1" />
+      <LineId Id="264" Count="0" />
+      <LineId Id="97" Count="0" />
+      <LineId Id="222" Count="0" />
+      <LineId Id="98" Count="0" />
+      <LineId Id="176" Count="0" />
+      <LineId Id="178" Count="3" />
+      <LineId Id="187" Count="0" />
+      <LineId Id="113" Count="0" />
+      <LineId Id="281" Count="14" />
+      <LineId Id="125" Count="0" />
+      <LineId Id="143" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="P_ModeStateManager.Act_CollectMachineState">
+      <LineId Id="1" Count="1" />
+      <LineId Id="15" Count="0" />
+    </LineIds>
+    <LineIds Name="P_ModeStateManager.Act_ModeChangeSelector">
+      <LineId Id="3" Count="2" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

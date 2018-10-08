@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <DUT Name="ST_NCIChannelState" Id="{0e81cadf-e753-493c-90a0-be9c67337898}">
+    <Declaration><![CDATA[TYPE ST_NCIChannelState :
+STRUCT
+	(* Achtung:
+		=========================
+		Erster Kanal ist PTP Achsen Kanal!
+	*)
+
+	(* ---------------------------------------------
+	"NOT Ready"	// 0
+	"Standby"	// 1 
+	"Automatic"	// 2
+	"MDI"			// 3
+	"Manual"		// 4
+	"Reference" // 5
+	 ------------------------------------------------- *)
+	Mode			: ARRAY[1..8] OF INT;	(* Operation Mode *)
+
+
+	(* ---------------------------------------------
+	"-",				// 0 "Standby"
+	"Deselected",	// 1 "Standby"
+	"Selected",		// 2
+	"Ready",			// 3
+	"Active",		// 4
+	"Hold",			// 5
+	"Error",			// 6
+	"",				// 7
+	"",				// 8
+	"Preparing",	// 9
+	"Clearing",		// 10
+	"Starting",		// 11
+	"Aborting",		// 12
+	"Stopping",		// 13
+	"Resuming",		// 14
+	"Resetting" };	// 15
+	 ------------------------------------------------- *)
+	State			: ARRAY[1..8] OF INT;	(* Operation State *)
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

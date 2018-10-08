@@ -1,0 +1,454 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="FB_K_Auto" Id="{a3c4118e-c96f-4ad5-a626-dc0fe0322678}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_K_Auto
+VAR_INPUT
+	Zasilanie:bool;
+	Start:BOOL;
+	Stop:BOOL;
+	Pauza:BOOL;
+	W_Wys:BOOL;
+	W_Cof:BOOL;
+	Docisk_Wys:BOOL;
+	Docisk_Cof:BOOL;
+	K1_Wys:BOOL;
+	K1_Cof:BOOL;
+	K2_Wys:BOOL;
+	K2_Cof:BOOL;
+	K_Dluga_Wyp:BOOL;
+	K_Dluga_Cof:BOOL;
+	S_Ready:BOOL;
+	S_Run:BOOL;
+	S_Done:BOOL;
+	kolejny: BOOL;
+	Safety1 : BOOL;
+	Safety2  : BOOL;
+	Pred_zad_podjazd: LREAL;
+	Pred_zad_odjazd: LREAL;
+	Reset: BOOL;
+	xKartonWydany :BOOL;
+	
+END_VAR
+VAR_OUTPUT
+	S_KL_Dl:BOOL;
+	S_KL1_K:BOOL;
+	S_KL2_K:BOOL;
+	S_Wy:BOOL;
+	S_EXE:BOOL;	
+	S_Docisk:BOOL;
+	F2_Run:BOOL;	
+	Pomp_V:BOOL;
+	Pozycja:LREAL;
+	Predkosc:LREAL;
+	F2_CZ:INT;
+	Error_ind: BOOL;
+	Error_numb: INT;
+	xKartonZabrany:BOOL;
+	xWydajKarton:BOOL;
+	
+	
+END_VAR
+VAR
+	Seq :INT;
+	Czas :ARRAY[0..100] OF TON;
+	CZ :TON;
+	przeliczenie :INT;
+	alarm_int : INT:=3;
+	
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[CASE seq OF
+	
+
+0:(**)
+	S_KL_Dl:=FALSE;
+	S_KL1_K:=FALSE;
+	S_KL2_K:=FALSE;
+	S_Wy:=FALSE;
+	S_EXE:=FALSE;
+	S_Docisk:=FALSE;
+	F2_Run:=FALSE;
+	Pomp_V:=FALSE;
+	F2_CZ:=0;
+	
+	xKartonZabrany:=FALSE;
+
+	IF start=TRUE AND Safety1=TRUE AND Safety2=TRUE AND Zasilanie=TRUE THEN
+		
+	Seq:=5;
+
+	END_IF
+	
+
+4:(*start kolejnego cyklu *)
+
+	
+	S_KL_Dl:=FALSE;
+	S_KL1_K:=FALSE;
+	S_KL2_K:=FALSE;
+	S_Wy:=FALSE;
+	S_EXE:=FALSE;
+	S_Docisk:=FALSE;
+	//F2_Run:=FALSE;
+	Pomp_V:=FALSE;
+	//F2_CZ:=0;
+	
+	IF kolejny=TRUE THEN
+		
+	Seq:=5;
+
+	END_IF
+
+5:(**)
+	
+	IF W_Cof=TRUE AND Docisk_Cof=TRUE AND K1_Cof=TRUE AND K2_Cof=TRUE AND K_Dluga_Cof=TRUE AND S_Ready=TRUE  THEN
+		
+	F2_CZ:=2000;
+	F2_Run:=TRUE;
+
+	Seq:=10;
+	END_IF
+
+
+10:(**)
+	Predkosc:=Pred_zad_podjazd;		/// 900
+	Pozycja:=600;
+	
+	IF S_Ready=TRUE THEN
+	
+		S_EXE:=TRUE;
+	
+	END_IF
+	
+	IF S_Run=TRUE THEN
+		S_EXE:=FALSE;
+		Seq:=15;
+	
+	END_IF
+
+15:(**)
+	IF S_Done=TRUE THEN
+		Pomp_V:=TRUE;    // czy został zamontowany czujnik podcisnienie???
+		xWydajKarton:=TRUE;
+		
+		Seq:=17; 
+	END_IF
+17:(**)	
+		//IF GVL_IO.Vacuostat=TRUE THEN
+	//	IF Czas[11].q=TRUE THEN 
+		Seq:=20; 
+		//END_IF
+		//END_IF
+
+
+
+20:(**)
+	Pozycja:=225-((GVL_Recipe.szer_kartonu)/2);//dla malego kartonu bylo 156 //dla kartonu 370x370 was 40 
+	Predkosc:=Pred_zad_odjazd;
+	IF czas[0].Q=TRUE AND S_Ready=TRUE AND xKartonWydany=TRUE THEN
+		xWydajKarton:=FALSE;	
+	 S_EXE:=TRUE;
+	 
+	
+	END_IF
+
+	IF S_Run=TRUE THEN 
+
+	Seq:=25;
+	
+	END_IF
+
+25:(**)
+	IF S_Done=TRUE THEN
+		S_EXE:=FALSE;
+		S_Docisk:=TRUE;
+		xKartonZabrany:=TRUE;
+		seq:=30;
+	
+	END_IF
+
+30:(**)
+	
+	IF 	Docisk_Wys=TRUE THEN 
+		xKartonZabrany:=FALSE;
+	S_KL1_K:=TRUE;
+	S_KL2_K:=TRUE;
+		seq:=35;
+	END_IF
+	
+
+35:(**)
+	IF K1_Wys=TRUE AND K2_Wys=TRUE THEN
+		S_KL_Dl:=TRUE;
+		
+		seq:=40;
+	END_IF
+40:(**)
+
+	IF K_Dluga_Wyp=TRUE AND Czas[1].Q=TRUE THEN
+		Pomp_V:=FALSE;
+		seq:=42;
+	END_IF
+	
+42:
+	Pozycja:=225-((GVL_Recipe.szer_kartonu)/2)-20;//dla malego kartonu bylo 156 //dla kartonu 370x370 was 40
+	Predkosc:=800; /// predkosc odjazdu do home
+	IF  S_Ready=TRUE AND S_Run=FALSE THEN
+		
+	 S_EXE:=TRUE;
+	 
+	
+	END_IF
+
+	IF S_Run=TRUE THEN 
+		
+	Seq:=44;
+	
+	END_IF
+44:
+	IF S_Done=TRUE THEN
+		S_Wy:=TRUE;
+		Seq:=45;
+	END_IF
+	
+
+45:(**)
+	IF W_Wys=TRUE AND Czas[2].Q=TRUE  THEN
+		
+		S_KL_Dl:=FALSE;
+		S_KL1_K:=FALSE;
+		S_KL2_K:=FALSE;
+		S_Wy:=FALSE;
+		
+		
+		seq:=50;
+	END_IF
+
+50:(**)
+	IF  W_Cof=TRUE  AND K1_Cof=TRUE AND K2_Cof=TRUE AND K_Dluga_Cof=TRUE THEN
+		
+	S_Docisk:=FALSE;
+	seq:=4;
+	END_IF
+
+1000:(**)// Errors
+	
+	Error_ind:=TRUE;
+	F2_Run:=FALSE;
+	Pomp_V:=FALSE;  
+	IF Reset=TRUE THEN
+		Error_ind:=FALSE;
+		Error_numb:=0;
+		alarm_int:=3;
+		seq:=0;
+	END_IF
+
+END_CASE
+
+Czas[0](IN:=seq=20, PT:=T#450MS);
+Czas[1](IN:=seq=40, PT:=T#0.5S);
+Czas[2](IN:=seq=45, PT:=T#0.5S);
+
+//czasowki do bledow
+Czas[3](IN:=seq=5, PT:=T#5S); //Błąd gotowości do pracy
+//Czas[4](IN:=seq=15, PT:=T#5S);
+Czas[5](IN:=seq=25, PT:=T#5S); // Nie osiągnięto pozycji składania kartonu
+Czas[6](IN:=seq=30, PT:=T#5S); // Docisk się nie wysunął
+Czas[7](IN:=seq=35, PT:=T#5S); // Błąd klap
+Czas[8](IN:=seq=40, PT:=T#5S); // Błąd wypychacz
+Czas[9](IN:=seq=44, PT:=T#5S); // Błąd pozycji oczekiwania
+Czas[10](IN:=seq=50, PT:=T#5S); // Błąd kończenia cyklu... kartoniarka nie przechodzi do stanu początkowego
+Czas[11](IN:=GVL_IO.K1K3=TRUE, PT:=T#1S); // Błąd kończenia cyklu... kartoniarka nie przechodzi do stanu początkowego
+// Obsługa błędów
+
+IF Reset= FALSE THEN
+FOR alarm_int:=3 TO 10 DO 
+IF Czas[alarm_int].Q=TRUE THEN
+	Error_numb:=alarm_int+100; // DLA KART. +100 DLA ZAKLEJARKI +200 ITD
+	seq:=1000;
+END_IF	
+END_FOR
+END_IF
+
+IF stop=TRUE OR Safety1=FALSE OR Safety2=FALSE OR Zasilanie=FALSE  THEN 
+	
+	seq:=0;
+		F2_Run:=FALSE;
+		
+
+	
+
+END_IF
+	]]></ST>
+    </Implementation>
+    <LineIds Name="FB_K_Auto">
+      <LineId Id="9" Count="0" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="77" Count="8" />
+      <LineId Id="785" Count="0" />
+      <LineId Id="415" Count="0" />
+      <LineId Id="75" Count="0" />
+      <LineId Id="360" Count="3" />
+      <LineId Id="76" Count="0" />
+      <LineId Id="71" Count="0" />
+      <LineId Id="62" Count="0" />
+      <LineId Id="61" Count="0" />
+      <LineId Id="344" Count="9" />
+      <LineId Id="343" Count="0" />
+      <LineId Id="354" Count="0" />
+      <LineId Id="356" Count="3" />
+      <LineId Id="355" Count="0" />
+      <LineId Id="15" Count="1" />
+      <LineId Id="472" Count="0" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="88" Count="0" />
+      <LineId Id="90" Count="0" />
+      <LineId Id="123" Count="0" />
+      <LineId Id="416" Count="0" />
+      <LineId Id="124" Count="0" />
+      <LineId Id="89" Count="0" />
+      <LineId Id="20" Count="1" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="176" Count="0" />
+      <LineId Id="100" Count="0" />
+      <LineId Id="784" Count="0" />
+      <LineId Id="95" Count="0" />
+      <LineId Id="99" Count="0" />
+      <LineId Id="96" Count="0" />
+      <LineId Id="98" Count="0" />
+      <LineId Id="97" Count="0" />
+      <LineId Id="63" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="101" Count="0" />
+      <LineId Id="104" Count="0" />
+      <LineId Id="103" Count="0" />
+      <LineId Id="102" Count="0" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="64" Count="0" />
+      <LineId Id="105" Count="0" />
+      <LineId Id="840" Count="0" />
+      <LineId Id="898" Count="0" />
+      <LineId Id="780" Count="0" />
+      <LineId Id="778" Count="1" />
+      <LineId Id="663" Count="0" />
+      <LineId Id="774" Count="0" />
+      <LineId Id="108" Count="0" />
+      <LineId Id="777" Count="0" />
+      <LineId Id="664" Count="0" />
+      <LineId Id="106" Count="0" />
+      <LineId Id="26" Count="1" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="116" Count="0" />
+      <LineId Id="175" Count="0" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="112" Count="0" />
+      <LineId Id="115" Count="0" />
+      <LineId Id="117" Count="0" />
+      <LineId Id="114" Count="0" />
+      <LineId Id="113" Count="0" />
+      <LineId Id="118" Count="0" />
+      <LineId Id="65" Count="0" />
+      <LineId Id="119" Count="0" />
+      <LineId Id="121" Count="1" />
+      <LineId Id="120" Count="0" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="28" Count="0" />
+      <LineId Id="125" Count="0" />
+      <LineId Id="139" Count="0" />
+      <LineId Id="144" Count="0" />
+      <LineId Id="781" Count="0" />
+      <LineId Id="142" Count="1" />
+      <LineId Id="140" Count="0" />
+      <LineId Id="126" Count="0" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="146" Count="2" />
+      <LineId Id="150" Count="0" />
+      <LineId Id="152" Count="0" />
+      <LineId Id="151" Count="0" />
+      <LineId Id="149" Count="0" />
+      <LineId Id="145" Count="0" />
+      <LineId Id="128" Count="0" />
+      <LineId Id="127" Count="0" />
+      <LineId Id="130" Count="0" />
+      <LineId Id="153" Count="0" />
+      <LineId Id="842" Count="0" />
+      <LineId Id="155" Count="0" />
+      <LineId Id="154" Count="0" />
+      <LineId Id="129" Count="0" />
+      <LineId Id="179" Count="0" />
+      <LineId Id="156" Count="1" />
+      <LineId Id="160" Count="0" />
+      <LineId Id="158" Count="0" />
+      <LineId Id="236" Count="0" />
+      <LineId Id="238" Count="13" />
+      <LineId Id="237" Count="0" />
+      <LineId Id="252" Count="0" />
+      <LineId Id="255" Count="1" />
+      <LineId Id="258" Count="0" />
+      <LineId Id="257" Count="0" />
+      <LineId Id="253" Count="0" />
+      <LineId Id="132" Count="0" />
+      <LineId Id="131" Count="0" />
+      <LineId Id="161" Count="0" />
+      <LineId Id="167" Count="0" />
+      <LineId Id="165" Count="1" />
+      <LineId Id="162" Count="0" />
+      <LineId Id="178" Count="0" />
+      <LineId Id="177" Count="0" />
+      <LineId Id="164" Count="0" />
+      <LineId Id="168" Count="0" />
+      <LineId Id="163" Count="0" />
+      <LineId Id="134" Count="0" />
+      <LineId Id="133" Count="0" />
+      <LineId Id="169" Count="1" />
+      <LineId Id="172" Count="1" />
+      <LineId Id="171" Count="0" />
+      <LineId Id="136" Count="1" />
+      <LineId Id="68" Count="0" />
+      <LineId Id="600" Count="0" />
+      <LineId Id="611" Count="0" />
+      <LineId Id="717" Count="1" />
+      <LineId Id="605" Count="0" />
+      <LineId Id="607" Count="0" />
+      <LineId Id="610" Count="0" />
+      <LineId Id="609" Count="0" />
+      <LineId Id="606" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="604" Count="0" />
+      <LineId Id="109" Count="0" />
+      <LineId Id="180" Count="0" />
+      <LineId Id="300" Count="0" />
+      <LineId Id="525" Count="0" />
+      <LineId Id="524" Count="0" />
+      <LineId Id="526" Count="0" />
+      <LineId Id="578" Count="0" />
+      <LineId Id="576" Count="1" />
+      <LineId Id="579" Count="1" />
+      <LineId Id="582" Count="2" />
+      <LineId Id="581" Count="0" />
+      <LineId Id="783" Count="0" />
+      <LineId Id="719" Count="0" />
+      <LineId Id="592" Count="0" />
+      <LineId Id="598" Count="0" />
+      <LineId Id="608" Count="0" />
+      <LineId Id="591" Count="0" />
+      <LineId Id="589" Count="0" />
+      <LineId Id="587" Count="0" />
+      <LineId Id="366" Count="0" />
+      <LineId Id="720" Count="0" />
+      <LineId Id="365" Count="0" />
+      <LineId Id="367" Count="0" />
+      <LineId Id="370" Count="0" />
+      <LineId Id="420" Count="2" />
+      <LineId Id="419" Count="0" />
+      <LineId Id="369" Count="0" />
+      <LineId Id="368" Count="0" />
+      <LineId Id="111" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,1473 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="P_Hbot_V3" Id="{57dca314-d807-4370-bd55-5545866ff511}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM P_Hbot_V3
+VAR_INPUT
+	eMachineMode							: E_MachineMode; 		// Machine mode
+	eMachineCommand							: E_MachineCommand; 	// Command from top level state program
+END_VAR
+VAR_OUTPUT
+	eMachineState							: E_MachineState;
+  	bError									: BOOL;
+END_VAR
+VAR_IN_OUT
+
+END_VAR
+VAR
+	// INPUTS
+	bIn1									: BOOL;
+	// OUTPUTS
+	bOut1									: BOOL;	
+	// Local
+	iStateIdle								: INT;
+	iStepStarting							: INT;
+	iStateStoping							: INT;
+	iStateAborting							: INT;	
+// HMI Maintenance 
+	
+	// FBs Axis Online
+	Axis_MCS_X						: AXIS_REF; 		// virtual axis X
+	Axis_MCS_Y						: AXIS_REF;			// virtual axis Y
+	Axis_ACS_X						: AXIS_REF;			// HW axis X
+	Axis_ACS_Y						: AXIS_REF;			// HW axis Y
+	stMcAxisOnline_MCS_X			: ST_McAxisOnline;
+	stMcAxisOnline_MCS_Y			: ST_McAxisOnline;
+	stMcAxisOnline_ACS_X			: ST_McAxisOnline;
+	stMcAxisOnline_ACS_Y			: ST_McAxisOnline;
+	
+
+
+	fbMcAxisOnline_MCS_X			: FB_McAxisOnlineAX5000;
+	fbMcAxisOnline_MCS_Y			: FB_McAxisOnlineAX5000;
+	fbMcAxisOnline_ACS_X			: FB_McAxisOnlineAX5000;
+	fbMcAxisOnline_ACS_Y			: FB_McAxisOnlineAX5000;
+
+	tonAxesReady 					: TON;
+	tonAxesError 					: TON;
+	R_bReadyForMove					:R_Trig;
+
+
+	
+	rPickItemHigh			: REAL	:= GVL_Recipe.Poz_Z_Pobranie;
+	rPlaceItemHigh			: REAL	:= GVL_Recipe.Poz_Z_Odlozenie;
+	rItemPickVelocity		: REAL 	:= GVL_Recipe.Predk_plot_pobranie;//50
+	rItemPlaceVelocity		: REAL 	:= GVL_Recipe.Predk_plot_odlozenie;//50
+	rMoveVelocity			: REAL 	:= GVL_Recipe.Predk_plot_ruch;
+	rMoveMode				: REAL 	:= 0;
+	
+	//Mode select
+	bPickAndPlace			: BOOL;
+	bReturnToPick			: BOOL;
+	bReferneceHbot			: BOOL;
+	
+	//Status
+	bReadyToPick			: BOOL;
+	bReadyToPlace			: BOOL;
+	bHome					: BOOL;
+	bReadyForMove			: BOOL;
+	bPicked					: BOOL;
+	bPlaced					: BOOL;
+	//CMDs
+	bMoveCmd				: BOOL;
+	bPickDone				: BOOL;
+	bPlaceDone				: BOOL;
+	bHomeDone				: BOOL;
+	bPickedACK				: BOOL;
+	bPlacedACK				: BOOL;
+	bReadyToPickACK			: BOOL;
+	bReadyToPlaceACK		: BOOL;
+	
+	rtM50Ack				: R_TRIG;
+	rtM61Ack				: R_TRIG;
+	rtM62Ack				: R_TRIG;
+	rtM63Ack				: R_TRIG;
+	rtM64Ack				: R_TRIG;
+	rtM65Ack				: R_TRIG;
+	
+	F_Ploter: FB_MX2;
+	ui_PPodCzestotliwosc: INT;
+	b_FP_CCW: BOOL;
+	b_FP_CW: BOOL;
+	b_FP_Reset: BOOL;
+	seq:INT;
+	czas:ARRAY[0..100] OF ton;
+	R_Pobranie_Kierownica:R_TRIG;
+
+	Zabral: BOOL;
+	
+	
+	
+	bZabral: BOOL;
+	iStateRunning: INT;
+	bServiceMove: BOOL;
+
+END_VAR
+
+VAR CONSTANT
+	nAxes	 : WORD:=2;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// Always clear command in active step
+
+// Read input signals
+Act_InUpdate();
+
+// ====================================================
+// FBs CALL
+Act_FBsCall();
+// Monitoring
+Act_Monitoring();
+	
+// Error collection
+Act_Error();
+
+Act_MovePath(); 
+
+//automat plotera
+A_Ploter_Auto();
+
+// SAFETY CALL 
+// Tylko komenda Abort dostepna jest niezaleznie od stanu
+IF eMachineCommand = E_MachineCommand.eAbort AND eMachineState <> E_MachineState.eAborted THEN
+	eMachineState := E_MachineState.eAborting;
+END_IF
+
+// Machine mode change over
+CASE eMachineMode OF
+	
+	E_MachineMode.eAutomatic:
+		Act_ModeAutomatic();
+		
+	E_MachineMode.eManual:
+		Act_ModeManual();	
+		
+	E_MachineMode.eMaintenance:
+		Act_ModeMaintenance();	
+		
+END_CASE
+
+// Call Axis online FBs
+
+
+// Write outputs
+Act_OutUpdate(); 
+A_FPloter();
+A_Prawidlo();
+
+(*//jogi
+IF  GVL_HMI.bAuto=FALSE  THEN
+	GVL_GLOBAL.bPlotJogF:=GVL_HMI.bHmiPlotCw;
+	GVL_GLOBAL.bPlotJogB:=GVL_HMI.bHmiPlotCCw;
+END_IF*)]]></ST>
+    </Implementation>
+    <Action Name="A_FPloter" Id="{49aece13-6322-404d-843f-c20981307c39}">
+      <Implementation>
+        <ST><![CDATA[F_Ploter
+	(w_Status:=GVL_Omron.wOmron_Pl_Status,
+	ui_CzestotliwoscI:=ui_PPodCzestotliwosc,
+	b_CCW									:= b_FP_CCW, 
+	b_CW									:= b_FP_CW,
+	b_Reset                                 := b_FP_Reset,
+	w_ControlW                              => GVL_Omron.wOmron_Pl_Control,
+ 	ui_CzestotliwoscO                       => GVL_Omron.iOmron_Pl_SeVelo,
+);
+
+	
+	IF GVL_HMI.A_Start=TRUE AND GVL_HMI.bAuto=TRUE AND GVL_HMI.bEnablePloter=TRUE THEN 
+		
+	ui_PPodCzestotliwosc					:= 2500;
+	b_FP_CCW								:= TRUE;		
+	
+	END_IF	
+	IF GVL_HMI.A_Stop=TRUE OR GVL_HMI.bEnablePloter=FALSE THEN  
+
+	b_FP_CCW								:= FALSE;		
+	b_FP_CW:=FALSE;
+	END_IF
+	
+	IF GVL_HMI.bAuto=FALSE AND GVL_GLOBAL.falownik_rolek_cewka=TRUE THEN 
+	ui_PPodCzestotliwosc					:= 2500;	
+	b_FP_CCW								:= TRUE;
+	b_FP_CW 								:= FALSE;
+	
+	
+	ELSIF GVL_HMI.bAuto=FALSE AND GVL_GLOBAL.falownik_pasow_cewka=FALSE THEN
+	
+	ui_PPodCzestotliwosc					:= 0;	
+	b_FP_CCW								:= 0;
+	b_FP_CW									:= 0;
+
+	END_IF]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_Ploter_Auto" Id="{861998ea-d71f-4776-a9bb-e15925c5b795}">
+      <Implementation>
+        <ST><![CDATA[//prędkości osi 
+					rItemPickVelocity:=GVL_Recipe.Predk_plot_ruch; 	//[mm/min]
+					rItemPlaceVelocity:=GVL_Recipe.Predk_plot_ruch;	//[mm/min]
+					rMoveVelocity:=GVL_Recipe.Predk_plot_pobranie;		//[mm/min]
+//podglad bitów do obsłgui programu
+					R_Pobranie_Kierownica(CLK:=GVL_GLOBAL.Zabierz_Z_Kierownicy);
+					R_bReadyForMove(CLK:=bReadyForMove);
+				
+					bZabral;
+					GVL_GLOBAL.odloz_do_kartonu;
+//automat do plotera 
+				(*	IF GVL_HMI.A_Stop=TRUE OR GVL_HMI.bEnablePloter=FALSE THEN	
+					seq									:=0;
+					END_IF
+				*)	
+//rozpoczęcie case
+		CASE seq OF 
+			0:(*start*)			
+					IF GVL_HMI.A_Start=TRUE AND GVL_HMI.bEnablePloter=TRUE THEN	
+					seq									:=2;
+					END_IF
+			2:(*Jazda do home i sprawdzenie stanów *)
+					bReferneceHbot						:=TRUE;
+					GVL_GLOBAL.zaw_chwyt1_auto			:=FALSE;
+					GVL_GLOBAL.zaw_chwyt2_auto			:=FALSE;
+					IF GVL_Machine.eState=60 AND bReadyForMove=TRUE AND rMoveMode=3  THEN 
+					seq									:=3;
+					END_IF
+			3:(**)	
+					IF bReadyForMove=TRUE AND czas[1].Q=TRUE THEN	
+					bMoveCmd							:=TRUE;
+					END_IF
+					IF bReadyForMove=FALSE THEN	
+					bMoveCmd							:=FALSE;
+					seq									:=5;
+					END_IF
+			5:(*sprawdza czy dojechał jak dojechał to jedzie dalej *)
+					IF bHome=TRUE THEN
+					bHomeDone							:=TRUE;
+					seq									:=7;
+					END_IF			
+			7:(*czeka az zniknie bit bhome*)		
+					IF bHome=FALSE THEN
+					bHomeDone							:=FALSE;
+					seq									:=10;
+					END_IF	
+			10:(*jade pick pozycje*)
+					
+					bPickAndPlace						:=TRUE;
+					IF rMoveMode=1 AND czas[2].Q=TRUE  THEN
+					bPickAndPlace						:=FALSE;
+					seq									:=13;
+					END_IF
+			13:(**)
+					IF   bReadyForMove=TRUE THEN
+					bMoveCmd							:=TRUE;
+					seq									:=14;
+					END_IF
+			14:(**)	
+					IF   bReadyForMove=FALSE THEN
+					bMoveCmd							:=FALSE;
+					seq									:=15;
+					END_IF
+			15:(**)	
+					IF bReadyToPick=TRUE AND GVL_GLOBAL.Zabierz_Z_Kierownicy  THEN
+					bReadyToPickACK						:=TRUE;
+					seq									:=17;
+					END_IF
+			17:(**)	
+					IF bReadyToPick=FALSE THEN
+					bReadyToPickACK						:=FALSE;
+					seq									:=19;						
+					END_IF
+			19:(**)
+				 	IF bPicked=TRUE AND bZabral=TRUE THEN
+					GVL_GLOBAL.zaw_chwyt1_auto			:=TRUE;
+					GVL_GLOBAL.zaw_chwyt2_auto			:=TRUE;
+					seq									:=20;	
+					END_IF
+					
+			20:(*jedzio pobrac jak ma zgode*)
+
+					IF bPicked=TRUE AND czas[4].Q=TRUE THEN
+					bPickedACK							:=TRUE;						
+					seq									:=22;
+					END_IF
+			22:(**)		
+					IF bPicked=FALSE THEN
+					bPickedACK							:=FALSE;						
+					seq									:=25;
+					END_IF			
+
+					
+			25:(*jak zgoda odklada*)
+					IF bReadyToPlace=TRUE AND GVL_GLOBAL.odloz_do_kartonu=TRUE THEN
+					bReadyToPlaceACK					:=TRUE;
+					seq									:=27;
+					END_IF
+
+			27:(**)
+					IF bReadyToPlace=FALSE   THEN
+					bReadyToPlaceACK					:=FALSE;
+					seq									:=30;
+					END_IF
+			30:(*potwierdzenie ze dojechal do pobrania *)
+					IF bPlaced	=TRUE  THEN
+					GVL_GLOBAL.Ploter_pobral			:=TRUE;
+					bPlacedACK							:=TRUE;
+					seq									:=33;
+					END_IF
+			33:(**)		
+					IF bPlaced	=FALSE  THEN
+					bPlacedACK							:=FALSE;
+					seq									:=35;
+					END_IF
+			35:(*jak zgoda to jedzie spowrotem do pobrania *)
+					GVL_GLOBAL.zaw_chwyt1_auto			:=FALSE;
+					GVL_GLOBAL.zaw_chwyt2_auto			:=FALSE;
+					bReturnToPick						:=TRUE;
+					IF rMoveMode = 2  AND czas[3].Q=TRUE  THEN
+					seq									:=40;
+					END_IF
+			40:(**)
+					IF bReadyForMove=TRUE THEN
+					bMoveCmd							:=TRUE;
+					seq									:=43;	
+					END_IF
+			43:(**)
+					IF bReadyForMove=FALSE THEN
+					bMoveCmd							:=FALSE;
+					seq									:=45;	
+					END_IF
+
+			45:(**)
+					IF P_HBot_v3.stMcAxisOnline_MCS_X.stStatus.lrActPos<700 THEN 
+					GVL_GLOBAL.bZaladowanyPrawidlo		:=TRUE;
+					END_IF
+					IF bPicked	=TRUE THEN	
+					bPickedACK							:=TRUE;
+					seq									:=50;//bedzie wracal do 10 
+					END_IF
+			50:(**)
+					IF bPicked	=FALSE THEN	
+					bPickedACK							:=FALSE;
+					seq									:=10;//bedzie wracal do 10 					
+					END_IF
+			END_CASE
+			czas[1](IN:=seq=3,PT:=T#1200MS);
+			czas[2](IN:=rMoveMode=1,PT:=T#1200MS);
+			czas[3](IN:=rMoveMode=2,PT:=T#1200MS);
+			czas[4](IN:=seq=20,PT:=T#500MS);
+			czas[9](IN:=bReferneceHbot,PT:=T#300MS);
+			czas[12](IN:=GVL_GLOBAL.bZaladowanyPrawidlo,PT:=T#500MS);
+
+			IF czas[12].Q=TRUE THEN
+				GVL_GLOBAL.bZaladowanyPrawidlo	:=FALSE;
+			END_IF]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_Prawidlo" Id="{37696184-62a8-4d3f-ae3c-77df5352c9ff}">
+      <Implementation>
+        <ST><![CDATA[FB_Prawidlo(
+	b_Start:=GVL_HMI.A_Start AND GVL_HMI.bEnablePloter , 
+	b_Stop:=GVL_HMI.A_Stop , 
+	bKon_Hamulec1:=GVL_IO_P.b1B1 , 
+	bKon_Hamulec2:=GVL_IO_P.b5B1 , 
+	bKonPodajnik1:=GVL_IO_P.b6B1 , 
+	bKonPodajnik2:=GVL_IO_P.b2B1 , 
+	bCzHamulec:=GVL_IO_P.b3B1 , 
+	bZaladowany:=GVL_GLOBAL.bZaladowanyPrawidlo	 , 
+	bZaworPodnosnik1=>GVL_GLOBAL.zaw_prawidlo_auto , 
+	bZaworPodnosnik2=>GVL_GLOBAL.zaw_prawidlo_dol_auto , 
+	bZaworHamulec=>GVL_GLOBAL.zaw_hamulec_auto , 
+	bZgodaNaRuch=>GVL_GLOBAL.bZgodaNaRuchPrawidlo , 
+	bLaduj=>GVL_GLOBAL.odloz_do_kartonu );]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="Act_Error" Id="{342fca7c-7166-4959-8954-f5810dc19af4}">
+      <Implementation>
+        <ST><![CDATA[// Program summary error
+bError := 	tonAxesError.Q OR 
+			PLCMachineMode[GVL_NCI.nChan].Error OR  
+			PRG_KinTrans.eKinStatus = KinStatus_Error;
+			// ie. Init Error
+			// OR axis error
+			// OR item error   ]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="Act_FBsCall" Id="{f9d974f3-03f1-42ad-a32a-9ebbf1105994}">
+      <Implementation>
+        <ST><![CDATA[
+PRG_ChannelHandler();
+fbMcAxisOnline_MCS_X(stMcAxisOnline:= stMcAxisOnline_MCS_X , Axis:= Axis_MCS_X);
+fbMcAxisOnline_MCS_Y(stMcAxisOnline:= stMcAxisOnline_MCS_y , Axis:= Axis_MCS_Y);
+fbMcAxisOnline_ACS_X(stMcAxisOnline:= stMcAxisOnline_ACS_X , Axis:= Axis_ACS_X);
+fbMcAxisOnline_ACS_Y(stMcAxisOnline:= stMcAxisOnline_ACS_Y , Axis:= Axis_ACS_Y);	
+
+
+//________Kinematic____________//
+PRG_KinTrans(
+	bBuildKinGroup:= , 
+	bCleanKinGroup:= , 
+	bResetKinGroup:= , 
+	bKinBusy=> , 
+	bKinDone=> , 
+	bKinBuilt=> , 
+	bKinClined=> , 
+	bKinError=> , 
+	udiKinErrorID=> , 
+	eKinStatus=> );
+//_____________________________//
+
+//________NCI__________________//
+PRG_GroupAxesToNci(	stMachineMode := PLCMachineMode[PLCSelectedChannel], 
+					stAxisRef_X:= Axis_MCS_X, 
+					stAxisRef_Y:= Axis_MCS_Y );
+
+//_____________________________//
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="Act_InUpdate" Id="{33f832ad-73fd-46b8-b602-86ce2443928d}">
+      <Implementation>
+        <ST><![CDATA[bIn1 := TRUE; // Assign, filters, conditions, scaling etc
+PLCMachineMode[GVL_NCI.nChan].ProgramName := 'C:\TwinCat\CNC\NC_1.nc';]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="Act_ModeAutomatic" Id="{10e156a1-4c74-4231-8795-e81081e3437e}">
+      <Implementation>
+        <ST><![CDATA[// State Machine
+CASE eMachineState OF
+
+	E_MachineState.eIdle:
+		
+	
+		// ====================================================
+		// There should be main code
+		// i.e. CASE iStepInit OF	
+		// ====================================================
+		// Allow for stop only if conditions are true - in this step we can wait without an error
+
+		
+		IF TRUE (* condition *) THEN
+			eMachineState 						:= E_MachineState.eStopped;
+		END_IF
+		
+		IF bError THEN
+			eMachineState 						:= E_MachineState.eError;
+		END_IF
+		
+	E_MachineState.eStopping:
+		PLCMachineMode[GVL_NCI.nChan].Start:= FALSE;
+		
+		CASE iStateStoping OF
+			0:
+				PLCMachineMode[GVL_NCI.nChan].Stop:= TRUE;
+				IF stMcAxisOnline_MCS_X.stStatus.stAxisStatus.NotMoving AND stMcAxisOnline_MCS_Y.stStatus.stAxisStatus.NotMoving THEN
+					PLCMachineMode[GVL_NCI.nChan].Stop:= FALSE;
+					iStateStoping := iStateStoping + 10;
+				ELSIF stMcAxisOnline_MCS_X.stStatus.bNcError OR stMcAxisOnline_MCS_Y.stStatus.bNcError THEN
+					iStateStoping := iStateStoping + 20;
+				END_IF
+			10:
+				IF PRG_KinTrans.bKinBuilt THEN
+					PRG_KinTrans.bCleanKinGroup := TRUE;
+					iStateStoping := iStateStoping + 10;
+				ELSE
+					iStateStoping := iStateStoping + 20;	
+				END_IF
+			20:
+				IF PRG_KinTrans.bKinDone THEN
+					PRG_KinTrans.bCleanKinGroup 		:= FALSE;
+					iStateStoping := iStateStoping + 10;
+				ELSIF PRG_KinTrans.bKinError THEN
+					PRG_KinTrans.bCleanKinGroup 		:= FALSE;
+					iStateStoping := iStateStoping + 10;
+				END_IF
+				
+			30:
+				PLCMachineMode[GVL_NCI.nChan].Reset:= TRUE;
+				IF ItpGetStateInterpreter(arrNCToPLC_NCIChannel_REF[1]) = 1 THEN
+					PLCMachineMode[GVL_NCI.nChan].Reset := FALSE;
+					iStateStoping := iStateStoping + 10;
+				END_IF
+			END_CASE
+		IF iStateStoping = 40 (* condition *) THEN
+			eMachineState 						:= E_MachineState.eStopped;
+			iStateStoping 						:= 0;
+		END_IF		
+	
+	E_MachineState.eStopped:
+		
+		stMcAxisOnline_MCS_X.mcPower.bEnable 			:= FALSE;
+		stMcAxisOnline_MCS_X.mcPower.bEnable_Negative 	:= FALSE;
+		stMcAxisOnline_MCS_X.mcPower.bEnable_Positive 	:= FALSE;
+
+		stMcAxisOnline_MCS_Y.mcPower.bEnable 			:= FALSE;
+		stMcAxisOnline_MCS_Y.mcPower.bEnable_Negative 	:= FALSE;
+		stMcAxisOnline_MCS_Y.mcPower.bEnable_Positive 	:= FALSE;
+		
+		stMcAxisOnline_ACS_X.mcPower.bEnable 			:= FALSE;
+		stMcAxisOnline_ACS_X.mcPower.bEnable_Negative 	:= FALSE;
+		stMcAxisOnline_ACS_X.mcPower.bEnable_Positive 	:= FALSE;
+		
+		stMcAxisOnline_ACS_Y.mcPower.bEnable 			:= FALSE;
+		stMcAxisOnline_ACS_Y.mcPower.bEnable_Negative 	:= FALSE;
+		stMcAxisOnline_ACS_Y.mcPower.bEnable_Positive 	:= FALSE;
+	
+		
+		IF eMachineCommand = E_MachineCommand.eRun THEN
+			eMachineState 						:= E_MachineState.eStarting;
+		END_IF
+
+		IF eMachineCommand = E_MachineCommand.eRestart THEN
+			GVL_Machine.eCommand				:= E_MachineCommand.eStop;
+			eMachineState 						:= E_MachineState.eRestarting;
+		END_IF			
+				
+		IF bError THEN
+			eMachineState 						:= E_MachineState.eError;
+		END_IF
+
+	E_MachineState.eStarting:
+		PLCMachineMode[GVL_NCI.nChan].Manual 	:= FALSE;
+
+		CASE iStepStarting OF
+			0:
+				PLCMachineMode[GVL_NCI.nChan].Stop				:= FALSE;
+				
+				stMcAxisOnline_MCS_X.mcPower.bEnable 			:= TRUE;
+				stMcAxisOnline_MCS_X.mcPower.bEnable_Negative 	:= TRUE;
+				stMcAxisOnline_MCS_X.mcPower.bEnable_Positive 	:= TRUE;
+				stMcAxisOnline_MCS_X.mcPower.lrOverride		 	:= 100.0;	
+	
+				stMcAxisOnline_MCS_Y.mcPower.bEnable 			:= TRUE;
+				stMcAxisOnline_MCS_Y.mcPower.bEnable_Negative 	:= TRUE;
+				stMcAxisOnline_MCS_Y.mcPower.bEnable_Positive 	:= TRUE;
+				stMcAxisOnline_MCS_Y.mcPower.lrOverride		 	:= 100.0;	
+				
+				stMcAxisOnline_ACS_X.mcPower.bEnable 			:= TRUE;
+				stMcAxisOnline_ACS_X.mcPower.bEnable_Negative 	:= TRUE;
+				stMcAxisOnline_ACS_X.mcPower.bEnable_Positive 	:= TRUE;
+				stMcAxisOnline_ACS_X.mcPower.lrOverride		 	:= 100.0;	
+				
+				stMcAxisOnline_ACS_Y.mcPower.bEnable 			:= TRUE;
+				stMcAxisOnline_ACS_Y.mcPower.bEnable_Negative 	:= TRUE;
+				stMcAxisOnline_ACS_Y.mcPower.bEnable_Positive 	:= TRUE;
+				stMcAxisOnline_ACS_Y.mcPower.lrOverride		 	:= 100.0;	
+				
+				IF tonAxesReady.Q THEN
+					iStepStarting := iStepStarting + 10;
+				ELSIF tonAxesError.Q THEN
+					bError := TRUE;
+				END_IF
+			10:
+				PLCMachineMode[GVL_NCI.nChan].Automatic := TRUE;
+				IF PLCNciChannelState.Mode[GVL_NCI.nChan] = 2 THEN
+					iStepStarting := iStepStarting + 10;
+				END_IF
+			20:
+			
+				IF PRG_KinTrans.bKinBuilt AND NOT PRG_KinTrans.bKinError THEN
+					iStepStarting := iStepStarting + 20;		
+				ELSE
+					iStepStarting := iStepStarting + 10;
+				END_IF
+				
+			30:
+				PRG_KinTrans.bBuildKinGroup := TRUE;
+					IF PRG_KinTrans.bKinDone THEN
+						PRG_KinTrans.bBuildKinGroup := FALSE;
+						iStepStarting := iStepStarting + 10;
+					END_IF
+			40:
+				;
+			END_CASE 
+	
+		IF iStepStarting = 40 AND PRG_KinTrans.eKinStatus = KinStatus_Ready(* condition *) THEN
+			eMachineState 						:= E_MachineState.eRunning;
+			iStepStarting 						:= 0;
+		END_IF
+		
+	E_MachineState.eRunning:
+		
+		//Act_MovePath();  do usuniecia
+		PLCMachineMode[GVL_NCI.nChan].Start 	:= GVL_Machine.bNciStart;
+		PLCMachineMode[GVL_NCI.nChan].Stop 		:= GVL_Machine.bNCiStop;
+	
+		GVL_Machine.bNciFeedHold := ItpIsEStopEx(arrNCToPLC_NCIChannel_REF[1]);
+		
+		// ====================================================
+		// There should be main code
+		// i.e. CASE iStepAuto OF
+		// ====================================================
+		IF eMachineCommand = E_MachineCommand.eStop OR bError THEN
+			eMachineState 						:= E_MachineState.eStopping;
+		END_IF
+
+	E_MachineState.eAborting:
+
+		// Stop and reset everything - usually SAFETY function
+		CASE iStateAborting OF
+			0:
+				IF ItpGetStateInterpreter(arrNCToPLC_NCIChannel_REF[1]) <> 1 THEN
+					iStateAborting := iStateAborting +10;
+				ELSE
+					iStateAborting := iStateAborting + 20;
+				END_IF
+			10:
+				PLCMachineMode[GVL_NCI.nChan].Stop:= TRUE;
+					IF ItpIsEStopEx(arrNCToPLC_NCIChannel_REF[1]) THEN
+						PLCMachineMode[GVL_NCI.nChan].Stop:= FALSE;
+						iStateAborting := iStateAborting +10;
+					ELSIF 	ItpGetStateInterpreter(arrNCToPLC_NCIChannel_REF[1]) <> 1 OR
+							ItpGetStateInterpreter(arrNCToPLC_NCIChannel_REF[1]) <> 12 OR
+							ItpGetStateInterpreter(arrNCToPLC_NCIChannel_REF[1]) <> 13 THEN
+						PLCMachineMode[GVL_NCI.nChan].Stop:= FALSE;
+						iStateAborting := iStateAborting +10;
+					END_IF
+			20:
+				IF PRG_KinTrans.bKinBuilt THEN
+					PRG_KinTrans.bCleanKinGroup := TRUE;
+					iStateAborting := iStateAborting + 10;
+				ELSE	
+					iStateAborting := iStateAborting + 20;
+				END_IF
+			30:
+				IF PRG_KinTrans.bKinDone THEN
+					PRG_KinTrans.bCleanKinGroup := FALSE;
+					iStateAborting := iStateAborting + 10;
+				ELSIF PRG_KinTrans.bKinError THEN
+					PRG_KinTrans.bCleanKinGroup := FALSE;
+					iStateAborting := iStateAborting + 10;
+				END_IF
+			40:	
+				PLCMachineMode[GVL_NCI.nChan].Manual := TRUE;
+				stMcAxisOnline_ACS_X.mcSS1.bExecute := TRUE;
+				stMcAxisOnline_ACS_Y.mcSS1.bExecute := TRUE;
+				IF stMcAxisOnline_ACS_X.mcSS1.bDone AND stMcAxisOnline_ACS_Y.mcSS1.bDone THEN
+					iStateAborting := iStateAborting + 10;
+				ELSIF stMcAxisOnline_ACS_X.mcSS1.bError OR stMcAxisOnline_ACS_Y.mcSS1.bError THEN
+					iStateAborting := iStateAborting + 10;
+				END_IF
+			50:	
+
+				stMcAxisOnline_MCS_X.mcSS1.bExecute := Axis_MCS_X.Status.PTPmode;
+				stMcAxisOnline_MCS_Y.mcSS1.bExecute := Axis_MCS_Y.Status.PTPmode;
+			
+				IF 	stMcAxisOnline_MCS_X.mcSS1.bDone AND stMcAxisOnline_MCS_Y.mcSS1.bDone THEN
+					iStateAborting := iStateAborting + 10;
+				ELSIF stMcAxisOnline_MCS_X.mcSS1.bError OR stMcAxisOnline_MCS_Y.mcSS1.bError THEN
+					iStateAborting := iStateAborting + 10;
+				END_IF	
+			
+			60:
+				stMcAxisOnline_MCS_X.mcSS1.bExecute := TRUE;
+				stMcAxisOnline_MCS_Y.mcSS1.bExecute := TRUE;
+				stMcAxisOnline_ACS_X.mcSS1.bExecute := TRUE;;
+				stMcAxisOnline_ACS_Y.mcSS1.bExecute := TRUE;
+		END_CASE
+	
+		IF iStateAborting = 60 THEN
+			eMachineState 						:= E_MachineState.eAborted;
+			iStateAborting						:= 0;
+		END_IF		
+		
+	E_MachineState.eAborted:
+
+		stMcAxisOnline_MCS_X.mcSS1.bExecute := NOT GVL_SafetyFrom_RT2.bSAFETY_PermissionSS1;
+		stMcAxisOnline_MCS_Y.mcSS1.bExecute := NOT GVL_SafetyFrom_RT2.bSAFETY_PermissionSS1;
+		stMcAxisOnline_ACS_X.mcSS1.bExecute := NOT GVL_SafetyFrom_RT2.bSAFETY_PermissionSS1;
+		stMcAxisOnline_ACS_Y.mcSS1.bExecute := NOT GVL_SafetyFrom_RT2.bSAFETY_PermissionSS1;
+					
+		IF eMachineCommand = E_MachineCommand.eReset THEN
+			eMachineState 						:= E_MachineState.eReseting;
+		END_IF
+		
+		IF bError THEN
+			eMachineState 						:= E_MachineState.eError;
+		END_IF
+
+	E_MachineState.eError:
+
+		// ====================================================
+		// Two types of error:
+		// 1. 'Small/soft' Error - fix a problem and go to stop
+		// 2. 'Serious/hard' Error - there is a need of restart everything, if there is a sequence - reset it too - fix a problem and go to init
+		// ====================================================
+		stMcAxisOnline_MCS_X.mcReset.bExecute	:= FALSE;	
+		stMcAxisOnline_MCS_Y.mcReset.bExecute 	:= FALSE;	
+		stMcAxisOnline_ACS_X.mcReset.bExecute 	:= FALSE;	
+		stMcAxisOnline_ACS_Y.mcReset.bExecute 	:= FALSE;	
+		stMcAxisOnline_MCS_X.mcStop.bExecute 	:= FALSE;
+		stMcAxisOnline_MCS_Y.mcStop.bExecute	:= FALSE;
+		stMcAxisOnline_ACS_X.mcStop.bExecute 	:= FALSE;
+		stMcAxisOnline_ACS_Y.mcStop.bExecute	:= FALSE;
+		PRG_KinTrans.bResetKinGroup 			:= FALSE;
+		PRG_KinTrans.bBuildKinGroup 			:= FALSE;
+		PRG_KinTrans.bCleanKinGroup 			:= FALSE;		
+		PLCMachineMode[GVL_NCI.nChan].Reset 	:= FALSE;		
+		PLCMachineMode[GVL_NCI.nChan].Stop		:= FALSE;
+		PLCMachineMode[GVL_NCI.nChan].Start		:= FALSE;
+	
+		IF eMachineCommand = E_MachineCommand.eReset THEN
+			eMachineState 						:= E_MachineState.eReseting;
+		END_IF
+		
+		IF eMachineCommand = E_MachineCommand.eRestart THEN
+			eMachineState 						:= E_MachineState.eRestarting;
+		END_IF
+
+	E_MachineState.eReseting:
+
+		// ====================================================
+		//'Small/soft' Error - fix a problem and go to stop
+		// Reset drives only when it is necessary
+		// ====================================================
+		// Check if axis errors cleared
+	
+		IF PRG_KinTrans.eKinStatus = KinStatus_Error OR PRG_KinTrans.bKinError	THEN
+			PRG_KinTrans.bResetKinGroup := TRUE;
+		ELSIF PLCMachineMode[GVL_NCI.nChan].Error THEN
+			PLCMachineMode[GVL_NCI.nChan].Reset := TRUE;
+		ELSIF stMcAxisOnline_MCS_X.stError.bError THEN
+			stMcAxisOnline_MCS_X.mcReset.bExecute := TRUE;
+		ELSIF stMcAxisOnline_MCS_Y.stError.bError THEN
+			stMcAxisOnline_MCS_Y.mcReset.bExecute := TRUE;	
+		ELSIF stMcAxisOnline_ACS_X.stError.bError THEN
+			stMcAxisOnline_ACS_X.mcReset.bExecute := TRUE;
+		ELSIF stMcAxisOnline_ACS_Y.stError.bError THEN
+			stMcAxisOnline_ACS_Y.mcReset.bExecute := TRUE;
+		END_IF
+
+	
+		IF NOT tonAxesError.Q AND NOT PLCMachineMode[GVL_NCI.nChan].Error AND PRG_KinTrans.eKinStatus <> KinStatus_Error AND NOT PRG_KinTrans.bKinError THEN
+			stMcAxisOnline_MCS_X.mcReset.bExecute	:= FALSE;	
+			stMcAxisOnline_MCS_Y.mcReset.bExecute 	:= FALSE;	
+			stMcAxisOnline_ACS_X.mcReset.bExecute 	:= FALSE;	
+			stMcAxisOnline_ACS_Y.mcReset.bExecute 	:= FALSE;	
+			PRG_KinTrans.bResetKinGroup 			:= FALSE;
+			PLCMachineMode[GVL_NCI.nChan].Reset		:= FALSE;
+			eMachineState  						:= E_MachineState.eStopping;
+		END_IF
+				
+		// Blad bloku resetowania lub zakonczylismy kasowanie bledu osi, ale os jest nadal w bledzie, np. nie usunieta usterka - idz do kroku bledu
+		IF bError (*(stAxis.stAxisDiagOutputs.Error OR (stAxis.stAxisDiagOutputs.Done AND stAxis.bAxisError)) *) THEN
+			eMachineState  						:= E_MachineState.eError;
+		END_IF
+		
+	E_MachineState.eRestarting:
+
+		// ====================================================
+		// 'Serious/hard' Error - there is a need of restart everything, if there is a sequence - reset it too - fix a problem and go to init
+		// Reset drives only when it is necessary
+		// ====================================================
+		// Check if axis errors cleared
+		bError := FALSE;
+		
+		IF TRUE (*NOT bAxisError AND NOT other errors *) THEN
+			eMachineState  						:= E_MachineState.eIdle;
+		END_IF
+				
+		// Blad bloku resetowania lub zakonczylismy kasowanie bledu osi, ale os jest nadal w bledzie, np. nie usunieta usterka - idz do kroku bledu
+		IF bError (*(stAxis.stAxisDiagOutputs.Error OR (stAxis.stAxisDiagOutputs.Done AND stAxis.bAxisError)) *) THEN
+			eMachineState  						:= E_MachineState.eError;
+		END_IF
+		
+END_CASE]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="Act_ModeMaintenance" Id="{76f2d4e9-75eb-4a06-8c25-b2d563100a74}">
+      <Implementation>
+        <ST><![CDATA[// State Machine
+CASE eMachineState OF
+
+	E_MachineState.eIdle, E_MachineState.eStopping, E_MachineState.eStopped, E_MachineState.eStarting:
+	
+		// ====================================================
+		// There should be main code
+		// i.e. CASE iStepInit OF	
+		// ====================================================
+		// Allow for stop only if conditions are true - in this step we can wait without an error	
+		IF TRUE (* condition *) AND eMachineCommand = E_MachineCommand.eRun THEN
+			eMachineState 						:= E_MachineState.eRunning;
+		END_IF
+
+	E_MachineState.eRunning:
+
+		// ====================================================
+		// HMI control
+		// There should be main code,
+		// i.e. CASE iStepAuto OF
+		// ====================================================
+		IF eMachineCommand = E_MachineCommand.eStop THEN
+			eMachineState 						:= E_MachineState.eStopping;
+		END_IF
+
+	E_MachineState.eAborting:
+
+		// Stop and reset everything - usually SAFETY function
+		IF TRUE (* condition *) THEN
+			eMachineState 						:= E_MachineState.eAborted;
+		END_IF
+		
+	E_MachineState.eAborted:
+
+		IF eMachineCommand = E_MachineCommand.eReset THEN
+			eMachineState 						:= E_MachineState.eReseting;
+		END_IF
+
+	E_MachineState.eRestarting, E_MachineState.eReseting, E_MachineState.eError:
+
+			;// Unused
+
+END_CASE]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="Act_ModeManual" Id="{1ce6f9c0-ca91-48c0-9f3d-47154e586725}">
+      <Implementation>
+        <ST><![CDATA[// State Machine
+
+CASE eMachineState OF
+
+	E_MachineState.eIdle:
+	
+		// ====================================================
+		// There should be main code
+		// i.e. CASE iStepInit OF	
+		// ====================================================
+		// Allow for stop only if conditions are true - in this step we can wait without an error
+
+		CASE iStateIdle OF
+			0:	//Wyłączenie kanału interpolacji
+				PLCMachineMode[GVL_NCI.nChan].Automatic 		:= FALSE;
+				PLCMachineMode[GVL_NCI.nChan].Manual			:= TRUE;
+				IF arrNCToPLC_NCIChannel_REF[1].ItpState = 1 THEN
+					iStateIdle := iStateIdle + 10;
+				END_IF
+			10:	
+				IF PRG_KinTrans.bKinBuilt THEN
+					PRG_KinTrans.bCleanKinGroup := TRUE;
+					iStateIdle := iStateIdle + 10;
+				ELSE
+					iStateIdle := iStateIdle + 20;	
+				END_IF
+			20:
+				IF PRG_KinTrans.bKinDone THEN
+					PRG_KinTrans.bCleanKinGroup 		:= FALSE;
+					iStateIdle := iStateIdle + 10;
+				ELSIF PRG_KinTrans.bKinError THEN
+					PRG_KinTrans.bCleanKinGroup 		:= FALSE;
+					iStateIdle := iStateIdle + 10;
+				END_IF
+			END_CASE
+	
+		IF iStateIdle = 30 (* condition *)THEN
+			eMachineState 						:= E_MachineState.eStopped;
+			iStateIdle							:= 0;		
+		END_IF
+		
+		IF bError THEN
+			eMachineState 						:= E_MachineState.eError;
+			iStateIdle							:= 0;	
+		END_IF
+
+	E_MachineState.eStopping:	
+		CASE iStateStoping OF
+			0:	
+
+				stMcAxisOnline_MCS_X.mcStop.bExecute := TRUE;
+				stMcAxisOnline_MCS_Y.mcStop.bExecute := TRUE;
+				IF 	stMcAxisOnline_MCS_X.mcStop.bDone AND stMcAxisOnline_MCS_Y.mcStop.bDone THEN
+					iStateStoping := iStateStoping + 10;
+				ELSIF stMcAxisOnline_MCS_X.mcStop.bError OR stMcAxisOnline_MCS_Y.mcStop.bError THEN
+					iStateStoping := iStateStoping + 10;
+				END_IF	
+			10:
+				stMcAxisOnline_MCS_X.mcStop.bExecute := FALSE;
+				stMcAxisOnline_MCS_Y.mcStop.bExecute := FALSE;
+				iStateStoping := iStateStoping + 10;
+			20:
+				PRG_KinTrans.bCleanKinGroup := TRUE;
+				IF PRG_KinTrans.bKinDone THEN
+					PRG_KinTrans.bCleanKinGroup 		:= FALSE;
+					iStateStoping := iStateStoping + 10;
+				END_IF	
+		END_CASE
+		
+		IF iStateStoping = 30 (* condition *) THEN
+			eMachineState 						:= E_MachineState.eStopped;
+			iStateStoping 						:= 0;
+		END_IF			
+	
+		IF bError THEN
+			eMachineState 						:= E_MachineState.eError;
+		END_IF		
+	
+	E_MachineState.eStopped:
+			
+				stMcAxisOnline_MCS_X.mcPower.bEnable 			:= FALSE;
+				stMcAxisOnline_MCS_X.mcPower.bEnable_Negative 	:= FALSE;
+				stMcAxisOnline_MCS_X.mcPower.bEnable_Positive 	:= FALSE;
+		
+				stMcAxisOnline_MCS_Y.mcPower.bEnable 			:= FALSE;
+				stMcAxisOnline_MCS_Y.mcPower.bEnable_Negative 	:= FALSE;
+				stMcAxisOnline_MCS_Y.mcPower.bEnable_Positive 	:= FALSE;
+				
+				stMcAxisOnline_ACS_X.mcPower.bEnable 			:= FALSE;
+				stMcAxisOnline_ACS_X.mcPower.bEnable_Negative 	:= FALSE;
+				stMcAxisOnline_ACS_X.mcPower.bEnable_Positive 	:= FALSE;
+				
+				stMcAxisOnline_ACS_Y.mcPower.bEnable 			:= FALSE;
+				stMcAxisOnline_ACS_Y.mcPower.bEnable_Negative 	:= FALSE;
+				stMcAxisOnline_ACS_Y.mcPower.bEnable_Positive 	:= FALSE;
+		IF eMachineCommand = E_MachineCommand.eRun THEN
+			eMachineState 						:= E_MachineState.eStarting;
+		END_IF	
+
+		IF eMachineCommand = E_MachineCommand.eRestart THEN
+			GVL_Machine.eCommand				:= E_MachineCommand.eStop;
+			eMachineState 						:= E_MachineState.eRestarting;
+		END_IF			
+		
+ 	E_MachineState.eStarting:
+		CASE iStepStarting OF
+			0:
+				stMcAxisOnline_MCS_X.mcPower.bEnable 			:= TRUE;
+				stMcAxisOnline_MCS_X.mcPower.bEnable_Negative 	:= TRUE;
+				stMcAxisOnline_MCS_X.mcPower.bEnable_Positive 	:= TRUE;
+				stMcAxisOnline_MCS_X.mcPower.lrOverride		 	:= 100.0;	
+			
+				stMcAxisOnline_MCS_Y.mcPower.bEnable 			:= TRUE;
+				stMcAxisOnline_MCS_Y.mcPower.bEnable_Negative 	:= TRUE;
+				stMcAxisOnline_MCS_Y.mcPower.bEnable_Positive 	:= TRUE;
+				stMcAxisOnline_MCS_Y.mcPower.lrOverride		 	:= 100.0;	
+				
+				stMcAxisOnline_ACS_X.mcPower.bEnable 			:= TRUE;
+				stMcAxisOnline_ACS_X.mcPower.bEnable_Negative 	:= TRUE;
+				stMcAxisOnline_ACS_X.mcPower.bEnable_Positive 	:= TRUE;
+				stMcAxisOnline_ACS_X.mcPower.lrOverride		 	:= 100.0;	
+				
+				stMcAxisOnline_ACS_Y.mcPower.bEnable 			:= TRUE;
+				stMcAxisOnline_ACS_Y.mcPower.bEnable_Negative 	:= TRUE;
+				stMcAxisOnline_ACS_Y.mcPower.bEnable_Positive 	:= TRUE;
+				stMcAxisOnline_ACS_Y.mcPower.lrOverride		 	:= 100.0;	
+				IF tonAxesReady.Q THEN
+					iStepStarting := iStepStarting + 10;
+				END_IF
+			10:
+				IF PRG_KinTrans.bKinBuilt THEN
+					iStepStarting := iStepStarting + 20;
+				ELSE
+					PRG_KinTrans.bBuildKinGroup := TRUE;
+					iStepStarting := iStepStarting + 10;
+				END_IF
+
+			20:	
+				IF PRG_KinTrans.bKinDone THEN
+					PRG_KinTrans.bBuildKinGroup := FALSE;	
+					iStepStarting := iStepStarting + 10;
+				END_IF
+			30:
+				;	
+		END_CASE
+	
+		IF iStepStarting = 30 THEN
+			eMachineState 						:= E_MachineState.eRunning;
+			iStepStarting 						:= 0;
+		END_IF
+				
+
+		
+		IF bError THEN
+			eMachineState 							:= E_MachineState.eError;		
+			iStepStarting							:= 0;			
+		END_IF
+	
+		
+		
+	E_MachineState.eRunning:
+
+		// ====================================================
+		// HMI control
+		// There should be main code,
+		// i.e. CASE iStepAuto OF
+		// ====================================================
+		CASE iStateRunning OF
+			0:
+				stMcAxisOnline_MCS_Y.mcMoveAbsolute.bExecute := FALSE;
+				stMcAxisOnline_MCS_X.mcMoveAbsolute.bExecute := FALSE;
+				IF bServiceMove THEN
+					bServiceMove := FALSE;
+					iStateRunning := iStateRunning + 10;
+				END_IF
+			10:
+				stMcAxisOnline_MCS_Y.mcMoveAbsolute.lrPosition :=  0; //Pozycja
+				stMcAxisOnline_MCS_Y.mcMoveAbsolute.lrVelocity :=  10;      //Predkosc
+				stMcAxisOnline_MCS_Y.mcMoveAbsolute.bExecute := TRUE;
+				IF stMcAxisOnline_MCS_Y.mcMoveAbsolute.bDone THEN
+					stMcAxisOnline_MCS_Y.mcMoveAbsolute.bExecute := FALSE;
+					iStateRunning := iStateRunning + 10;
+				END_IF
+			20:
+				
+				stMcAxisOnline_MCS_X.mcMoveAbsolute.lrPosition :=  0; //Pozycja
+				stMcAxisOnline_MCS_X.mcMoveAbsolute.lrVelocity :=  10;      //Predkosc
+				stMcAxisOnline_MCS_X.mcMoveAbsolute.bExecute := TRUE;
+				IF stMcAxisOnline_MCS_X.mcMoveAbsolute.bDone THEN
+					stMcAxisOnline_MCS_X.mcMoveAbsolute.bExecute := FALSE;
+					iStateRunning := iStateRunning + 10;
+				END_IF
+			30:
+				;//Dummy wait
+			
+		END_CASE
+		IF eMachineCommand = E_MachineCommand.eStop OR bError THEN
+			eMachineState 						:= E_MachineState.eStopping;
+			iStateRunning := 0;
+		END_IF
+
+	E_MachineState.eAborting:
+		CASE iStateAborting OF
+			0:
+				PLCMachineMode[GVL_NCI.nChan].Automatic 		:= FALSE;
+				PLCMachineMode[GVL_NCI.nChan].Manual	 		:= TRUE;
+				iStateAborting := iStateAborting + 10;
+			10:
+				IF PRG_KinTrans.bKinBuilt THEN
+					PRG_KinTrans.bCleanKinGroup := TRUE;
+					iStateAborting := iStateAborting + 10;
+				ELSE	
+					iStateAborting := iStateAborting + 20;
+				END_IF
+			20:
+				IF PRG_KinTrans.bKinDone THEN
+					PRG_KinTrans.bCleanKinGroup := FALSE;
+					iStateAborting := iStateAborting + 10;
+				ELSIF PRG_KinTrans.bKinError THEN
+					PRG_KinTrans.bCleanKinGroup := FALSE;
+					iStateAborting := iStateAborting + 10;
+				END_IF
+			30:
+				stMcAxisOnline_ACS_X.mcSS1.bExecute := TRUE;
+				stMcAxisOnline_ACS_Y.mcSS1.bExecute := TRUE;
+				
+				IF stMcAxisOnline_ACS_X.mcSS1.bDone AND stMcAxisOnline_ACS_Y.mcSS1.bDone THEN
+					iStateAborting := iStateAborting + 10;
+				ELSIF stMcAxisOnline_ACS_X.mcSS1.bError OR stMcAxisOnline_ACS_Y.mcSS1.bError THEN
+					iStateAborting := iStateAborting + 10;
+				END_IF	
+			40:
+				stMcAxisOnline_MCS_X.mcSS1.bExecute := Axis_MCS_X.Status.PTPmode;
+				stMcAxisOnline_MCS_Y.mcSS1.bExecute := Axis_MCS_Y.Status.PTPmode;
+				IF 	stMcAxisOnline_MCS_X.mcSS1.bDone AND stMcAxisOnline_MCS_Y.mcSS1.bDone THEN
+					iStateAborting := iStateAborting + 10;
+				ELSIF stMcAxisOnline_MCS_X.mcSS1.bError OR stMcAxisOnline_MCS_Y.mcSS1.bError THEN
+					iStateAborting := iStateAborting + 10;
+				END_IF	
+			50:
+				stMcAxisOnline_MCS_X.mcSS1.bExecute := TRUE;
+				stMcAxisOnline_MCS_Y.mcSS1.bExecute := TRUE;
+				stMcAxisOnline_ACS_X.mcSS1.bExecute := TRUE;
+				stMcAxisOnline_ACS_Y.mcSS1.bExecute := TRUE;
+				eMachineState 						:= E_MachineState.eAborted;	
+		END_CASE
+		// Stop and reset everything - usually SAFETY function
+		IF iStateAborting = 50 (* condition *) THEN
+			eMachineState 						:= E_MachineState.eAborted;
+			iStateAborting := 0;
+		END_IF
+		
+	E_MachineState.eAborted:
+	
+		stMcAxisOnline_MCS_X.mcSS1.bExecute := NOT GVL_SafetyFrom_RT2.bSAFETY_PermissionSS1;
+		stMcAxisOnline_MCS_Y.mcSS1.bExecute := NOT GVL_SafetyFrom_RT2.bSAFETY_PermissionSS1;
+		stMcAxisOnline_ACS_X.mcSS1.bExecute := NOT GVL_SafetyFrom_RT2.bSAFETY_PermissionSS1;
+		stMcAxisOnline_ACS_Y.mcSS1.bExecute := NOT GVL_SafetyFrom_RT2.bSAFETY_PermissionSS1;
+		IF eMachineCommand = E_MachineCommand.eReset THEN
+			eMachineState 						:= E_MachineState.eReseting;
+		END_IF
+
+	E_MachineState.eError:
+
+		// ====================================================
+		// Two types of error:
+		// 1. 'Small/soft' Error - fix a problem and go to stop
+		// 2. 'Serious/hard' Error - there is a need of restart everything, if there is a sequence - reset it too - fix a problem and go to init
+		// ====================================================
+		stMcAxisOnline_MCS_X.mcReset.bExecute	:= FALSE;	
+		stMcAxisOnline_MCS_Y.mcReset.bExecute 	:= FALSE;	
+		stMcAxisOnline_ACS_X.mcReset.bExecute 	:= FALSE;	
+		stMcAxisOnline_ACS_Y.mcReset.bExecute 	:= FALSE;	
+		stMcAxisOnline_MCS_X.mcStop.bExecute 	:= FALSE;
+		stMcAxisOnline_MCS_Y.mcStop.bExecute	:= FALSE;
+		stMcAxisOnline_ACS_X.mcStop.bExecute 	:= FALSE;
+		stMcAxisOnline_ACS_Y.mcStop.bExecute	:= FALSE;
+		PRG_KinTrans.bResetKinGroup 			:= FALSE;
+		PRG_KinTrans.bBuildKinGroup 			:= FALSE;	
+		PRG_KinTrans.bCleanKinGroup 			:= FALSE;		
+	
+		IF eMachineCommand = E_MachineCommand.eReset THEN
+			eMachineState 						:= E_MachineState.eReseting;
+		END_IF
+		
+		IF eMachineCommand = E_MachineCommand.eRestart THEN
+			eMachineState 						:= E_MachineState.eRestarting;
+		END_IF		
+			
+		
+	E_MachineState.eRestarting, E_MachineState.eReseting:
+	
+		IF PRG_KinTrans.eKinStatus = KinStatus_Error	THEN
+			PRG_KinTrans.bResetKinGroup := TRUE;
+		ELSIF PLCMachineMode[GVL_NCI.nChan].Error THEN
+			PLCMachineMode[GVL_NCI.nChan].Reset := TRUE;
+		ELSIF stMcAxisOnline_MCS_X.stError.bError THEN
+			stMcAxisOnline_MCS_X.mcReset.bExecute := TRUE;
+		ELSIF stMcAxisOnline_MCS_Y.stError.bError THEN
+			stMcAxisOnline_MCS_Y.mcReset.bExecute := TRUE;	
+		ELSIF stMcAxisOnline_ACS_X.stError.bError THEN
+			stMcAxisOnline_ACS_X.mcReset.bExecute := TRUE;
+		ELSIF stMcAxisOnline_ACS_Y.stError.bError THEN
+			stMcAxisOnline_ACS_Y.mcReset.bExecute := TRUE;
+		END_IF	
+	
+		IF NOT tonAxesError.Q AND NOT PLCMachineMode[GVL_NCI.nChan].Error AND PRG_KinTrans.eKinStatus <> KinStatus_Error THEN
+			stMcAxisOnline_MCS_X.mcReset.bExecute	:= FALSE;	
+			stMcAxisOnline_MCS_Y.mcReset.bExecute 	:= FALSE;	
+			stMcAxisOnline_ACS_X.mcReset.bExecute 	:= FALSE;	
+			stMcAxisOnline_ACS_Y.mcReset.bExecute 	:= FALSE;	
+			PRG_KinTrans.bResetKinGroup 			:= FALSE;
+			PLCMachineMode[GVL_NCI.nChan].Reset		:= FALSE;
+			
+			IF eMachineState = E_MachineState.eReseting THEN
+				eMachineState  						:= E_MachineState.eStopping;
+			END_IF
+			
+			IF eMachineState = E_MachineState.eRestarting THEN
+				eMachineState  						:= E_MachineState.eIdle;	
+			END_IF
+		END_IF	
+	(*
+		// Blad bloku resetowania lub zakonczylismy kasowanie bledu osi, ale os jest nadal w bledzie, np. nie usunieta usterka - idz do kroku bledu
+		IF bError (*(stAxis.stAxisDiagOutputs.Error OR (stAxis.stAxisDiagOutputs.Done AND stAxis.bAxisError)) *) THEN
+			eMachineState  						:= E_MachineState.eError;
+		END_IF
+			;// Unused
+	*)
+END_CASE
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="Act_Monitoring" Id="{5758dc5d-f248-4a25-a1ef-81d132b70b99}">
+      <Implementation>
+        <ST><![CDATA[// Ustawianie flag, monitoring kolizjii, watchdogi, jazdy po krzywce itp
+tonAxesReady.IN := 	stMcAxisOnline_ACS_X.mcPower.bStatus AND stMcAxisOnline_ACS_X.stStatus.bAxisReady AND
+					stMcAxisOnline_ACS_Y.mcPower.bStatus AND stMcAxisOnline_ACS_Y.stStatus.bAxisReady AND
+					stMcAxisOnline_MCS_X.mcPower.bStatus AND stMcAxisOnline_MCS_X.stStatus.bAxisReady AND
+					stMcAxisOnline_MCS_Y.mcPower.bStatus AND stMcAxisOnline_MCS_Y.stStatus.bAxisReady	;
+tonAxesReady(PT:=T#200MS);
+
+tonAxesError.IN := 	stMcAxisOnline_ACS_X.stError.bDriveError OR stMcAxisOnline_ACS_X.stError.bNcError OR
+					stMcAxisOnline_ACS_Y.stError.bDriveError OR stMcAxisOnline_ACS_Y.stError.bNcError OR
+					stMcAxisOnline_MCS_X.stError.bDriveError OR stMcAxisOnline_MCS_X.stError.bNcError OR
+					stMcAxisOnline_MCS_Y.stError.bDriveError OR stMcAxisOnline_MCS_Y.stError.bNcError	;
+tonAxesError(PT:=T#200MS);]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="Act_MovePath" Id="{d431d847-5cbb-49a0-b44d-d6a3c4a2037c}">
+      <Implementation>
+        <ST><![CDATA[nRParamWrite[1,10] := rMoveMode;				//[mm]
+nRParamWrite[1,11] := rPickItemHigh;			//[mm]
+nRParamWrite[1,12] := rPlaceItemHigh;			//[mm/min]
+nRParamWrite[1,13] := 60 * rItemPickVelocity; 	//[mm/min]
+nRParamWrite[1,14] := 60 * rItemPlaceVelocity;	//[mm/min]
+nRParamWrite[1,15] := 60 * rMoveVelocity;		//[mm/min]
+
+bReadyForMove		:= bMFunc[1,50];
+bReadyToPick 		:= bMFunc[1,61]; 	// Item Picked
+bPicked		 		:= bMFunc[1,62]; 	// Item Picked
+bReadyToPlace 		:= bMFunc[1,63];	// ItemP laced
+bPlaced		 		:= bMFunc[1,64];	// ItemP laced
+bHome				:= bMFunc[1,65];
+
+rtM50Ack(CLK:= bMoveCmd			);
+rtM61Ack(CLK:= bReadyToPickACK	);
+rtM62Ack(CLK:= bPickedACK		);
+rtM63Ack(CLK:= bReadyToPlaceACK	);
+rtM64Ack(CLK:= bPlacedACK		);
+rtM65Ack(CLK:= bHomeDone		);
+
+bQuitMFunc[1,50] 	:= rtM50Ack.Q;
+bQuitMFunc[1,61] 	:= rtM61Ack.Q;
+bQuitMFunc[1,62] 	:= rtM62Ack.Q;
+bQuitMFunc[1,63] 	:= rtM63Ack.Q;
+bQuitMFunc[1,64] 	:= rtM64Ack.Q;
+bQuitMFunc[1,65] 	:= rtM65Ack.Q;
+
+// Mode selector
+IF bPickAndPlace THEN
+	bPickAndPlace	:= FALSE;
+	bReturnToPick 	:= FALSE;	
+	bReferneceHbot 	:= FALSE;
+	rMoveMode 		:= 1;
+END_IF
+
+IF bReturnToPick AND NOT bPickAndPlace AND NOT bReferneceHbot THEN
+	bReturnToPick 	:= FALSE;
+	bPickAndPlace 	:= FALSE;	
+	bReferneceHbot	:= FALSE;	
+	rMoveMode 		:= 2;
+END_IF
+
+IF bReferneceHbot AND NOT bPickAndPlace AND NOT bReturnToPick THEN
+	bReferneceHbot	:= FALSE;	
+	bPickAndPlace 	:= FALSE;	
+	bReturnToPick 	:= FALSE;	
+	rMoveMode 		:= 3;
+END_IF
+//_________________________________________________
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="Act_OutUpdate" Id="{acc4a931-cac6-4325-b1ae-109bee2e0b4d}">
+      <Implementation>
+        <ST><![CDATA[;]]></ST>
+      </Implementation>
+    </Action>
+    <LineIds Name="P_Hbot_V3">
+      <LineId Id="251" Count="1" />
+      <LineId Id="3" Count="1" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="253" Count="0" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="82" Count="5" />
+      <LineId Id="699" Count="1" />
+      <LineId Id="698" Count="0" />
+      <LineId Id="480" Count="1" />
+      <LineId Id="278" Count="0" />
+      <LineId Id="273" Count="0" />
+      <LineId Id="275" Count="2" />
+      <LineId Id="274" Count="0" />
+      <LineId Id="88" Count="13" />
+      <LineId Id="308" Count="0" />
+      <LineId Id="102" Count="0" />
+      <LineId Id="307" Count="0" />
+      <LineId Id="306" Count="0" />
+      <LineId Id="103" Count="0" />
+      <LineId Id="2" Count="0" />
+      <LineId Id="384" Count="0" />
+      <LineId Id="383" Count="0" />
+      <LineId Id="591" Count="0" />
+      <LineId Id="580" Count="0" />
+      <LineId Id="592" Count="1" />
+      <LineId Id="595" Count="0" />
+      <LineId Id="594" Count="0" />
+    </LineIds>
+    <LineIds Name="P_Hbot_V3.A_FPloter">
+      <LineId Id="2" Count="7" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="1" Count="0" />
+      <LineId Id="11" Count="1" />
+      <LineId Id="14" Count="3" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="20" Count="1" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="41" Count="0" />
+      <LineId Id="28" Count="4" />
+      <LineId Id="42" Count="1" />
+      <LineId Id="35" Count="1" />
+      <LineId Id="24" Count="0" />
+    </LineIds>
+    <LineIds Name="P_Hbot_V3.A_Ploter_Auto">
+      <LineId Id="218" Count="0" />
+      <LineId Id="223" Count="1" />
+      <LineId Id="221" Count="0" />
+      <LineId Id="225" Count="0" />
+      <LineId Id="446" Count="0" />
+      <LineId Id="445" Count="0" />
+      <LineId Id="228" Count="0" />
+      <LineId Id="230" Count="0" />
+      <LineId Id="227" Count="0" />
+      <LineId Id="1" Count="0" />
+      <LineId Id="4" Count="0" />
+      <LineId Id="212" Count="0" />
+      <LineId Id="211" Count="0" />
+      <LineId Id="248" Count="1" />
+      <LineId Id="264" Count="6" />
+      <LineId Id="454" Count="1" />
+      <LineId Id="271" Count="0" />
+      <LineId Id="273" Count="0" />
+      <LineId Id="275" Count="1" />
+      <LineId Id="383" Count="0" />
+      <LineId Id="277" Count="0" />
+      <LineId Id="385" Count="0" />
+      <LineId Id="382" Count="0" />
+      <LineId Id="389" Count="0" />
+      <LineId Id="278" Count="0" />
+      <LineId Id="388" Count="0" />
+      <LineId Id="279" Count="13" />
+      <LineId Id="390" Count="0" />
+      <LineId Id="293" Count="6" />
+      <LineId Id="391" Count="0" />
+      <LineId Id="393" Count="2" />
+      <LineId Id="392" Count="0" />
+      <LineId Id="300" Count="1" />
+      <LineId Id="303" Count="0" />
+      <LineId Id="396" Count="0" />
+      <LineId Id="304" Count="0" />
+      <LineId Id="397" Count="1" />
+      <LineId Id="401" Count="0" />
+      <LineId Id="399" Count="1" />
+      <LineId Id="472" Count="0" />
+      <LineId Id="474" Count="1" />
+      <LineId Id="473" Count="0" />
+      <LineId Id="478" Count="0" />
+      <LineId Id="476" Count="1" />
+      <LineId Id="305" Count="0" />
+      <LineId Id="450" Count="0" />
+      <LineId Id="306" Count="0" />
+      <LineId Id="402" Count="0" />
+      <LineId Id="307" Count="0" />
+      <LineId Id="309" Count="0" />
+      <LineId Id="403" Count="0" />
+      <LineId Id="407" Count="2" />
+      <LineId Id="406" Count="0" />
+      <LineId Id="457" Count="1" />
+      <LineId Id="405" Count="0" />
+      <LineId Id="311" Count="0" />
+      <LineId Id="313" Count="0" />
+      <LineId Id="468" Count="0" />
+      <LineId Id="314" Count="0" />
+      <LineId Id="464" Count="0" />
+      <LineId Id="411" Count="0" />
+      <LineId Id="413" Count="2" />
+      <LineId Id="412" Count="0" />
+      <LineId Id="315" Count="1" />
+      <LineId Id="479" Count="0" />
+      <LineId Id="318" Count="0" />
+      <LineId Id="426" Count="1" />
+      <LineId Id="416" Count="0" />
+      <LineId Id="422" Count="1" />
+      <LineId Id="425" Count="0" />
+      <LineId Id="417" Count="0" />
+      <LineId Id="320" Count="0" />
+      <LineId Id="452" Count="1" />
+      <LineId Id="321" Count="5" />
+      <LineId Id="328" Count="0" />
+      <LineId Id="428" Count="0" />
+      <LineId Id="329" Count="0" />
+      <LineId Id="429" Count="0" />
+      <LineId Id="431" Count="0" />
+      <LineId Id="434" Count="0" />
+      <LineId Id="433" Count="0" />
+      <LineId Id="435" Count="0" />
+      <LineId Id="432" Count="0" />
+      <LineId Id="430" Count="0" />
+      <LineId Id="331" Count="3" />
+      <LineId Id="336" Count="0" />
+      <LineId Id="442" Count="0" />
+      <LineId Id="337" Count="0" />
+      <LineId Id="437" Count="0" />
+      <LineId Id="439" Count="0" />
+      <LineId Id="441" Count="0" />
+      <LineId Id="443" Count="1" />
+      <LineId Id="338" Count="0" />
+      <LineId Id="340" Count="0" />
+      <LineId Id="447" Count="1" />
+      <LineId Id="467" Count="0" />
+      <LineId Id="350" Count="0" />
+      <LineId Id="353" Count="0" />
+      <LineId Id="379" Count="2" />
+      <LineId Id="260" Count="0" />
+    </LineIds>
+    <LineIds Name="P_Hbot_V3.A_Prawidlo">
+      <LineId Id="2" Count="8" />
+      <LineId Id="13" Count="3" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="P_Hbot_V3.Act_Error">
+      <LineId Id="2" Count="1" />
+      <LineId Id="5" Count="1" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="4" Count="0" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="P_Hbot_V3.Act_FBsCall">
+      <LineId Id="71" Count="0" />
+      <LineId Id="70" Count="0" />
+      <LineId Id="2" Count="4" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="22" Count="9" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="58" Count="0" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="66" Count="2" />
+      <LineId Id="46" Count="0" />
+      <LineId Id="57" Count="0" />
+      <LineId Id="35" Count="0" />
+    </LineIds>
+    <LineIds Name="P_Hbot_V3.Act_InUpdate">
+      <LineId Id="1" Count="1" />
+    </LineIds>
+    <LineIds Name="P_Hbot_V3.Act_ModeAutomatic">
+      <LineId Id="2721" Count="337" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="P_Hbot_V3.Act_ModeMaintenance">
+      <LineId Id="215" Count="1" />
+      <LineId Id="348" Count="6" />
+      <LineId Id="224" Count="3" />
+      <LineId Id="249" Count="0" />
+      <LineId Id="258" Count="2" />
+      <LineId Id="336" Count="0" />
+      <LineId Id="261" Count="0" />
+      <LineId Id="337" Count="0" />
+      <LineId Id="263" Count="16" />
+      <LineId Id="284" Count="2" />
+      <LineId Id="298" Count="0" />
+      <LineId Id="338" Count="0" />
+      <LineId Id="211" Count="0" />
+    </LineIds>
+    <LineIds Name="P_Hbot_V3.Act_ModeManual">
+      <LineId Id="1173" Count="105" />
+      <LineId Id="1504" Count="0" />
+      <LineId Id="1281" Count="222" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="P_Hbot_V3.Act_Monitoring">
+      <LineId Id="2" Count="10" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="P_Hbot_V3.Act_MovePath">
+      <LineId Id="61" Count="25" />
+      <LineId Id="54" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="49" Count="0" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="43" Count="0" />
+      <LineId Id="28" Count="0" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="50" Count="0" />
+      <LineId Id="45" Count="1" />
+      <LineId Id="32" Count="3" />
+      <LineId Id="47" Count="0" />
+      <LineId Id="52" Count="0" />
+      <LineId Id="48" Count="0" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="37" Count="0" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="24" Count="0" />
+    </LineIds>
+    <LineIds Name="P_Hbot_V3.Act_OutUpdate">
+      <LineId Id="1" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

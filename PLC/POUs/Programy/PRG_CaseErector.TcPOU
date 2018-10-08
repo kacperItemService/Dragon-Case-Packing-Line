@@ -1,0 +1,519 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="PRG_CaseErector" Id="{787febfa-fe21-4eba-bbd9-2fbeb26b9e96}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM PRG_CaseErector
+
+(*----------------------------------------------NOWE Wejściowe ------------------------------------------*)
+VAR_INPUT
+	eMachineMode							: E_LineMachineMode; 		// Machine mode
+	eMachineCommand							: E_LineMachineCommand; 	// Command from top level state program
+END_VAR
+(*----------------------------------------------NOWE Wyjściowe ------------------------------------------*)
+VAR_OUTPUT
+	eMachineState							: E_CaseErectorMachineState;
+  	bError									: BOOL;
+END_VAR
+(*----------------------------------------------NOWE Wewnętrzne ------------------------------------------*)
+VAR
+	// INPUTS
+	bIn1									: BOOL;
+	// OUTPUTS
+	bOut1									: BOOL;	
+	// Local
+	iStateIdle								: INT;
+	iStepStarting							: INT;
+	iStateStoping							: INT;
+	iStateAborting							: INT;	
+	fbPower 								:MC_Power;
+	fbMove	 								:MC_MoveAbsolute;
+	fbJog 									:MC_Jog;
+	fbReset 								:MC_Reset;	
+	fbStop									:MC_Stop;
+	//fbBeltInverter							:FB_MX2;
+	arrErrorTable							:ARRAY[0..1000] OF UDINT;
+	arrError								:ARRAY[0..1000] OF BOOL;
+	tonAxesReady							:TON;
+	tonAxesError							:TON;
+	fbBeltInverter							:FB_INV003_MX2_ECT;
+END_VAR
+(*----------------------------------------------Koniec nowego dopisanego -------------------------------*)
+
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Action Name="Ack_FBsCall" Id="{9fbcae2a-f886-48dc-a8fd-b42be9c44f4d}">
+      <Implementation>
+        <ST><![CDATA[//Servo Axis Fb`s
+	
+fbPower(
+	Axis:=GVL_AXIS.stAxis1 , 
+	Enable:=, 
+	Enable_Positive:=GVL_AXIS.bEnable , 
+	Enable_Negative:=GVL_AXIS.bEnable , 
+	Override:=100.0 , 
+	BufferMode:= , 
+	Options:= , 
+	Status=> , 
+	Busy=> , 
+	Active=> , 
+	Error=> arrError[0], 
+	ErrorID=>arrErrorTable[0] );
+
+fbReset(
+	Axis:= GVL_AXIS.stAxis1, 
+	Execute:= , 
+	Done=> , 
+	Busy=> , 
+	Error=>	arrError[1] , 
+	ErrorID=>arrErrorTable[1] );
+		
+fbJog(
+	Axis:= GVL_AXIS.stAxis1, 
+	JogForward:= bJog_B , 
+	JogBackwards:=bJog_F , 
+	Mode:= , 
+	Position:= , 
+	Velocity:= GVL_HMI.J_VelK, 
+	Acceleration:= , 
+	Deceleration:= , 
+	Jerk:= , 
+	Done=> , 
+	Busy=> , 
+	Active=> , 
+	CommandAborted=> , 
+	Error=> arrError[2] , 
+	ErrorID=>arrErrorTable[2] );
+	
+fbMove(
+	Axis:=GVL_AXIS.stAxis1 , 
+	Execute:= bExecute, 
+	Position:=Position , 
+	Velocity:=Predkosc , 
+	Acceleration:= , 
+	Deceleration:= , 
+	Jerk:= , 
+	BufferMode:= , 
+	Options:= , 
+	Done=> , 
+	Busy=> , 
+	Active=> , 
+	CommandAborted=> , 
+	Error=>arrError[3] , 
+	ErrorID=>arrErrorTable[3]
+ );
+ fbStop(
+	Axis:=GVL_AXIS.stAxis1 , 
+	Execute:= , 
+	Deceleration:= , 
+	Jerk:= , 
+	Options:= , 
+	Done=> , 
+	Busy=> , 
+	Active=> , 
+	CommandAborted=> , 
+	Error=> arrError[4] , 
+	ErrorID=>arrErrorTable[4] );
+	//Inverters fb`s nie używany 
+(*fbBeltInverter
+	(w_Status:=GVL_Omron.wOmron_1_Status,
+	ui_CzestotliwoscI:=F1_FQ,
+	b_CCW:=F1_CW, 
+	b_CW:=F1_CCW, 
+	b_Reset:=F_Reset,		
+	w_ControlW=>GVL_Omron.wOmron_1_Control,
+ 	ui_CzestotliwoscO=>GVL_Omron.iOmron_1_SeVelo,);
+*)	
+(*
+fbBeltInverter(
+	Output_Frequency_Monitor:=GVL_Omron.iOmron_1_ActVelo , 
+	During_Rev:= , 
+	Enable:= , 
+	Fwd:= , 
+	Rev:= , 
+	Fault_Reset:= , 
+	Frequency_in:= , 
+	Acceleration:= , 
+	Deceleration:= , 
+	ENO=> , 
+	Frequency_out=>GVL_Omron.iOmron_1_SeVelo , 
+	During_Fwd=> , 
+	Fault=>arrError[5], 
+	Warning=> , 
+	Remote=> , 
+	Freq_Match=> , 
+	Connection_Error=> , 
+	Command:=GVL_Omron.wOmron_1_Status , 
+	Frequency_Reference:= , 
+	F002_1st_Acceleration:=GVL_Omron.iOmronErectorAcc , 
+	F003_1st_Deceleration:=GVL_Omron.iOmronErectorDcc , 
+	Status:=GVL_Omron.wOmron_1_Status);
+*)	
+	
+ 
+ 
+ ]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="Ack_IOLinkRequest" Id="{d80c0f49-d643-4e27-9599-7ce7ea085bdf}">
+      <Implementation>
+        <ST><![CDATA[//załączenie kanału io-link Kanał 1 
+		GVL_IO.IOLinkCh1T:=TRUE;
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="Act_ButtonsLight" Id="{976c460d-ce54-4d95-a684-d06828d38226}">
+      <Implementation>
+        <ST><![CDATA[IF  (gvl_hmi.A_Start=TRUE  THEN GVL_IO.K1K5:=FALSE; GVL_IO.K1K7:=TRUE; ; END_IF
+IF gvl_hmi.A_Stop=TRUE THEN GVL_IO.K1K5:=TRUE; GVL_IO.K1K7:=FALSE;  END_IF
+GVL_HMI.A_Start:=gvl_Io.b1K1;
+GVL_HMI.A_Stop:=GVL_IO.b1K3;
+
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="Act_Error" Id="{d847853c-0914-4802-bce7-bd5b5e3321aa}">
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="Act_Magazine" Id="{7f1f6fa3-4a22-4cb2-b4c0-4e2ecc8ef5c4}">
+      <Implementation>
+        <ST><![CDATA[K_Magazyn(
+	bStop:=GVL_IO.b1K3 AND GVL_HMI.bAuto,
+	xPodjedz:=GVL_IO.b1K1, 
+	xWydajKarton:=, 
+	xKartonPobrany:=, 
+	xCzPodjazd:=, 
+	xCzTrzymacz2:=, 
+	xCzTrzymacz1:=GVL_IO.bCzujnik_Trzymacz1, 
+	xSilPodpych=>GVL_IO.K1K4, 
+	xSilTrzymacz1=>GVL_IO.K1K1, 
+	xSilTrzymacz2=>GVL_IO.K1K3, 
+	xWydalemKarton=>, 
+	xBlad=> );]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="Act_ModeAutomatic" Id="{f4ca6b94-7366-4b9f-a3a5-13513218a207}">
+      <Implementation>
+        <ST><![CDATA[// State Machine
+(*
+CASE eMachineState OF
+
+	E_MachineState.eIdle:
+		
+	
+		// ====================================================
+		// There should be main code
+		// i.e. CASE iStepInit OF	
+		// ====================================================
+		// Allow for stop only if conditions are true - in this step we can wait without an error
+
+		
+		IF TRUE (* condition *) THEN
+			eMachineState 						:= E_MachineState.eStopped;
+		END_IF
+		
+		IF bError THEN
+			eMachineState 						:= E_MachineState.eError;
+		END_IF
+		
+	E_MachineState.eStopping:
+		
+		
+		CASE iStateStoping OF
+			0:
+				
+			
+			10:
+			
+			20:
+				
+		END_CASE
+		IF iStateStoping = 20 (* condition *) THEN
+			eMachineState 						:= E_MachineState.eStopped;
+			iStateStoping 						:= 0;
+		END_IF		
+	
+	E_MachineState.eStopped:
+		
+	
+		
+		IF eMachineCommand = E_MachineCommand.eRun THEN
+			eMachineState 						:= E_MachineState.eStarting;
+		END_IF
+		
+		IF eMachineCommand = E_MachineCommand.eRestart THEN
+			GVL_MachineMaintenance.eCommand		:= E_MachineCommand.eStop;
+			eMachineState 						:= E_MachineState.eRestarting;
+		END_IF			
+				
+		IF bError THEN
+			eMachineState 						:= E_MachineState.eError;
+		END_IF
+
+	E_MachineState.eStarting:
+	
+
+		CASE iStepStarting OF
+			0:		
+				fbPower.Enable:=TRUE;
+				
+				IF tonAxesReady.Q THEN
+					iStepStarting := iStepStarting + 10;
+				ELSIF tonAxesError.Q THEN
+					bError := TRUE;
+				END_IF
+			
+			10:
+			
+				IF (*Warunki startu automatu*)  THEN
+					iStepStarting := iStepStarting + 20;		
+				ELSE
+					bError := TRUE;
+					iStepStarting := iStepStarting + 10;
+				END_IF
+				
+			20:
+			
+		
+				
+			END_CASE 
+	
+		IF iStepStarting = 20 AND (*Kartoniarka READY*) THEN
+			eMachineState 						:= E_MachineState.eRunning;
+			iStepStarting 						:= 0;
+		END_IF
+		
+			
+		
+	E_MachineState.eRunning:
+		
+
+		// ====================================================
+		// There should be main code
+		// i.e. CASE iStepAuto OF
+		// ====================================================
+		IF eMachineCommand = E_MachineCommand.eStop OR bError THEN
+			eMachineState 						:= E_MachineState.eStopping;
+		END_IF
+
+	E_MachineState.eAborting:
+
+		// Stop and reset everything - usually SAFETY function
+		CASE iStateAborting OF
+			0:
+				IF (*warunek wykonania zatrzymania *) THEN
+					iStateAborting := iStateAborting +10;
+				END_IF
+			10:
+				
+						fbMove.Execute:= FALSE;
+						fbStop.Execute:= FALSE;
+						
+						IF fbStop.Done THEN
+							iStateAborting := iStateAborting +10;	
+						END_IF
+				
+			20:
+						fbPower.Enable:=FALSE;
+					IF NOT fbPower.Status THEN 
+						iStateAborting := iStateAborting + 10;
+					END_IF
+			30:
+			
+					
+				
+		END_CASE
+	
+		IF iStateAborting = 30 THEN
+			eMachineState 						:= E_MachineState.eAborted;
+			iStateAborting						:= 0;
+		END_IF		
+		
+	E_MachineState.eAborted:
+
+					
+		IF eMachineCommand = E_MachineCommand.eReset THEN
+			eMachineState 						:= E_MachineState.eReseting;
+		END_IF
+		
+		IF bError THEN
+			eMachineState 						:= E_MachineState.eError;
+		END_IF
+
+	E_MachineState.eError:
+
+		// ====================================================
+		// Two types of error:
+		// 1. 'Small/soft' Error - fix a problem and go to stop
+		// 2. 'Serious/hard' Error - there is a need of restart everything, if there is a sequence - reset it too - fix a problem and go to init
+		// ====================================================
+
+	
+	
+		IF eMachineCommand = E_MachineCommand.eReset THEN
+			eMachineState 						:= E_MachineState.eReseting;
+		END_IF
+		
+		IF eMachineCommand = E_MachineCommand.eRestart THEN
+			eMachineState 						:= E_MachineState.eRestarting;
+		END_IF
+
+	E_MachineState.eReseting:
+
+		// ====================================================
+		//'Small/soft' Error - fix a problem and go to stop
+		// Reset drives only when it is necessary
+		// ====================================================
+		// Check if axis errors cleared
+	
+		IF fbPower.Error	THEN
+			fbReset.Execute := TRUE;
+		ELSIF fbBeltInverter.Fault THEN
+			fbBeltInverter.Fault_Reset:=TRUE;
+		END_IF
+
+	
+		IF NOT tonAxesError.Q  THEN
+			fbReset.Execute := FALSE;
+			fbBeltInverter.Fault_Reset:=FALSE;
+		END_IF
+				
+		// Blad bloku resetowania lub zakonczylismy kasowanie bledu osi, ale os jest nadal w bledzie, np. nie usunieta usterka - idz do kroku bledu
+		IF bError (*(stAxis.stAxisDiagOutputs.Error OR (stAxis.stAxisDiagOutputs.Done AND stAxis.bAxisError)) *) THEN
+			eMachineState  						:= E_MachineState.eError;
+		END_IF
+		
+	E_MachineState.eRestarting:
+
+		// ====================================================
+		// 'Serious/hard' Error - there is a need of restart everything, if there is a sequence - reset it too - fix a problem and go to init
+		// Reset drives only when it is necessary
+		// ====================================================
+		// Check if axis errors cleared
+		bError := FALSE;
+		
+		IF TRUE (*NOT bAxisError AND NOT other errors *) THEN
+			eMachineState  						:= E_MachineState.eIdle;
+		END_IF
+				
+		// Blad bloku resetowania lub zakonczylismy kasowanie bledu osi, ale os jest nadal w bledzie, np. nie usunieta usterka - idz do kroku bledu
+		IF bError (*(stAxis.stAxisDiagOutputs.Error OR (stAxis.stAxisDiagOutputs.Done AND stAxis.bAxisError)) *) THEN
+			eMachineState  						:= E_MachineState.eError;
+		END_IF
+		
+END_CASE
+*)]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="Act_ModeManual" Id="{de63055e-42c1-4b42-bc45-31e1849e99a1}">
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="Act_Monitoring" Id="{32ce7dfd-1d1b-42ec-9e3a-a2f9429ed76b}">
+      <Implementation>
+        <ST><![CDATA[tonAxesReady(PT:=T#200MS);
+tonAxesReady.IN:=fbPower.Active;
+
+tonAxesError(PT:=T#200MS);
+tonAxesError.IN:=arrError[0] OR arrError[1] OR arrError[2]  OR arrError[5]
+							 OR arrError[3] OR arrError[4];]]></ST>
+      </Implementation>
+    </Action>
+    <LineIds Name="PRG_CaseErector">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_CaseErector.Ack_FBsCall">
+      <LineId Id="3" Count="0" />
+      <LineId Id="63" Count="0" />
+      <LineId Id="5" Count="55" />
+      <LineId Id="65" Count="10" />
+      <LineId Id="64" Count="0" />
+      <LineId Id="76" Count="0" />
+      <LineId Id="78" Count="5" />
+      <LineId Id="85" Count="1" />
+      <LineId Id="88" Count="0" />
+      <LineId Id="112" Count="0" />
+      <LineId Id="90" Count="21" />
+      <LineId Id="89" Count="0" />
+      <LineId Id="87" Count="0" />
+      <LineId Id="77" Count="0" />
+      <LineId Id="61" Count="1" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_CaseErector.Ack_IOLinkRequest">
+      <LineId Id="17" Count="0" />
+      <LineId Id="19" Count="1" />
+    </LineIds>
+    <LineIds Name="PRG_CaseErector.Act_ButtonsLight">
+      <LineId Id="1" Count="0" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="11" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_CaseErector.Act_Error">
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_CaseErector.Act_Magazine">
+      <LineId Id="2" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="3" Count="9" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_CaseErector.Act_ModeAutomatic">
+      <LineId Id="2" Count="0" />
+      <LineId Id="348" Count="0" />
+      <LineId Id="3" Count="24" />
+      <LineId Id="334" Count="0" />
+      <LineId Id="34" Count="1" />
+      <LineId Id="42" Count="9" />
+      <LineId Id="67" Count="5" />
+      <LineId Id="327" Count="0" />
+      <LineId Id="74" Count="13" />
+      <LineId Id="335" Count="1" />
+      <LineId Id="110" Count="4" />
+      <LineId Id="119" Count="5" />
+      <LineId Id="347" Count="0" />
+      <LineId Id="125" Count="4" />
+      <LineId Id="133" Count="0" />
+      <LineId Id="135" Count="6" />
+      <LineId Id="328" Count="0" />
+      <LineId Id="330" Count="0" />
+      <LineId Id="142" Count="2" />
+      <LineId Id="149" Count="15" />
+      <LineId Id="167" Count="2" />
+      <LineId Id="171" Count="0" />
+      <LineId Id="337" Count="0" />
+      <LineId Id="341" Count="0" />
+      <LineId Id="338" Count="2" />
+      <LineId Id="177" Count="0" />
+      <LineId Id="179" Count="4" />
+      <LineId Id="185" Count="0" />
+      <LineId Id="346" Count="0" />
+      <LineId Id="214" Count="0" />
+      <LineId Id="218" Count="8" />
+      <LineId Id="231" Count="16" />
+      <LineId Id="260" Count="21" />
+      <LineId Id="290" Count="4" />
+      <LineId Id="301" Count="0" />
+      <LineId Id="342" Count="0" />
+      <LineId Id="302" Count="24" />
+      <LineId Id="1" Count="0" />
+      <LineId Id="349" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_CaseErector.Act_ModeManual">
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_CaseErector.Act_Monitoring">
+      <LineId Id="1" Count="1" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="6" Count="0" />
+      <LineId Id="10" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

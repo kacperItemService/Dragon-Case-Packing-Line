@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <DUT Name="uWORD_BOOL_MX2" Id="{d4fffac4-f061-468b-898e-ecaef371cfd4}">
+    <Declaration><![CDATA[TYPE uWORD_BOOL_MX2 :
+UNION
+	bits 			:ARRAY [0..15] OF BOOL;
+	ch 				:WORD;
+	
+END_UNION
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

@@ -1,0 +1,133 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="FB_NCIAutomatic" Id="{c7c211a7-fad1-4047-aec8-5abe216136b5}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_NCIAutomatic
+VAR_INPUT
+	nChan: 						UINT;
+	sProgramName: 				STRING(1024);
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	fbLoadStart: 				FB_LoadStart;
+	ItpStartStop1: 				ItpStartStop;
+	nItpState: 					UDINT;
+
+	bCommandSingleStep: 		BOOL := FALSE;
+	nItpMode: 					UDINT;
+	bCommandLoadStart: 			BOOL := FALSE;
+	bCommandEStop: 				BOOL := FALSE;
+	bCommandEStopStepOn: 		BOOL := FALSE;
+	fbEStop: 					FB_EStop;
+	fbStepOnAfterEStop: 		FB_StepOnAfterEStop;
+	sTmp: 						STRING;
+END_VAR
+
+VAR_IN_OUT
+	bStateStart: 				BOOL;
+	bStateStop: 				BOOL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* ==========================================================*)
+(*   FB: FB_NciAutomatic		                             *)
+(* ----------------------------------------------------------*)
+(*   Desc:  										         *)
+(*   Auth: MiB / TV                                          *)
+(*   Date: 02.09.2005                                        *)
+(*   Last: 02.04.2013                                        *)
+(*   Rev.: 1.1                                               *)
+(* ==========================================================*)
+
+(* START, STOP, load program *)
+nItpState	:=	arrNCToPLC_NCIChannel_REF[nChan-1].ItpState;
+nItpMode 	:= arrNCToPLC_NCIChannel_REF[nChan-1].ItpMode;
+
+IF (bStateStop) THEN				(* if STOP -> do not start anything *)
+  bStateStart := FALSE;
+END_IF
+
+IF (nItpState = NCI_INTERPRETER_RUNNING AND nItpMode = 1 AND bStateStart) THEN
+		bCommandSingleStep := TRUE;
+END_IF
+
+IF ( (nItpState = NCI_INTERPRETER_IDLE OR nItpState = NCI_INTERPRETER_READY) AND bStateStart) THEN
+	bCommandLoadStart := TRUE;
+END_IF
+
+IF bStateStop THEN
+	bCommandEStop := TRUE;
+END_IF
+
+IF bStateStart THEN
+	bCommandEStopStepOn := TRUE;
+END_IF
+
+(* EStop programm *)
+IF bCommandEStop THEN
+	fbEStop(
+		bExec:= TRUE,
+		nChan:= nChan);
+	IF NOT fbEStop.bBusy THEN
+		fbEStop(bExec := FALSE);
+		bCommandEStop := FALSE;
+	END_IF
+END_IF
+
+(* Step on after EStop *)
+IF bCommandEStopStepOn THEN
+	fbStepOnAfterEStop(
+		bExec:= TRUE,
+		nChan:= nChan);
+	IF NOT fbStepOnAfterEStop.bBusy THEN
+		fbStepOnAfterEStop(bExec := FALSE);
+		bCommandEStopStepOn := FALSE;
+	END_IF
+END_IF
+
+(* load program and start it *)
+IF bCommandLoadStart THEN
+	fbLoadStart(
+	bExec:= TRUE,
+	sPrg:= sProgramName,
+	nChan:= nChan,
+	nErrId=> ,
+	bBusy=> ,
+	bErr=> );
+	IF (NOT fbLoadStart.bBusy) THEN
+		bCommandLoadStart := FALSE;
+		fbLoadStart(bExec := FALSE);
+	END_IF
+END_IF
+
+
+(* start single step *)
+IF bCommandSingleStep THEN
+	ItpStartStop1(
+	bStart:= TRUE,
+	bStop:= bStateStop,
+	nChnId:= nChan,
+	tTimeOut:= t#250ms,
+	bBusy=> ,
+	bErr=> ,
+	nErrId=> );
+	IF (NOT ItpStartStop1.bBusy) THEN
+		ItpStartStop1(bStart:= FALSE, bStop := FALSE);
+		bStateStop := FALSE;
+		bCommandSingleStep := FALSE;
+	END_IF
+END_IF
+
+bStateStart := FALSE;
+bStateStop := FALSE;
+
+]]></ST>
+    </Implementation>
+    <LineIds Name="FB_NCIAutomatic">
+      <LineId Id="3" Count="69" />
+      <LineId Id="135" Count="0" />
+      <LineId Id="88" Count="20" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

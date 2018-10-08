@@ -1,0 +1,549 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<safetyApplication Crc="63659580" xmlns:dm0="http://schemas.microsoft.com/VisualStudio/2008/DslTools/Core" dslVersion="1.1.0.0" Id="c43809dc-ffb2-4808-a35a-1d6fd99e6b6c" name="" mapState="false" mapDiag="false" groupOrderId="1" passificationAllowed="false" temporaryDeactivationAllowed="false" permamentDeactivationAllowed="false" xmlid="0" analogFBOutputReplacementValues="Zero" verifyAnalogFBInputsIfStart="false" xmlns="http://schemas.microsoft.com/dsltools/SafetyApplicationLanguage">
+  <comments>
+    <comment Id="9849f1b3-c2f3-4074-8127-2519d3d7652e" text="Servo Kartoniarka" currentNetworkOrderId="0">
+      <networks>
+        <commentReferencesNetworks Id="c877daa2-3591-4a47-8e04-734ba53ba178">
+          <networkMoniker name="//Network1" />
+        </commentReferencesNetworks>
+      </networks>
+    </comment>
+    <comment Id="dba08d3d-3460-4927-8455-64d9bf641ad1" text="AX5000 HBot&#xD;&#xA;" currentNetworkOrderId="1">
+      <networks>
+        <commentReferencesNetworks Id="cec5e091-e685-4ad3-a250-b01561af8aeb">
+          <networkMoniker name="//Network2" />
+        </commentReferencesNetworks>
+      </networks>
+    </comment>
+    <comment Id="562652ad-2f8f-4d36-818f-96f4df318078" text="Servo Kierownica Servo" currentNetworkOrderId="2">
+      <networks>
+        <commentReferencesNetworks Id="e3c95f16-89c7-4def-b7b8-3b189f86ac4b">
+          <networkMoniker name="//Network3" />
+        </commentReferencesNetworks>
+      </networks>
+    </comment>
+    <comment Id="698ec118-3b6b-4fd2-b697-84a65c45d9c1" text="Zaklejarka" currentNetworkOrderId="4">
+      <networks>
+        <commentReferencesNetworks Id="0ed7a32d-aa53-4a5f-af4c-6fa0efc1551c">
+          <networkMoniker name="//Network5" />
+        </commentReferencesNetworks>
+      </networks>
+    </comment>
+    <comment Id="b6bc48de-c33a-44f1-8e5c-86eb2261962e" text="Kierownica Falownik" currentNetworkOrderId="3">
+      <networks>
+        <commentReferencesNetworks Id="cde53699-f8c9-403a-a761-07f5d004051d">
+          <networkMoniker name="//Network4" />
+        </commentReferencesNetworks>
+      </networks>
+    </comment>
+    <comment Id="6e53f241-f0c8-445c-81ae-f46fead04e90" text="Podajnik ploter&#xD;&#xA;" currentNetworkOrderId="5">
+      <networks>
+        <commentReferencesNetworks Id="84847d70-b6e3-46bd-8613-304a0ce52679">
+          <networkMoniker name="//Network6" />
+        </commentReferencesNetworks>
+      </networks>
+    </comment>
+  </comments>
+  <networks>
+    <safetyApplicationHasNetworks Id="e2d8d27b-be2b-4505-9ef9-5b8149210a4c">
+      <Network Id="29541732-06ab-425a-a028-08a171511aaa" name="Network1" networkName="Network1" intId="1" networkOrderId="0">
+        <functionBlocks>
+          <networkHasFunctionBlocks Id="56986cfc-12db-45c9-9322-40b8ce6e11be">
+            <fBMon Id="40b9c0a4-2ea2-4af0-a797-4f8ac152b314" name="FBMon1" instanceName="FBMon1" orderOfExecution="1" mapState="false" mapDiag="false" xmlid="0" functionName="safeMon" safeInputsAfterDiscError="false" manualFunctionTest="false">
+              <inPorts>
+                <functioBlockHasInPorts Id="d499d5fc-99e4-4457-810f-fb412e8d8763">
+                  <inPort Id="ed6c7831-090d-487c-8f9a-4380139bb6c8" name="Restart" portName="Restart" portNum="2" objectIndex="0" varId="1" filter="3" portDataType="1" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="10385b7e-3b5e-4375-93bd-3fe0d34b913c">
+                  <inPort Id="191702ba-e578-4333-96c6-ca280d92fef2" name="MonIn1" portName="MonIn1" assignedVariable="TwinSafeGroup1.Network1.FBEstop1.EStopOut" portNum="4" objectIndex="8" varId="4" filter="2" portDataType="1" channelInterface="Single-Channel Both Activated" deactivate1="Break Contact (NC)" deactivate2="Break Contact (NC)" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="83026f4d-c8bd-4ea1-a8b1-269581d7aa9c">
+                  <inPort Id="84d0908b-1dd8-4c86-b51c-6ed21192a96a" name="MonIn2" portName="MonIn2" assignedVariable="TwinSafeGroup1.Network1.FBEstop1.EStopOut" portNum="5" objectIndex="9" varId="5" filter="2" portDataType="1" channelInterface="Both Deactivated" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="9706c04a-d2bd-44a7-9c08-12156a662f94">
+                  <inPort Id="c01910b1-b896-4acf-8230-618c420d995e" name="MonIn3" portName="MonIn3" portNum="6" objectIndex="10" varId="6" filter="2" portDataType="1" channelInterface="Both Deactivated" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="81b4ccf1-2a57-4f35-be5e-9a91029413a9">
+                  <inPort Id="f8699c46-2fd8-40af-ad6e-85ed6f41f042" name="MonIn4" portName="MonIn4" portNum="7" objectIndex="11" varId="7" filter="2" portDataType="1" channelInterface="Both Deactivated" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="595b652b-f0aa-4fa4-a7a7-acf6cd79a35d">
+                  <inPort Id="6099b883-08fd-4c69-9c5e-9bdeb9661fb7" name="Secure1" portName="Secure1" portNum="9" objectIndex="12" varId="9" filter="2" portDataType="1" channelInterface="Both Deactivated" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="a7273fac-98f6-4f35-aaf2-7b1ffc499221">
+                  <inPort Id="bda174df-5a89-4d41-b403-49a7d36e20db" name="Secure2" portName="Secure2" portNum="10" objectIndex="13" varId="10" filter="2" portDataType="1" channelInterface="Both Deactivated" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="8cb04e34-45a1-4e4d-b221-17c4fe084af1">
+                  <inPort Id="1ae9100d-ba82-4a4e-a877-e7d3d055e440" name="EDM1" portName="EDM1" assignedVariable="TwinSafeGroup1.Network2.FBDecouple1.DecOut1" portNum="13" objectIndex="1" varId="13" filter="3" portDataType="1" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="edfa935d-8f93-4e5d-97b4-c7367d27a1ac">
+                  <inPort Id="f5a43835-6c3c-4e54-b2dd-a5276b05e7da" name="EDM2" portName="EDM2" portNum="14" objectIndex="2" varId="14" filter="3" portDataType="1" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+              </inPorts>
+              <outPorts>
+                <functionBlockHasOutPorts Id="1155f6df-3adc-45c7-a268-b68d26c931b7">
+                  <outPort Id="1ff13d93-abcc-43f0-a8a0-65555c76df1e" name="Error" portName="Error" portNum="4" objectIndex="0" varId="16" filter="7" portDataType="1" replacementValue="0" />
+                </functionBlockHasOutPorts>
+                <functionBlockHasOutPorts Id="620185bf-bf22-4deb-b058-5a6701115b88">
+                  <outPort Id="cd1b9624-0192-4036-8456-af3dd7093346" name="MonOut" portName="MonOut" assignedVariable="bOmronStop" portNum="11" objectIndex="1" varId="23" filter="7" portDataType="1" replacementValue="0">
+                    <portMappings>
+                      <functionBlockPortHasPortMappings Id="c6c344c3-db6e-49b1-8391-6f23d5ceeb88">
+                        <portMapping Id="c69ad16e-a4ee-43f0-bf3d-086bc840bc29" name="FBMon1_MonOut_mapping" direction="output" dataType="safeBool" assignedVariable="bOmronStop" physicalPorts="55.Out">
+                          <aliasPorts>
+                            <portMappingHasAliasPorts Id="cfe0d41d-93dd-4c3f-bd3d-1666e0cc379b">
+                              <aliasPort Id="ebaf2713-0588-4f26-ac70-a145aa34ee5e" name="SdsId55.ChannelId1" sdsId="55" channelId="1" channelName="Out" functionId="1131179972" />
+                            </portMappingHasAliasPorts>
+                          </aliasPorts>
+                        </portMapping>
+                      </functionBlockPortHasPortMappings>
+                    </portMappings>
+                  </outPort>
+                </functionBlockHasOutPorts>
+                <functionBlockHasOutPorts Id="60f1de93-7c49-449a-8924-a3a386f51a55">
+                  <outPort Id="84c187f8-f9b4-4f38-90e7-9f7589b9addb" name="MonDelOut" portName="MonDelOut" assignedVariable="bOmronStopDel" portNum="12" objectIndex="2" varId="25" filter="7" portDataType="1" replacementValue="0">
+                    <portMappings>
+                      <functionBlockPortHasPortMappings Id="a23b27d3-174b-4238-89f9-bc78c368007c">
+                        <portMapping Id="72ed0769-63a7-45b0-a25c-dba87cf2aeee" name="FBMon1_MonDelOut_mapping" direction="output" dataType="safeBool" assignedVariable="bOmronStopDel" physicalPorts="52.OutputChannel1;52.OutputChannel2;52.OutputChannel3;52.OutputChannel4">
+                          <aliasPorts>
+                            <portMappingHasAliasPorts Id="e97bc095-5a6e-474c-9505-3cfdf17d40eb">
+                              <aliasPort Id="a2892b3e-2cbe-4a23-bf36-dda454cd847c" name="SdsId52.ChannelId1" sdsId="52" channelId="1" channelName="OutputChannel1" functionId="1879113985" />
+                            </portMappingHasAliasPorts>
+                            <portMappingHasAliasPorts Id="35cf515c-3d80-416c-8fbe-29857a0ed62f">
+                              <aliasPort Id="116b0fad-e037-43d1-b9b3-834190d1ff04" name="SdsId52.ChannelId2" sdsId="52" channelId="2" channelName="OutputChannel2" functionId="1879114241" />
+                            </portMappingHasAliasPorts>
+                            <portMappingHasAliasPorts Id="5f74f79e-c3c2-4e1b-a9cc-b35916650859">
+                              <aliasPort Id="45109bb1-b927-4808-b9e0-a14dcd614219" name="SdsId52.ChannelId3" sdsId="52" channelId="3" channelName="OutputChannel3" functionId="1879114497" />
+                            </portMappingHasAliasPorts>
+                            <portMappingHasAliasPorts Id="ef76fd4c-0e7d-4fc1-9c67-9289c2943671">
+                              <aliasPort Id="abe8a013-5b06-4066-af90-8976aec46f81" name="SdsId52.ChannelId4" sdsId="52" channelId="4" channelName="OutputChannel4" functionId="1879114753" />
+                            </portMappingHasAliasPorts>
+                          </aliasPorts>
+                        </portMapping>
+                      </functionBlockPortHasPortMappings>
+                    </portMappings>
+                  </outPort>
+                </functionBlockHasOutPorts>
+              </outPorts>
+              <parameterPorts>
+                <functionBlockHasParamPorts Id="24105e64-3dd3-4893-b95c-2ea5629e3c40">
+                  <parameterPort Id="d8d7f181-1530-43e4-8b39-c63f6e466e73" name="Delay Time (ms)" portName="Delay Time (ms)" portNum="8" objectIndex="0" varId="0" filter="0" portDataType="0" timing="100" />
+                </functionBlockHasParamPorts>
+              </parameterPorts>
+            </fBMon>
+          </networkHasFunctionBlocks>
+        </functionBlocks>
+      </Network>
+    </safetyApplicationHasNetworks>
+    <safetyApplicationHasNetworks Id="db5ad3cd-d8d3-4b37-9cba-2716e9fbe292">
+      <Network Id="cd08c3ca-6405-457c-9a84-384342782174" name="Network2" networkName="Network2" intId="2" networkOrderId="1">
+        <functionBlocks>
+          <networkHasFunctionBlocks Id="efa955f9-0047-48d6-9140-57188339de09">
+            <fBMon Id="d7838100-216c-4f70-a4df-be8e7a9e38aa" name="FBMon1" instanceName="FBMon2" orderOfExecution="2" mapState="false" mapDiag="false" xmlid="0" functionName="safeMon" safeInputsAfterDiscError="false" manualFunctionTest="false">
+              <inPorts>
+                <functioBlockHasInPorts Id="8758e199-c35c-4a64-b95e-f215c772349a">
+                  <inPort Id="736f5a72-cb6d-468a-9135-d4276b6941b2" name="Restart" portName="Restart" portNum="2" objectIndex="0" varId="1" filter="3" portDataType="1" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="c55ae1c6-2c39-4f09-9964-a6d0fc4040c8">
+                  <inPort Id="b266b371-e9fb-4196-90e1-fb2370c3630c" name="MonIn1" portName="MonIn1" assignedVariable="TwinSafeGroup1.Network1.FBEstop1.EStopOut" portNum="4" objectIndex="8" varId="4" filter="2" portDataType="1" channelInterface="Single-Channel 1 Activated" deactivate1="Break Contact (NC)" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="a2bb463a-a2be-49c4-9b7b-703182cd388f">
+                  <inPort Id="fa43387c-83c0-4986-a404-da051f6eeac9" name="MonIn2" portName="MonIn2" portNum="5" objectIndex="9" varId="5" filter="2" portDataType="1" channelInterface="Both Deactivated" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="76a8b754-ab71-4622-8740-cec8bf430e43">
+                  <inPort Id="d54b2017-13b0-48d3-8097-c25a8610bf91" name="MonIn3" portName="MonIn3" portNum="6" objectIndex="10" varId="6" filter="2" portDataType="1" channelInterface="Both Deactivated" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="e74ab015-6d2e-4641-9660-087049889b3e">
+                  <inPort Id="30eeb107-73f2-40d4-8cb0-0e2a3fbf6bff" name="MonIn4" portName="MonIn4" portNum="7" objectIndex="11" varId="7" filter="2" portDataType="1" channelInterface="Both Deactivated" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="00e829ac-f5ec-4e9c-8c5d-8384fa6dbd3e">
+                  <inPort Id="1ad8a449-f78d-46a3-88d3-d0f859e34241" name="Secure1" portName="Secure1" portNum="9" objectIndex="12" varId="9" filter="2" portDataType="1" channelInterface="Both Deactivated" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="8d215d84-9932-45fa-8d0a-3b3575240265">
+                  <inPort Id="a14b05c8-497f-437e-8401-2a4bf4a49a06" name="Secure2" portName="Secure2" portNum="10" objectIndex="13" varId="10" filter="2" portDataType="1" channelInterface="Both Deactivated" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="b6e90e0a-372d-48a6-95ef-3ce9b8d63781">
+                  <inPort Id="bbe01373-1bed-48c6-ae78-844a01bff8e5" name="EDM1" portName="EDM1" assignedVariable="TwinSafeGroup1.Network2.FBDecouple1.DecOut8" portNum="13" objectIndex="1" varId="13" filter="3" portDataType="1" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="7a352b41-5a86-4f2e-a917-aa030049ac4d">
+                  <inPort Id="41386cea-1f82-4b99-8a67-12ad0fbfae9d" name="EDM2" portName="EDM2" portNum="14" objectIndex="2" varId="14" filter="3" portDataType="1" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+              </inPorts>
+              <outPorts>
+                <functionBlockHasOutPorts Id="495afc7a-1418-4e8d-b902-0ee6e027d476">
+                  <outPort Id="37a84ee3-7bb8-47c3-b1b8-941fa680b3c5" name="Error" portName="Error" portNum="4" objectIndex="0" varId="16" filter="7" portDataType="1" replacementValue="0" />
+                </functionBlockHasOutPorts>
+                <functionBlockHasOutPorts Id="9e7f5d3e-a6c3-4bdc-8c4f-d22254093f5f">
+                  <outPort Id="146de22f-e63f-49e2-a427-657f53039fa3" name="MonOut" portName="MonOut" assignedVariable="bAx5000Stop" portNum="11" objectIndex="1" varId="23" filter="7" portDataType="1" replacementValue="0">
+                    <portMappings>
+                      <functionBlockPortHasPortMappings Id="739adc24-6dfb-46e8-8f84-c14a4b2b6697">
+                        <portMapping Id="72c13ba7-96cc-4726-bf81-f22c49511581" name="FBMon1_MonOut_mapping" direction="output" dataType="safeBool" assignedVariable="bAx5000Stop" physicalPorts="56.Out">
+                          <aliasPorts>
+                            <portMappingHasAliasPorts Id="c0c9400f-74b8-4a27-b470-125008dccdb0">
+                              <aliasPort Id="42e113b0-04ee-42a3-8e86-fe4cd4c6c241" name="SdsId56.ChannelId1" sdsId="56" channelId="1" channelName="Out" functionId="1131179972" />
+                            </portMappingHasAliasPorts>
+                          </aliasPorts>
+                        </portMapping>
+                      </functionBlockPortHasPortMappings>
+                    </portMappings>
+                  </outPort>
+                </functionBlockHasOutPorts>
+                <functionBlockHasOutPorts Id="760b78c2-a1aa-47d6-89a5-0c1fb0779e76">
+                  <outPort Id="38c54afc-821e-46a3-b748-f17572bc50a6" name="MonDelOut" portName="MonDelOut" assignedVariable="bAx5000StopDel" portNum="12" objectIndex="2" varId="25" filter="7" portDataType="1" replacementValue="0">
+                    <portMappings>
+                      <functionBlockPortHasPortMappings Id="82dadae8-62b7-4489-8d33-386da94304b9">
+                        <portMapping Id="45bd44cc-7167-40e2-aa7b-fef8d880ee0e" name="FBMon1_MonDelOut_mapping" direction="output" dataType="safeBool" assignedVariable="bAx5000StopDel" physicalPorts="59.OutputChannel1">
+                          <aliasPorts>
+                            <portMappingHasAliasPorts Id="6549ca85-48f4-4d15-94b0-1e6852733e28">
+                              <aliasPort Id="60d43aa2-e1da-42b9-b00e-ea7c63d85fd0" name="SdsId59.ChannelId1" sdsId="59" channelId="1" channelName="OutputChannel1" functionId="1879113985" />
+                            </portMappingHasAliasPorts>
+                          </aliasPorts>
+                        </portMapping>
+                      </functionBlockPortHasPortMappings>
+                    </portMappings>
+                  </outPort>
+                </functionBlockHasOutPorts>
+              </outPorts>
+              <parameterPorts>
+                <functionBlockHasParamPorts Id="97421b3e-015e-49cf-9da9-fb5476eea7af">
+                  <parameterPort Id="f57b3d05-011e-435f-8b28-582fdc49e811" name="Delay Time (ms)" portName="Delay Time (ms)" portNum="8" objectIndex="0" varId="0" filter="0" portDataType="0" timing="1000" />
+                </functionBlockHasParamPorts>
+              </parameterPorts>
+            </fBMon>
+          </networkHasFunctionBlocks>
+        </functionBlocks>
+      </Network>
+    </safetyApplicationHasNetworks>
+    <safetyApplicationHasNetworks Id="25991e30-3600-4cc2-843a-6ad802ef86b7">
+      <Network Id="43bcddb3-700a-43ef-a568-ec2a3fdb30d3" name="Network3" networkName="Network3" intId="3" networkOrderId="2">
+        <functionBlocks>
+          <networkHasFunctionBlocks Id="98a1101d-1255-4c0a-a972-e0eab7b936ac">
+            <fBMon Id="574d40eb-57a0-4bc5-837a-9e1d601f3293" name="FBMon1" instanceName="FBMon3" orderOfExecution="3" mapState="false" mapDiag="false" xmlid="0" functionName="safeMon" safeInputsAfterDiscError="false" manualFunctionTest="false">
+              <inPorts>
+                <functioBlockHasInPorts Id="1b0a7010-0367-4160-a520-a3fbba264089">
+                  <inPort Id="fdf722ca-c2cb-4f3a-a38d-72472055f8cf" name="Restart" portName="Restart" portNum="2" objectIndex="0" varId="1" filter="3" portDataType="1" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="d31dd2bd-8529-4cc9-8841-8f7a24a0a2aa">
+                  <inPort Id="e117b8f3-7b56-49b9-89be-e831e959f9b1" name="MonIn1" portName="MonIn1" assignedVariable="TwinSafeGroup1.Network1.FBEstop1.EStopOut" portNum="4" objectIndex="8" varId="4" filter="2" portDataType="1" channelInterface="Single-Channel 1 Activated" deactivate1="Break Contact (NC)" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="cf2ecd63-d060-426c-9450-1e7ed0c7f79b">
+                  <inPort Id="8214ce03-a36e-4185-b6f7-0f992bd6f688" name="MonIn2" portName="MonIn2" portNum="5" objectIndex="9" varId="5" filter="2" portDataType="1" channelInterface="Both Deactivated" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="9c8817c5-0b7f-4492-8830-4222adab1d38">
+                  <inPort Id="fbb7e675-2238-4c6b-aa70-aef360abc42d" name="MonIn3" portName="MonIn3" portNum="6" objectIndex="10" varId="6" filter="2" portDataType="1" channelInterface="Both Deactivated" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="78df5c4d-79db-43c1-a74d-143f6528c857">
+                  <inPort Id="3941035f-67d1-45e3-a85b-17063aceeeae" name="MonIn4" portName="MonIn4" portNum="7" objectIndex="11" varId="7" filter="2" portDataType="1" channelInterface="Both Deactivated" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="ac46af7d-e3ac-4e7a-b804-f2e52e73a6e3">
+                  <inPort Id="8f0c434b-0de6-478f-a9b3-dd2a19058954" name="Secure1" portName="Secure1" portNum="9" objectIndex="12" varId="9" filter="2" portDataType="1" channelInterface="Both Deactivated" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="1cce89ae-5e48-4e03-91b3-34a3fab40d03">
+                  <inPort Id="ebc38da4-64f5-4b60-8f34-20efcdfa9993" name="Secure2" portName="Secure2" portNum="10" objectIndex="13" varId="10" filter="2" portDataType="1" channelInterface="Both Deactivated" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="67c54d32-0f1f-4b0c-935b-0560fe782f4c">
+                  <inPort Id="e6e303af-32c9-40a8-abe6-316a5db8e58c" name="EDM1" portName="EDM1" assignedVariable="TwinSafeGroup1.Network3.FBDecouple2.DecOut1" portNum="13" objectIndex="1" varId="13" filter="3" portDataType="1" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="4e3201c7-40ad-40e8-a68d-497d8cbd7cf7">
+                  <inPort Id="e7ff2d82-e098-480d-99a7-bd0bb80d07c8" name="EDM2" portName="EDM2" portNum="14" objectIndex="2" varId="14" filter="3" portDataType="1" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+              </inPorts>
+              <outPorts>
+                <functionBlockHasOutPorts Id="b1801760-beab-41b6-b524-492e31edebce">
+                  <outPort Id="874f5459-4c16-4245-80e8-635a69d1e377" name="Error" portName="Error" portNum="4" objectIndex="0" varId="16" filter="7" portDataType="1" replacementValue="0" />
+                </functionBlockHasOutPorts>
+                <functionBlockHasOutPorts Id="110707f1-8779-4267-a95e-34ac4b6dd429">
+                  <outPort Id="1f331fd5-1487-4ea8-9a9d-a88842bde540" name="MonOut" portName="MonOut" assignedVariable="bKierownicaServo_EstopOut" portNum="11" objectIndex="1" varId="23" filter="7" portDataType="1" replacementValue="0">
+                    <portMappings>
+                      <functionBlockPortHasPortMappings Id="7a57ae81-f2a7-49b6-9548-4f18518f57d8">
+                        <portMapping Id="3f81e22a-5c41-4690-991a-6b155502aa4e" name="FBMon1_MonOut_mapping" direction="output" dataType="safeBool" assignedVariable="bKierownicaServo_EstopOut" physicalPorts="70.Out">
+                          <aliasPorts>
+                            <portMappingHasAliasPorts Id="8d7006a9-ae4f-46f4-a53b-7678cbd32839">
+                              <aliasPort Id="6052ec21-c25d-4a9a-b7c6-3647d010b007" name="SdsId70.ChannelId1" sdsId="70" channelId="1" channelName="Out" functionId="1131179972" />
+                            </portMappingHasAliasPorts>
+                          </aliasPorts>
+                        </portMapping>
+                      </functionBlockPortHasPortMappings>
+                    </portMappings>
+                  </outPort>
+                </functionBlockHasOutPorts>
+                <functionBlockHasOutPorts Id="dc0b0d15-263c-4d09-bade-1f53e573916e">
+                  <outPort Id="a6e033df-d7a7-4a7d-91bb-004266bbfbf0" name="MonDelOut" portName="MonDelOut" assignedVariable="bKierownicaServo_EstopOutDel" portNum="12" objectIndex="2" varId="25" filter="7" portDataType="1" replacementValue="0">
+                    <portMappings>
+                      <functionBlockPortHasPortMappings Id="43328ca5-7987-42ca-ae05-30b900c54363">
+                        <portMapping Id="40af5374-daff-41f3-8b48-2fd12d34e751" name="FBMon1_MonDelOut_mapping" direction="output" dataType="safeBool" assignedVariable="bKierownicaServo_EstopOutDel" physicalPorts="65.OutputChannel1;65.OutputChannel3">
+                          <aliasPorts>
+                            <portMappingHasAliasPorts Id="e5f9b975-1569-4db6-85a3-99fc3441d4ed">
+                              <aliasPort Id="ac311d1b-0205-408f-bc0a-7db855a8e7e6" name="SdsId65.ChannelId1" sdsId="65" channelId="1" channelName="OutputChannel1" functionId="1879113985" />
+                            </portMappingHasAliasPorts>
+                            <portMappingHasAliasPorts Id="ed3e73e2-b20e-4a90-a321-ac00663fe989">
+                              <aliasPort Id="9947c418-88b1-4572-bd32-e22bd4623a33" name="SdsId65.ChannelId3" sdsId="65" channelId="3" channelName="OutputChannel3" functionId="1879114497" />
+                            </portMappingHasAliasPorts>
+                          </aliasPorts>
+                        </portMapping>
+                      </functionBlockPortHasPortMappings>
+                    </portMappings>
+                  </outPort>
+                </functionBlockHasOutPorts>
+              </outPorts>
+              <parameterPorts>
+                <functionBlockHasParamPorts Id="012ed74e-e1a7-4168-9eea-f530a393176c">
+                  <parameterPort Id="447a7668-fd8c-4c21-b9b8-79b4d6e37f8a" name="Delay Time (ms)" portName="Delay Time (ms)" portNum="8" objectIndex="0" varId="0" filter="0" portDataType="0" timing="100" />
+                </functionBlockHasParamPorts>
+              </parameterPorts>
+            </fBMon>
+          </networkHasFunctionBlocks>
+        </functionBlocks>
+      </Network>
+    </safetyApplicationHasNetworks>
+    <safetyApplicationHasNetworks Id="d1e085f6-01ee-463c-b3df-1f39cd23d0ce">
+      <Network Id="e8491b05-1ec3-428c-b873-273db62774ad" name="Network4" networkName="Network4" intId="4" networkOrderId="3">
+        <functionBlocks>
+          <networkHasFunctionBlocks Id="77793ce4-bc77-4f17-8df4-74d156282269">
+            <fBMon Id="4650e52c-04b5-43da-8f25-77c7c88666ed" name="FBMon1" instanceName="FBMon5" orderOfExecution="5" mapState="false" mapDiag="false" xmlid="0" functionName="safeMon" safeInputsAfterDiscError="false" manualFunctionTest="false">
+              <inPorts>
+                <functioBlockHasInPorts Id="98681548-d619-4209-9fcd-87f15a71d962">
+                  <inPort Id="337771cf-ffd1-4271-b685-c09fd380abf7" name="Restart" portName="Restart" portNum="2" objectIndex="0" varId="1" filter="3" portDataType="1" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="f144affa-de90-4804-b849-a8031b3a944f">
+                  <inPort Id="6dafe05c-8e47-4084-aef7-2d5a2b355b7e" name="MonIn1" portName="MonIn1" assignedVariable="TwinSafeGroup1.Network1.FBEstop1.EStopOut" portNum="4" objectIndex="8" varId="4" filter="2" portDataType="1" channelInterface="Single-Channel 1 Activated" deactivate1="Break Contact (NC)" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="235b8d19-de2e-4d2f-8527-4e6c521de99e">
+                  <inPort Id="d1f1a0a6-277b-439f-8fc1-32f141a85a12" name="MonIn2" portName="MonIn2" portNum="5" objectIndex="9" varId="5" filter="2" portDataType="1" channelInterface="Both Deactivated" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="475cc67e-0da5-49a0-8de1-a21fa7ad5aca">
+                  <inPort Id="b53822b5-58f3-44d7-bd40-316e245fdbb9" name="MonIn3" portName="MonIn3" portNum="6" objectIndex="10" varId="6" filter="2" portDataType="1" channelInterface="Both Deactivated" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="ad82314f-a71f-4595-a530-9c1604a56d9d">
+                  <inPort Id="b7779e8c-9c01-461a-b967-42aef8be8b53" name="MonIn4" portName="MonIn4" portNum="7" objectIndex="11" varId="7" filter="2" portDataType="1" channelInterface="Both Deactivated" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="fbf143e4-9daa-416c-9105-f2d2b9c57301">
+                  <inPort Id="eddf7270-8e5f-460e-9434-8ecc5376a3b0" name="Secure1" portName="Secure1" portNum="9" objectIndex="12" varId="9" filter="2" portDataType="1" channelInterface="Both Deactivated" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="1c2bd557-21cb-450d-8d40-d1cfded48d9f">
+                  <inPort Id="df2f7264-8c58-4604-8b76-3ec3db044994" name="Secure2" portName="Secure2" portNum="10" objectIndex="13" varId="10" filter="2" portDataType="1" channelInterface="Both Deactivated" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="13a7d824-c6be-4ff3-8ad3-a37276db5804">
+                  <inPort Id="c29ac4c4-75ed-4bdc-b35e-d333af8dc1db" name="EDM1" portName="EDM1" assignedVariable="TwinSafeGroup1.Network3.FBDecouple2.DecOut2" portNum="13" objectIndex="1" varId="13" filter="3" portDataType="1" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="650b0a48-a95f-41c1-b29a-b6312df1bff7">
+                  <inPort Id="889616d0-3655-400c-bcd7-8567a8a0934e" name="EDM2" portName="EDM2" portNum="14" objectIndex="2" varId="14" filter="3" portDataType="1" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+              </inPorts>
+              <outPorts>
+                <functionBlockHasOutPorts Id="f3a51b87-c197-4797-b949-6a42acbf8f87">
+                  <outPort Id="34b3c194-5273-484a-b791-534947d8788a" name="Error" portName="Error" portNum="4" objectIndex="0" varId="16" filter="7" portDataType="1" replacementValue="0" />
+                </functionBlockHasOutPorts>
+                <functionBlockHasOutPorts Id="c3339c31-f83f-493a-b410-03a5aa424e2e">
+                  <outPort Id="48837007-2a0a-4364-9f7b-63edca921af9" name="MonOut" portName="MonOut" assignedVariable="bKierownicaFalownik_EstopOut" portNum="11" objectIndex="1" varId="23" filter="7" portDataType="1" replacementValue="0">
+                    <portMappings>
+                      <functionBlockPortHasPortMappings Id="fdded71e-500a-4b63-95cb-b6337d5a4f69">
+                        <portMapping Id="5b4d2170-e7b0-43a0-a070-77cf3f1ee528" name="FBMon1_MonOut_mapping" direction="output" dataType="safeBool" assignedVariable="bKierownicaFalownik_EstopOut" physicalPorts="71.Out">
+                          <aliasPorts>
+                            <portMappingHasAliasPorts Id="28ea3952-2c25-4dd8-8552-8345b3eb7827">
+                              <aliasPort Id="ebc9c6b0-2534-4840-9b69-3069fe743b3e" name="SdsId71.ChannelId1" sdsId="71" channelId="1" channelName="Out" functionId="1131179972" />
+                            </portMappingHasAliasPorts>
+                          </aliasPorts>
+                        </portMapping>
+                      </functionBlockPortHasPortMappings>
+                    </portMappings>
+                  </outPort>
+                </functionBlockHasOutPorts>
+                <functionBlockHasOutPorts Id="19f40708-5547-4c0b-a69d-07b38ffb02c5">
+                  <outPort Id="b877c988-5af0-4680-9eb3-1a802dca3153" name="MonDelOut" portName="MonDelOut" assignedVariable="bKierownicaFalownik_EstopOutDel" portNum="12" objectIndex="2" varId="25" filter="7" portDataType="1" replacementValue="0">
+                    <portMappings>
+                      <functionBlockPortHasPortMappings Id="e785d0b2-06f5-4917-bd50-a604e521d417">
+                        <portMapping Id="c9eb3325-37ed-4a25-b912-333c24da66cd" name="FBMon1_MonDelOut_mapping" direction="output" dataType="safeBool" assignedVariable="bKierownicaFalownik_EstopOutDel" physicalPorts="65.OutputChannel2;65.OutputChannel4">
+                          <aliasPorts>
+                            <portMappingHasAliasPorts Id="91e2ed9b-344a-431c-8291-9f5f2c6173f8">
+                              <aliasPort Id="9176daf7-0e37-498d-b47a-0eaebf1cedd8" name="SdsId65.ChannelId2" sdsId="65" channelId="2" channelName="OutputChannel2" functionId="1879114241" />
+                            </portMappingHasAliasPorts>
+                            <portMappingHasAliasPorts Id="67d71695-078b-4676-b0c6-4c3be53281ab">
+                              <aliasPort Id="3451fb6f-7ccd-493c-a19f-afc09fcdb190" name="SdsId65.ChannelId4" sdsId="65" channelId="4" channelName="OutputChannel4" functionId="1879114753" />
+                            </portMappingHasAliasPorts>
+                          </aliasPorts>
+                        </portMapping>
+                      </functionBlockPortHasPortMappings>
+                    </portMappings>
+                  </outPort>
+                </functionBlockHasOutPorts>
+              </outPorts>
+              <parameterPorts>
+                <functionBlockHasParamPorts Id="35c6767a-f522-45b8-8207-1a14b62c2c73">
+                  <parameterPort Id="2a3ce12a-a0e3-4ca7-be46-36f4711b6f54" name="Delay Time (ms)" portName="Delay Time (ms)" portNum="8" objectIndex="0" varId="0" filter="0" portDataType="0" timing="100" />
+                </functionBlockHasParamPorts>
+              </parameterPorts>
+            </fBMon>
+          </networkHasFunctionBlocks>
+        </functionBlocks>
+      </Network>
+    </safetyApplicationHasNetworks>
+    <safetyApplicationHasNetworks Id="38b4854d-eab0-4e28-9b76-37c29277cffa">
+      <Network Id="dee53eb5-adfc-439f-964d-bebb7b27edc7" name="Network5" networkName="Network5" intId="5" networkOrderId="4">
+        <functionBlocks>
+          <networkHasFunctionBlocks Id="0acbd934-cf1b-4ac0-8066-543440baa792">
+            <fBMon Id="628e4fa2-dded-4b30-8f32-896216bb8730" name="FBMon1" instanceName="FBMon4" orderOfExecution="4" mapState="false" mapDiag="false" xmlid="0" functionName="safeMon" safeInputsAfterDiscError="false" manualFunctionTest="false">
+              <inPorts>
+                <functioBlockHasInPorts Id="d417e400-141e-4374-a914-6ca97a6963c1">
+                  <inPort Id="774517a6-37d4-4fd5-b946-ca042171e84a" name="Restart" portName="Restart" portNum="2" objectIndex="0" varId="1" filter="3" portDataType="1" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="91396dea-9f19-4506-92c6-66443375f348">
+                  <inPort Id="624c4035-125f-42a1-b1c6-e17debb16aeb" name="MonIn1" portName="MonIn1" assignedVariable="TwinSafeGroup1.Network1.FBEstop1.EStopOut" portNum="4" objectIndex="8" varId="4" filter="2" portDataType="1" channelInterface="Single-Channel 1 Activated" deactivate1="Break Contact (NC)" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="d5088cf7-da27-4e9f-900e-0d5d58c67c2e">
+                  <inPort Id="ba88db70-4005-45cd-8837-3181aadd77a7" name="MonIn2" portName="MonIn2" portNum="5" objectIndex="9" varId="5" filter="2" portDataType="1" channelInterface="Both Deactivated" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="02113af6-6ccd-4d5a-9c55-841be9ffb87d">
+                  <inPort Id="cfe7d42f-a495-4307-8c67-feddc9cecf31" name="MonIn3" portName="MonIn3" portNum="6" objectIndex="10" varId="6" filter="2" portDataType="1" channelInterface="Both Deactivated" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="5e8c0c85-8fdf-4a0d-8ede-f36299c23a57">
+                  <inPort Id="7099df8e-e703-46da-8213-fa22cb3a0d84" name="MonIn4" portName="MonIn4" portNum="7" objectIndex="11" varId="7" filter="2" portDataType="1" channelInterface="Both Deactivated" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="6a6f1c71-6dab-4b42-a528-cc94dbf90199">
+                  <inPort Id="5c77e7ec-fdbd-4d3c-90a5-9604c383825c" name="Secure1" portName="Secure1" portNum="9" objectIndex="12" varId="9" filter="2" portDataType="1" channelInterface="Both Deactivated" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="3c16b9be-aaf6-41dd-a3c8-ee3314102d1e">
+                  <inPort Id="e7671051-8749-4b8d-a768-0105f553eb65" name="Secure2" portName="Secure2" portNum="10" objectIndex="13" varId="10" filter="2" portDataType="1" channelInterface="Both Deactivated" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="e8e12c57-6c47-48ac-af22-c562f79e6a6f">
+                  <inPort Id="f69fdb36-72eb-4e81-b093-f57405a95d5f" name="EDM1" portName="EDM1" assignedVariable="TwinSafeGroup1.Network2.FBDecouple1.DecOut7" portNum="13" objectIndex="1" varId="13" filter="3" portDataType="1" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="133d0998-0d56-4f7d-b14a-693deb33e103">
+                  <inPort Id="0d902d4b-185e-40c6-8317-fe48f7c9dca3" name="EDM2" portName="EDM2" portNum="14" objectIndex="2" varId="14" filter="3" portDataType="1" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+              </inPorts>
+              <outPorts>
+                <functionBlockHasOutPorts Id="319c3890-03a6-4348-99b8-4934e8f94f9e">
+                  <outPort Id="a2b2f3c7-584e-492e-af12-7204eaa0c806" name="Error" portName="Error" portNum="4" objectIndex="0" varId="16" filter="7" portDataType="1" replacementValue="0" />
+                </functionBlockHasOutPorts>
+                <functionBlockHasOutPorts Id="4714a97a-029e-487d-b5b3-b4de6a47ebe0">
+                  <outPort Id="d59a077f-052f-4a65-99ac-6665c59fe0b1" name="MonOut" portName="MonOut" assignedVariable="bZaklejarka_EstopOut" portNum="11" objectIndex="1" varId="23" filter="7" portDataType="1" replacementValue="0">
+                    <portMappings>
+                      <functionBlockPortHasPortMappings Id="ab661b39-1db2-4831-8900-1de70883a3cd">
+                        <portMapping Id="d8c2c6ac-d7e6-4b4b-9239-0abd9a7a72a9" name="FBMon1_MonOut_mapping" direction="output" dataType="safeBool" assignedVariable="bZaklejarka_EstopOut" physicalPorts="72.Out">
+                          <aliasPorts>
+                            <portMappingHasAliasPorts Id="81cdb7a8-2320-4c38-a3b5-66ea1d0c40bd">
+                              <aliasPort Id="c101d0f0-f86f-459c-9eec-4ae30b2382b5" name="SdsId72.ChannelId1" sdsId="72" channelId="1" channelName="Out" functionId="1131179972" />
+                            </portMappingHasAliasPorts>
+                          </aliasPorts>
+                        </portMapping>
+                      </functionBlockPortHasPortMappings>
+                    </portMappings>
+                  </outPort>
+                </functionBlockHasOutPorts>
+                <functionBlockHasOutPorts Id="3eac81ff-c49f-4622-b8a8-8f8280118c12">
+                  <outPort Id="f2ec51c6-3cb9-4604-93a8-a5ecc9f6d6f9" name="MonDelOut" portName="MonDelOut" assignedVariable="bZaklejarka_EstopOutDel" portNum="12" objectIndex="2" varId="25" filter="7" portDataType="1" replacementValue="0">
+                    <portMappings>
+                      <functionBlockPortHasPortMappings Id="b061d7fe-a7fe-4b50-ae40-41ad6a832612">
+                        <portMapping Id="edacf879-c448-45bb-9b99-036393856efa" name="FBMon1_MonDelOut_mapping" direction="output" dataType="safeBool" assignedVariable="bZaklejarka_EstopOutDel" physicalPorts="66.OutputChannel1;66.OutputChannel2">
+                          <aliasPorts>
+                            <portMappingHasAliasPorts Id="3c91c196-f4f2-4275-abf0-c5aea30ed9d3">
+                              <aliasPort Id="d54849f3-3993-4183-92c4-07e66d57b69d" name="SdsId66.ChannelId1" sdsId="66" channelId="1" channelName="OutputChannel1" functionId="1879113985" />
+                            </portMappingHasAliasPorts>
+                            <portMappingHasAliasPorts Id="4afabb13-f781-401b-bb13-3c51874b8fee">
+                              <aliasPort Id="20679781-9ef6-4bc9-a915-db46a0f1039f" name="SdsId66.ChannelId2" sdsId="66" channelId="2" channelName="OutputChannel2" functionId="1879114241" />
+                            </portMappingHasAliasPorts>
+                          </aliasPorts>
+                        </portMapping>
+                      </functionBlockPortHasPortMappings>
+                    </portMappings>
+                  </outPort>
+                </functionBlockHasOutPorts>
+              </outPorts>
+              <parameterPorts>
+                <functionBlockHasParamPorts Id="afebca18-5cbd-4b23-979b-2864982db6db">
+                  <parameterPort Id="f6aaed60-b3e9-4665-94d5-97a1cccc0728" name="Delay Time (ms)" portName="Delay Time (ms)" portNum="8" objectIndex="0" varId="0" filter="0" portDataType="0" timing="100" />
+                </functionBlockHasParamPorts>
+              </parameterPorts>
+            </fBMon>
+          </networkHasFunctionBlocks>
+        </functionBlocks>
+      </Network>
+    </safetyApplicationHasNetworks>
+    <safetyApplicationHasNetworks Id="86fd7cf1-4888-487b-8e7b-b8a7b8be42b7">
+      <Network Id="62906a00-3a8b-46d7-9b56-92e5be72d6a7" name="Network6" networkName="Network6" intId="6" networkOrderId="5">
+        <functionBlocks>
+          <networkHasFunctionBlocks Id="32ce8b68-9cb7-4a4d-9f22-26e22445a38b">
+            <fBMon Id="ea44cea9-0b4e-46da-8391-237e56c24712" name="FBMon1" instanceName="FBMon6" orderOfExecution="6" mapState="false" mapDiag="false" xmlid="0" functionName="safeMon" safeInputsAfterDiscError="false" manualFunctionTest="false">
+              <inPorts>
+                <functioBlockHasInPorts Id="20a157b1-739d-4ca5-bc68-efd646cc51bd">
+                  <inPort Id="eba22dce-de03-403a-a12a-71aa1f161040" name="Restart" portName="Restart" portNum="2" objectIndex="0" varId="1" filter="3" portDataType="1" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="d7d50336-bcd0-4b71-9937-a6a092b2057a">
+                  <inPort Id="17f6c047-bb40-4d81-8e68-356804b55ef9" name="MonIn1" portName="MonIn1" assignedVariable="TwinSafeGroup1.Network1.FBEstop1.EStopOut" portNum="4" objectIndex="8" varId="4" filter="2" portDataType="1" channelInterface="Single-Channel 1 Activated" deactivate1="Break Contact (NC)" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="92735185-12b5-44a8-a38f-6f044a780047">
+                  <inPort Id="c11ea516-7c04-4125-a93d-702e579de3d8" name="MonIn2" portName="MonIn2" portNum="5" objectIndex="9" varId="5" filter="2" portDataType="1" channelInterface="Both Deactivated" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="c4e37b6a-5061-4445-bf7c-f103c08c6f7e">
+                  <inPort Id="92dddfa0-5109-473e-8082-07fb96029792" name="MonIn3" portName="MonIn3" portNum="6" objectIndex="10" varId="6" filter="2" portDataType="1" channelInterface="Both Deactivated" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="968b3aca-9820-4a64-9573-af8101e95ca8">
+                  <inPort Id="9d000990-a452-472c-86ed-bfbb37501e98" name="MonIn4" portName="MonIn4" portNum="7" objectIndex="11" varId="7" filter="2" portDataType="1" channelInterface="Both Deactivated" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="22a3f0b6-de1e-45c8-8b3c-bdd5338e8f16">
+                  <inPort Id="36fb86fa-a98e-4005-a578-bb0bafcfcd23" name="Secure1" portName="Secure1" portNum="9" objectIndex="12" varId="9" filter="2" portDataType="1" channelInterface="Both Deactivated" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="c65d5537-a9c6-40ff-bc04-7c8e3d7c310c">
+                  <inPort Id="39f1bc0c-2408-4daf-a779-c9ebfee7c0c8" name="Secure2" portName="Secure2" portNum="10" objectIndex="13" varId="10" filter="2" portDataType="1" channelInterface="Both Deactivated" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="399a2f60-05bd-4f87-8eb0-4bd0abf43e98">
+                  <inPort Id="a4b5d718-f049-4849-aa47-7ddcd3e90350" name="EDM1" portName="EDM1" portNum="13" objectIndex="1" varId="13" filter="3" portDataType="1" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+                <functioBlockHasInPorts Id="2f96861e-73e9-4407-a808-3d5b16831e5d">
+                  <inPort Id="9e96427d-57cd-47e9-9256-a6736391a780" name="EDM2" portName="EDM2" portNum="14" objectIndex="2" varId="14" filter="3" portDataType="1" maxDeviation="0" resetTime="0" />
+                </functioBlockHasInPorts>
+              </inPorts>
+              <outPorts>
+                <functionBlockHasOutPorts Id="526a2e07-23c4-44e3-88bc-827663acad3a">
+                  <outPort Id="c69452b3-7e45-4997-b027-45517e44267c" name="Error" portName="Error" portNum="4" objectIndex="0" varId="16" filter="7" portDataType="1" replacementValue="0" />
+                </functionBlockHasOutPorts>
+                <functionBlockHasOutPorts Id="541d9e3b-ae8a-4d55-a6ed-f3af7ac42f0a">
+                  <outPort Id="5bf7813d-8f09-4be2-a5f1-d30d379ca7d2" name="MonOut" portName="MonOut" assignedVariable="bPloterFalownikEstopOut" portNum="11" objectIndex="1" varId="23" filter="7" portDataType="1" replacementValue="0">
+                    <portMappings>
+                      <functionBlockPortHasPortMappings Id="619cfa81-968b-43d9-9639-b42748bd7727">
+                        <portMapping Id="59b447e2-b15d-4197-b035-7390e1026c28" name="FBMon1_MonOut_mapping" direction="output" dataType="safeBool" assignedVariable="bPloterFalownikEstopOut" physicalPorts="59.OutputChannel2;59.OutputChannel3">
+                          <aliasPorts>
+                            <portMappingHasAliasPorts Id="77b60438-ee64-49d3-9701-eeb135bd8995">
+                              <aliasPort Id="da90c48a-2467-4c74-bbc0-cabdc3aac97d" name="SdsId59.ChannelId2" sdsId="59" channelId="2" channelName="OutputChannel2" functionId="1879114241" />
+                            </portMappingHasAliasPorts>
+                            <portMappingHasAliasPorts Id="864ae0f1-47e9-4836-864a-e24da14a769d">
+                              <aliasPort Id="a692d738-db41-4c67-88f4-fd514a0868cf" name="SdsId59.ChannelId3" sdsId="59" channelId="3" channelName="OutputChannel3" functionId="1879114497" />
+                            </portMappingHasAliasPorts>
+                          </aliasPorts>
+                        </portMapping>
+                      </functionBlockPortHasPortMappings>
+                    </portMappings>
+                  </outPort>
+                </functionBlockHasOutPorts>
+                <functionBlockHasOutPorts Id="894235c4-9458-4f15-8fa4-70fc5e98b77c">
+                  <outPort Id="2a773159-1a7b-414b-9764-b6ac77ac2f3c" name="MonDelOut" portName="MonDelOut" portNum="12" objectIndex="2" varId="25" filter="7" portDataType="1" replacementValue="0" />
+                </functionBlockHasOutPorts>
+              </outPorts>
+              <parameterPorts>
+                <functionBlockHasParamPorts Id="d4e45a11-bd12-4264-8dfe-f88356c404ff">
+                  <parameterPort Id="2d9947d6-ac0d-4f1c-afa1-aedce7288eb7" name="Delay Time (ms)" portName="Delay Time (ms)" portNum="8" objectIndex="0" varId="0" filter="0" portDataType="0" timing="100" />
+                </functionBlockHasParamPorts>
+              </parameterPorts>
+            </fBMon>
+          </networkHasFunctionBlocks>
+        </functionBlocks>
+      </Network>
+    </safetyApplicationHasNetworks>
+  </networks>
+  <twinSAFEGroupAliasPorts>
+    <safetyApplicationHasTwinSAFEGroupAliasPort Id="89539563-cebb-4423-aa68-485da1e0fbae">
+      <twinSAFEGroupAliasPort Id="f346afcb-d669-4ee3-a024-8f3cd6cb6441" name="ErrAck.SdsId42.ChannelId1" sdsId="42" channelId="1" portName="ErrAck" functionId="1131179973" />
+    </safetyApplicationHasTwinSAFEGroupAliasPort>
+    <safetyApplicationHasTwinSAFEGroupAliasPort Id="df29cdbc-83f1-4239-b479-288f14a506a9">
+      <twinSAFEGroupAliasPort Id="5489320c-75e8-4858-a780-f06550280417" name="RunStop.SdsId43.ChannelId1" sdsId="43" channelId="1" portName="RunStop" functionId="1131179973" />
+    </safetyApplicationHasTwinSAFEGroupAliasPort>
+    <safetyApplicationHasTwinSAFEGroupAliasPort Id="261e40e3-994c-463c-9608-9f922474ea54">
+      <twinSAFEGroupAliasPort Id="0b9c748c-ea38-4131-8c73-74ccde43fcbd" name="ComErr.SdsId44.ChannelId1" sdsId="44" channelId="1" portName="ComErr" functionId="1131179972" />
+    </safetyApplicationHasTwinSAFEGroupAliasPort>
+    <safetyApplicationHasTwinSAFEGroupAliasPort Id="1a995b48-2439-4150-9836-624a29407c6a">
+      <twinSAFEGroupAliasPort Id="73a9ca65-66ec-475f-a1bc-573fb912a527" name="FbErr.SdsId45.ChannelId1" sdsId="45" channelId="1" portName="FbErr" functionId="1131179972" />
+    </safetyApplicationHasTwinSAFEGroupAliasPort>
+    <safetyApplicationHasTwinSAFEGroupAliasPort Id="53b766c1-aa47-428e-a2e8-987973533f6a">
+      <twinSAFEGroupAliasPort Id="2bb660ca-6b38-4173-b0b6-c3f5db537d41" name="OtherErr.SdsId46.ChannelId1" sdsId="46" channelId="1" portName="OtherErr" functionId="1131179972" />
+    </safetyApplicationHasTwinSAFEGroupAliasPort>
+  </twinSAFEGroupAliasPorts>
+</safetyApplication>

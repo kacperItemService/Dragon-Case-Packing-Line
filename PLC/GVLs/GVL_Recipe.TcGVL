@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <GVL Name="GVL_Recipe" Id="{086f400e-99f0-4cd9-98a4-e7aa2c3f6e15}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL
+	
+
+			sName : STRING;
+			szer_kartonu :LREAL;
+			dl_kartonu :LREAL;
+			wys_kartonu :LREAL;
+			
+			Poz_Z_Pobranie :LREAL;
+			Poz_Z_Odlozenie :LREAL;
+			Poz_X_Pobranie :LREAL;
+			Poz_X_Odlozenie :LREAL;
+			
+			Predk_plot_pobranie :LREAL;
+			Predk_plot_odlozenie :LREAL;
+			Predk_plot_ruch: LREAL;
+			Predk_mag_pobranie :LREAL;
+			Predk_mag_odlozenie :LREAL;
+			
+			Il_rzedow: INT;
+			Il_kolumn: INT;
+			
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

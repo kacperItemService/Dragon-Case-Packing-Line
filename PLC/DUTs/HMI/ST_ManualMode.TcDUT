@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <DUT Name="ST_ManualMode" Id="{90245e24-d94f-4fcb-8638-0dbe067658cd}">
+    <Declaration><![CDATA[TYPE ST_ManualMode :
+STRUCT
+	bKeyPos : BOOL;
+	bKeyNeg : BOOL;
+	bKeyRapid : BOOL;
+	nLogAxisNumber : UINT;
+	nInc			: UINT;
+	nManualTyp	: UINT;
+	nSpeed : UINT;
+	nHwResolution:	UDINT;    (* Handradauflösung in 0.1 um / Umdrehung *)
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

@@ -1,0 +1,507 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="MAIN" Id="{f73fe69f-1507-4fef-a48a-82e6f8bf4ff4}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM MAIN
+VAR
+	przycisk_1 :FB_Button;
+	bWritePersistent: BOOL;
+	fbWritePersistentData: FB_WritePersistentData;
+	nValueInt 	: INT;
+	op :ARRAY[0..10] OF TOF;
+	byByte_0 AT%I* :BYTE;
+	byByte_1 AT%I* :BYTE;
+	byByte_2 AT%I* :BYTE;
+	byByte_3 AT%I* :BYTE;
+	dwCounterValue AT%Q* :DWORD;
+//recepty 
+	nValueDword : DWORD;
+	fValueReal 	: REAL;
+	
+	sRecipe 	: STRING;
+	manual: INT;
+	bManual: BOOL;
+
+	fbBUTTONZPodajnik: FB_Button;
+	dupa: BOOL;
+	dupa1: BOOL;
+		//kartoniarka
+		zaw_ssawki: FB_BUTTON;
+		zaw_skos: FB_BUTTON;
+		zaw_zeby: FB_BUTTON;
+		zaw_klap_krot: FB_BUTTON;
+		zaw_klap_dlug: FB_BUTTON;
+		zaw_wypychacz: FB_BUTTON;
+		falownik_pasow: FB_BUTTON;
+		falownik_CW_CCW: FB_BUTTON;
+		//ploter
+		zaw_chwyt1: FB_BUTTON;
+		zaw_chwyt2: FB_BUTTON;
+		zaw_prawidlo: FB_BUTTON;
+		zaw_prawidlo_dol: FB_BUTTON;
+		zaw_hamulec: FB_BUTTON;
+		falownik_rolek: FB_BUTTON;
+		
+		//kierownica
+		zaw_ham1_kier: FB_BUTTON;
+		zaw_ham2_kier: FB_BUTTON;
+		serwo_kier: FB_BUTTON;
+		zaw_hamulec_kier: FB_BUTTON;
+		falownik_podajnik_kier: FB_BUTTON;
+		
+		//zaklejarka
+		sil_zamykacz_zaklejarka: FB_BUTTON;
+		tasmy_zaklejarka: FB_BUTTON;
+		//kolumna
+		eColumnState 		:E_ColumState;
+		
+	xStartMode: BOOL;
+	xGenError: BOOL;
+END_VAR
+
+VAR PERSISTENT
+	bTest: BOOL;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// kinematyka
+
+dwCounterValue := F_4BYTES_TO_DWORD(BByte0:=byByte_2 , BByte1:=byByte_3 , BByte2:=byByte_0 , BByte3:= byByte_1);
+
+
+P_ModeStateManager();
+P_Hbot_V3(eMachineMode:=GVL_Machine.eMode , eMachineCommand:=GVL_Machine.eCommand , eMachineState=>GVL_Machine.eState , bError=> );
+IF  GVL_Machine.eState = E_MachineState.eRunning THEN
+	bTest := TRUE;
+ELSE;
+	bTest:= FALSE;
+END_IF
+(*
+PRG_HBotv2(
+	bBuildHBot:= , 
+	bCleanHBot:= , 
+	bStopHBot:= , 
+	bManualEnableHBot:= , 
+	bManualDisableHbot:= , 
+	bSafetyPermission:=	GVL_SafetyFrom_RT2.bSAFETY_PermissionSS1 , 
+	bHbotReady=> , 
+	bHbotStoper=> );
+	*)
+fbWritePersistentData(
+	NETID:= , 
+	PORT:= , 
+	START:=bWritePersistent , 
+	TMOUT:= , 
+	MODE:= , 
+	BUSY=> , 
+	ERR=> , 
+	ERRID=> );
+
+	
+	
+//Zaklejarka
+PRG_Zaklejarka();
+//program kartoniarka 
+PRG_Kartoniarka();
+//program kierwonica
+PRG_Kierownica();
+
+//recepty 
+RecipeManagement();
+A_Obsluga();
+//eventy
+P_EventsSimple();
+//przyciski
+A_Przyciski();
+
+
+
+
+
+]]></ST>
+    </Implementation>
+    <Action Name="A_Kolumna" Id="{74e1eec6-215e-44ed-83db-a133f9d7f9d7}">
+      <Implementation>
+        <ST><![CDATA[
+	(*------------------bezpieczeństwo skasowane/manual mode------------------*)
+		IF GVL_SafetyFrom_RT2.bSAFETY_PermissionSS1 AND GVL_SafetyFrom_RT2.bSAFETY_PermissionSS2 AND NOT GVL_HMI.bAutoWybor AND NOT xGenError THEN
+		GVL_Kolumna.Segment_1:=51;
+		GVL_Kolumna.Segment_2:=3;
+		eColumnState:=E_ColumState.eManualMode;
+		ELSE
+		eColumnState:=E_ColumState.eSafety_Ready;
+		GVL_Kolumna.Segment_1:=68;
+		GVL_Kolumna.Segment_2:=4;
+		END_IF
+	(*--------------------------Gotowy do startu/pauza----------------------*)
+
+		IF GVL_SafetyFrom_RT2.bSAFETY_PermissionSS1 AND GVL_SafetyFrom_RT2.bSAFETY_PermissionSS2 AND GVL_HMI.bAutoWybor AND NOT xStartMode AND NOT xGenError  THEN
+		GVL_Kolumna.Segment_1:=153;
+		GVL_Kolumna.Segment_2:=9;
+		eColumnState:=E_ColumState.eReadyToWork;
+		END_IF
+	(*------------------------------Pracuje----------------------*)
+	
+		IF GVL_SafetyFrom_RT2.bSAFETY_PermissionSS1 AND GVL_SafetyFrom_RT2.bSAFETY_PermissionSS2 AND GVL_HMI.bAutoWybor AND xStartMode AND NOT xGenError  THEN
+		GVL_Kolumna.Segment_1:=17;
+		GVL_Kolumna.Segment_2:=1;
+		eColumnState:=E_ColumState.eWork;
+		END_IF
+		
+	(*------------------------------obsługa przycisków start stop----------------------*)
+		IF GVL_IO.B1K1 THEN
+		xStartMode:=TRUE;
+		ELSIF GVL_IO.B1K3 THEN
+		xStartMode:=FALSE;
+		END_IF
+		]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_Obsluga" Id="{031ffa41-6f67-4452-88b4-add5b9da8cfc}">
+      <Implementation>
+        <ST><![CDATA[//PLOTER MANUAL 
+
+IF GVL_HMI.bManual=TRUE AND GVL_HMI.bAuto=FALSE THEN
+	
+
+GVL_IO_P.b1K1:=gvl_hmi.bDojkiM;
+//PRG_HBotv2.bManualEnableHBot:=TRUE;
+
+
+ELSE
+	
+//PRG_HBotv2.bManualEnableHBot:=FALSE;
+
+END_IF
+//PLOTER AUTOMAT MANUAL 
+IF GVL_HMI.bManual=FALSE AND GVL_HMI.bAuto=TRUE AND GVL_HMI.bEnablePloter=TRUE THEN
+
+	
+//PRG_HBotv2.bBuildHBot:=TRUE;
+
+ELSE
+	
+//PRG_HBotv2.bBuildHBot:=FALSE;
+
+END_IF
+//KARTONIARKA AUTOMAT MANUAL 
+IF GVL_HMI.bManual=FALSE AND GVL_HMI.bAuto=TRUE AND GVL_HMI.bEnableKartoniarka=TRUE THEN
+	
+GVL_GLOBAL.bEnableKartoniarka:=TRUE;
+
+ELSE
+	
+GVL_GLOBAL.bEnableKartoniarka:=FALSE;
+
+END_IF
+//ZAKLEJARKA AUTOMAT MANUAL 
+IF GVL_HMI.bManual=FALSE AND GVL_HMI.bAuto=TRUE AND GVL_HMI.bEnableZaklejarka=TRUE THEN
+	
+GVL_GLOBAL.bEnableZaklejarka:=TRUE;
+
+ELSE
+	
+GVL_GLOBAL.bEnableZaklejarka:=FALSE;
+
+END_IF
+//KIEROWNCICA AUTOMAT MANUAL 
+IF GVL_HMI.bManual=FALSE AND GVL_HMI.bAuto=TRUE AND GVL_HMI.bEnableKierownica=TRUE THEN
+	
+GVL_GLOBAL.bEnableKierownica:=TRUE;
+
+ELSE
+	
+GVL_GLOBAL.bEnableKierownica:=FALSE;
+
+END_IF
+
+
+//WYBÓR AUTO MANUAL
+
+IF gvl_hmi.bAutoWybor=TRUE THEN
+	
+GVL_HMI.bManual:=FALSE;
+GVL_HMI.bAuto:=TRUE;
+ELSE 
+	
+GVL_HMI.bManual:=TRUE;
+GVL_HMI.bAuto:=FALSE;
+END_IF
+
+
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_Przyciski" Id="{485c7243-943a-40a4-bcbf-06f794f2a8de}">
+      <Implementation>
+        <ST><![CDATA[ GVL_SafetyFrom_RT2.bSAFETY_ResetCMD :=gvl_io.b1K8;//reset bezpieczenstwa
+ 
+ IF GVL_SafetyFrom_RT2.bSAFETY_PermissionSS1=TRUE AND GVL_SafetyFrom_RT2.bSAFETY_PermissionSS2=TRUE THEN
+	 
+  gvl_io.K1K2:=0;
+ ELSE
+	 
+ gvl_io.K1K2:=1;
+ 
+ 
+ END_IF
+ 
+//IF GVL_HMI.bAutoWybor=FALSE THEN 
+	
+//kartoniarka
+zaw_ssawki(bprzyciskIn:= GVL_HMI.przycisk_zaw_ssawki,bAuto:=GVL_HMI.bAutoWybor, bprzyciskOut=>GVL_GLOBAL.zaw_ssawki_cewka);
+zaw_skos(bprzyciskIn:= GVL_HMI.przycisk_zaw_skos,bAuto:=GVL_HMI.bAutoWybor, bprzyciskOut=>GVL_GLOBAL.zaw_skos_cewka);
+zaw_zeby(bprzyciskIn:= GVL_HMI.przycisk_zaw_zeby,bAuto:=GVL_HMI.bAutoWybor, bprzyciskOut=>GVL_GLOBAL.zaw_zeby_cewka);
+zaw_klap_krot(bprzyciskIn:= GVL_HMI.przycisk_zaw_klap_krot,bAuto:=GVL_HMI.bAutoWybor, bprzyciskOut=> GVL_GLOBAL.zaw_klap_krot_cewka);
+zaw_klap_dlug(bprzyciskIn:= GVL_HMI.przycisk_zaw_klap_dlug,bAuto:=GVL_HMI.bAutoWybor, bprzyciskOut=> GVL_GLOBAL.zaw_klap_dlug_cewka);
+zaw_wypychacz(bprzyciskIn:=GVL_HMI.przycisk_zaw_wypychacz,bAuto:=GVL_HMI.bAutoWybor, bprzyciskOut=>GVL_GLOBAL.zaw_wypychacz_cewka);
+falownik_pasow(bprzyciskIn:= GVL_HMI.przycisk_falownik_pasow,bAuto:=GVL_HMI.bAutoWybor, bprzyciskOut=> GVL_GLOBAL.falownik_pasow_cewka);
+//END_IF
+
+IF GVL_HMI.bAuto=FALSE  AND gvl_hmi.bEnableKartoniarka=TRUE THEN 
+GVL_IO.P_Vac:=GVL_GLOBAL.zaw_ssawki_cewka;
+GVL_IO.S_skos:=GVL_GLOBAL.zaw_skos_cewka;
+GVL_IO.S_Zeb:=GVL_GLOBAL.zaw_zeby_cewka;
+GVL_IO.S_Kl_1:=GVL_GLOBAL.zaw_klap_krot_cewka;
+GVL_IO.S_Kl_2:=GVL_GLOBAL.zaw_klap_dlug_cewka;
+GVL_IO.S_Wypych:=GVL_GLOBAL.zaw_wypychacz_cewka;
+GVL_IO.S_Fal:=GVL_GLOBAL.falownik_pasow_cewka;
+
+END_IF
+
+IF GVL_HMI.bAuto=TRUE THEN
+GVL_IO.P_Vac :=GVL_global.zaw_ssawki_auto;
+GVL_IO.S_skos:=GVL_GLOBAL.S_skos;
+GVL_IO.S_Zeb:=GVL_GLOBAL.S_KL_Dl;
+GVL_IO.S_Kl_1:=	GVL_global.S_KL1_K;
+GVL_IO.S_Kl_2:= GVL_global.S_KL2_K;
+GVL_IO.S_Wypych:= GVL_global.S_Wy;
+GVL_IO.S_Fal:=GVL_GLOBAL.F1_CW; //GVL_GLOBAL.falownik_pasow_auto
+END_IF
+
+//ploter
+zaw_chwyt1(bprzyciskIn:= GVL_HMI.przycisk_zaw_chwyt1,bAuto:=GVL_HMI.bAutoWybor, bprzyciskOut=>GVL_GLOBAL.zaw_chwyt1_cewka);
+zaw_chwyt2(bprzyciskIn:= GVL_HMI.przycisk_zaw_chwyt2,bAuto:=GVL_HMI.bAutoWybor, bprzyciskOut=> GVL_GLOBAL.zaw_chwyt2_cewka);
+zaw_prawidlo(bprzyciskIn:= GVL_HMI.przycisk_zaw_prawidlo,bAuto:=GVL_HMI.bAutoWybor, bprzyciskOut=> GVL_GLOBAL.zaw_prawidlo_cewka);
+zaw_prawidlo_dol(bprzyciskIn:= GVL_HMI.przycisk_zaw_prawdidlo_dol,bAuto:=GVL_HMI.bAutoWybor, bprzyciskOut=> GVL_GLOBAL.zaw_prawidlo_dol_cewka);
+zaw_hamulec(bprzyciskIn:=GVL_HMI.przycisk_zaw_hamulec,bAuto:=GVL_HMI.bAutoWybor, bprzyciskOut=>GVL_GLOBAL.zaw_hamulec_cewka);
+falownik_rolek(bprzyciskIn:= GVL_HMI.przycisk_falownik_rolek,bAuto:=GVL_HMI.bAutoWybor, bprzyciskOut=> GVL_GLOBAL.falownik_rolek_cewka);
+
+IF GVL_HMI.bAuto=FALSE AND gvl_hmi.bEnablePloter=TRUE THEN  
+GVL_IO_P.b1K1:=GVL_GLOBAL.zaw_chwyt1_cewka;
+GVL_IO_P.b2K1:=GVL_GLOBAL.zaw_chwyt2_cewka;
+GVL_IO_P.b3K1:=GVL_GLOBAL.zaw_prawidlo_cewka;
+GVL_IO_P.b4K1:=GVL_GLOBAL.zaw_prawidlo_dol_cewka;
+GVL_IO_P.b5K1:=GVL_GLOBAL.zaw_hamulec_cewka;
+GVL_IO_P.b6K1:=GVL_GLOBAL.falownik_rolek_cewka;
+END_IF
+
+IF GVL_HMI.bAuto=TRUE THEN
+GVL_IO_P.b1K1:=GVL_GLOBAL.zaw_chwyt1_auto;
+GVL_IO_P.b2K1:=GVL_GLOBAL.zaw_chwyt2_auto;
+GVL_IO_P.b3K1:=GVL_GLOBAL.zaw_prawidlo_auto;
+GVL_IO_P.b4K1:=GVL_GLOBAL.zaw_prawidlo_dol_auto;
+GVL_IO_P.b5K1:=GVL_GLOBAL.zaw_hamulec_auto;
+GVL_IO_P.b6K1:=GVL_GLOBAL.falownik_rolek_auto; 
+END_IF
+
+//kierownica
+zaw_ham1_kier(bprzyciskIn:= GVL_HMI.przycisk_zaw_ham1_kier,bAuto:=GVL_HMI.bAutoWybor, bprzyciskOut=>GVL_GLOBAL.zaw_ham1_kier_cewka);
+zaw_ham2_kier(bprzyciskIn:= GVL_HMI.przycisk_zaw_ham2_kier,bAuto:=GVL_HMI.bAutoWybor, bprzyciskOut=> GVL_GLOBAL.zaw_ham2_kier_cewka);
+serwo_kier(bprzyciskIn:= GVL_HMI.przycisk_serwo_kier,bAuto:=GVL_HMI.bAutoWybor, bprzyciskOut=> GVL_GLOBAL.serwo_kier_cewka);
+zaw_hamulec_kier(bprzyciskIn:=GVL_HMI.przycisk_zaw_hamulec_kier,bAuto:=GVL_HMI.bAutoWybor, bprzyciskOut=>GVL_GLOBAL.zaw_hamulec_kier_cewka);
+falownik_podajnik_kier(bprzyciskIn:= GVL_HMI.przycisk_falownik_podajnik_kier,bAuto:=GVL_HMI.bAutoWybor, bprzyciskOut=> GVL_GLOBAL.falownik_podajnik_kier_cewka);
+
+
+IF GVL_HMI.bAuto=FALSE AND gvl_hmi.bEnableKierownica=TRUE THEN 
+GVL_IO_K.bK1:=GVL_GLOBAL.zaw_ham1_kier_cewka;
+GVL_IO_K.bK2:=GVL_GLOBAL.zaw_ham2_kier_cewka;
+GVL_IO_K.bK3:=GVL_GLOBAL.serwo_kier_cewka;
+GVL_IO_K.bK4:=GVL_GLOBAL.zaw_hamulec_kier_cewka;
+GVL_IO_K.bK5:=GVL_GLOBAL.falownik_podajnik_kier_cewka;
+END_IF
+
+IF GVL_HMI.bAuto=TRUE THEN
+GVL_IO_K.bK1:=GVL_IO_K.bK1;
+GVL_IO_K.bK2:=GVL_IO_K.bK2;
+GVL_IO_K.bK4:=GVL_GLOBAL.zaw_hamulec_kier_auto;
+GVL_IO_K.bK5:=GVL_GLOBAL.b_FK_CCW;
+END_IF
+	
+
+
+//zaklejarka
+sil_zamykacz_zaklejarka(bprzyciskIn:= GVL_HMI.przycisk_sil_zamykacz_zaklejarka, bAuto:=GVL_HMI.bAutoWybor,bprzyciskOUT=>GVL_GLOBAL.sil_zamykacz_zaklejarka_cewka);
+tasmy_zaklejarka(bprzyciskIn:= GVL_HMI.przycisk_tasmy_zaklejarka,bAuto:=GVL_HMI.bAutoWybor, bprzyciskOUT=>GVL_GLOBAL.tasmy_zaklejarka_cewka);
+
+IF GVL_HMI.bAuto=FALSE AND gvl_hmi.bEnableZaklejarka=TRUE THEN 
+	
+GVL_ZAK_IO.b_Sil_Zamkniecie:= GVL_GLOBAL.sil_zamykacz_zaklejarka_cewka;
+GVL_ZAK_IO.b_tasma:= GVL_GLOBAL.tasmy_zaklejarka_cewka ;
+
+END_IF
+
+IF GVL_HMI.bAuto=TRUE THEN 
+	
+GVL_ZAK_IO.b_Sil_Zamkniecie:=GVL_GLOBAL.zamykacz_zaklejarka_auto;
+GVL_ZAK_IO.b_tasma:=GVL_GLOBAL.bFZaklejarka_CCW;
+
+
+ELSE
+//kartoniarka
+GVL_HMI.przycisk_zaw_ssawki							:=0;
+GVL_HMI.przycisk_zaw_klap_krot						:=0;
+GVL_HMI.przycisk_zaw_skos							:=0;
+GVL_HMI.przycisk_zaw_zeby							:=0;
+GVL_HMI.przycisk_zaw_klap_dlug						:=0;
+GVL_HMI.przycisk_zaw_wypychacz						:=0;
+GVL_HMI.przycisk_falownik_pasow						:=0;
+//ploter
+GVL_HMI.przycisk_zaw_chwyt1							:=0;
+GVL_HMI.przycisk_zaw_chwyt2							:=0;
+GVL_HMI.przycisk_zaw_prawidlo						:=0;
+GVL_HMI.przycisk_zaw_prawdidlo_dol					:=0;
+GVL_HMI.przycisk_zaw_hamulec						:=0;
+GVL_HMI.przycisk_falownik_rolek						:=0;
+//kierownica
+GVL_HMI.przycisk_zaw_ham1_kier						:=0;
+GVL_HMI.przycisk_zaw_ham2_kier						:=0;
+GVL_HMI.przycisk_serwo_kier							:=0;
+GVL_HMI.przycisk_zaw_hamulec_kier					:=0;
+GVL_HMI.przycisk_falownik_podajnik_kier				:=0;
+//zaklejarka
+GVL_HMI.przycisk_sil_zamykacz_zaklejarka			:=0;
+GVL_HMI.przycisk_tasmy_zaklejarka					:=0;
+END_IF
+
+(*Tymczasowe obsługa serwa w manualu
+IF GVL_HMI.bAuto=FALSE THEN			
+	J_Vel:=100;
+	bJog_F:=GVL_HMI.bHmiJogKF;
+	bJog_B:=GVL_HMI.bHmiJogKB;	
+
+END_IF
+*)
+
+
+]]></ST>
+      </Implementation>
+    </Action>
+    <LineIds Name="MAIN">
+      <LineId Id="894" Count="53" />
+      <LineId Id="409" Count="0" />
+    </LineIds>
+    <LineIds Name="MAIN.A_Kolumna">
+      <LineId Id="5" Count="0" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="26" Count="2" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="29" Count="3" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="34" Count="3" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="46" Count="3" />
+      <LineId Id="45" Count="0" />
+      <LineId Id="50" Count="0" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="51" Count="0" />
+      <LineId Id="53" Count="0" />
+      <LineId Id="55" Count="0" />
+      <LineId Id="58" Count="0" />
+      <LineId Id="54" Count="0" />
+      <LineId Id="52" Count="0" />
+    </LineIds>
+    <LineIds Name="MAIN.A_Obsluga">
+      <LineId Id="54" Count="1" />
+      <LineId Id="1" Count="1" />
+      <LineId Id="6" Count="0" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="10" Count="1" />
+      <LineId Id="4" Count="0" />
+      <LineId Id="3" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="69" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="25" Count="8" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="35" Count="8" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="53" Count="0" />
+      <LineId Id="45" Count="7" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="57" Count="1" />
+      <LineId Id="56" Count="0" />
+      <LineId Id="60" Count="0" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="61" Count="0" />
+      <LineId Id="64" Count="1" />
+      <LineId Id="63" Count="0" />
+      <LineId Id="66" Count="0" />
+      <LineId Id="68" Count="0" />
+      <LineId Id="67" Count="0" />
+      <LineId Id="62" Count="0" />
+      <LineId Id="86" Count="0" />
+      <LineId Id="75" Count="0" />
+      <LineId Id="74" Count="0" />
+    </LineIds>
+    <LineIds Name="MAIN.A_Przyciski">
+      <LineId Id="89" Count="15" />
+      <LineId Id="362" Count="1" />
+      <LineId Id="105" Count="4" />
+      <LineId Id="341" Count="0" />
+      <LineId Id="110" Count="1" />
+      <LineId Id="364" Count="1" />
+      <LineId Id="112" Count="2" />
+      <LineId Id="399" Count="0" />
+      <LineId Id="406" Count="0" />
+      <LineId Id="116" Count="3" />
+      <LineId Id="367" Count="0" />
+      <LineId Id="366" Count="0" />
+      <LineId Id="120" Count="4" />
+      <LineId Id="373" Count="0" />
+      <LineId Id="126" Count="3" />
+      <LineId Id="358" Count="0" />
+      <LineId Id="130" Count="8" />
+      <LineId Id="360" Count="0" />
+      <LineId Id="139" Count="5" />
+      <LineId Id="361" Count="0" />
+      <LineId Id="145" Count="11" />
+      <LineId Id="344" Count="4" />
+      <LineId Id="403" Count="0" />
+      <LineId Id="350" Count="0" />
+      <LineId Id="405" Count="0" />
+      <LineId Id="352" Count="2" />
+      <LineId Id="356" Count="1" />
+      <LineId Id="215" Count="0" />
+      <LineId Id="228" Count="0" />
+      <LineId Id="296" Count="16" />
+      <LineId Id="394" Count="0" />
+      <LineId Id="315" Count="4" />
+      <LineId Id="369" Count="1" />
+      <LineId Id="320" Count="6" />
+      <LineId Id="368" Count="0" />
+      <LineId Id="327" Count="11" />
+      <LineId Id="412" Count="0" />
+      <LineId Id="339" Count="0" />
+      <LineId Id="407" Count="4" />
+      <LineId Id="340" Count="0" />
+      <LineId Id="413" Count="0" />
+      <LineId Id="213" Count="1" />
+      <LineId Id="22" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

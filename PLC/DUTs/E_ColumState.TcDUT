@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <DUT Name="E_ColumState" Id="{ccee3b71-bb6e-4a8f-8539-0ceefe18ac1f}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'strict'}
+TYPE E_ColumState :
+(	
+	eIdle			:=0,
+	eClear_Estop	:=10,
+	eSafety_Ready	:=20,
+	eReadyToWork	:=30,
+	eRun			:=40,
+	eError			:=50,
+	eEstopPush		:=60,	
+	eManualMode		:=70,
+	eWork		:=80
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

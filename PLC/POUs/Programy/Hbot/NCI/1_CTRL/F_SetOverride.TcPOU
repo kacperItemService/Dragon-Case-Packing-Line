@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="F_SetOverride" Id="{f645daea-8dcd-4653-af34-1d8c6ae42d1e}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION F_SetOverride : BOOL
+VAR_INPUT
+	nOverride: 	UDINT;
+	nChannel: 	UINT;
+	bFeedHold: 	BOOL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* ==========================================================*)
+(*   FUN: F_SetOverride			                           	 *)
+(* ----------------------------------------------------------*)
+(*   Desc:                                                   *)
+(*   Auth: MiB / TV                                          *)
+(*   Date: 02.09.2005                                        *)
+(*   Last: 02.04.2013                                        *)
+(*   Rev.: 1.1                                               *)
+(*    1.1 25.4.2006: bFeedHold rausgenommen	(MiB)		 *)
+(* 1.2 12.8.2008: FeedHold aus PLCMachineMode reingenommen *)
+(* ==========================================================*)
+
+
+(* channl 1 = PTP channel *)
+
+(* NCI channels *)
+IF (nChannel > 1) THEN
+		IF (NOT PLCMachineMode[nChannel].FeedHold) THEN
+			ItpSetOverridePercent(nOverride, arrPLCToNC_NCIChannel_REF[nChannel-1]);
+		ELSE
+			ItpSetOverridePercent(0, arrPLCToNC_NCIChannel_REF[nChannel-1]);
+		END_IF
+END_IF
+
+F_SetOverride := TRUE;
+]]></ST>
+    </Implementation>
+    <LineIds Name="F_SetOverride">
+      <LineId Id="3" Count="24" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

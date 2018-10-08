@@ -1,0 +1,588 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="PRG_Kartoniarka" Id="{b91fabf6-99f1-40b6-8ff7-2cf53c893103}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM PRG_Kartoniarka
+VAR
+		bTest2				:BOOL:=TRUE;
+		falownik2			:FB_MX2;
+		Falownik1			:FB_MX2;
+		fb_Mag_POS			:FB_MX2_POS;
+		F1_CW				:BOOL;
+		F1_CCW				:BOOL;
+		F1_FQ				:INT;
+		L_Kolejny 			:INT;
+		MagDocisk1			:BOOL;
+		P_FIRST_CYCLE  		:R_TRIG;
+		R_Pobranie_Kierwonica:R_TRIG;
+
+		tm_error:  TIME := T#5S;
+		errorTimer  :ARRAY[0..240] OF TON;
+		Errors :ARRAY[0..100] OF BOOL;
+		i_spr_blad : INT;
+		Error_ind: bool;
+	//balluff funkcja do zmiany I/o
+	
+	bSelect :BOOL;
+	iIO_Link_Port :INT;
+	iIndex :INT;
+	iSubindex :INT;
+	iDataLenght :UINT;
+	arWrite_Data :ARRAY [0..20] OF BYTE;
+	bStart :BOOL;
+	arRead_Data :ARRAY[0..240] OF BYTE;
+	bError :BOOL;
+	
+	//bloki do serwa
+	S_Power :MC_Power;
+	S_Move :MC_MoveAbsolute;
+	S_Jog :MC_Jog;
+	S_Reset :mc_reset;
+	cz  :ARRAY[0..240] OF TON;
+	czas  :ARRAY[0..240] OF TON;
+	
+	
+	bEnable: BOOL;
+	bJog_F: BOOL;
+	bJog_B: BOOL;
+	J_Vel: LREAL;
+	bExecute: BOOL;
+	Position: LREAL;
+	Predkosc: LREAL;
+	Automat: FB_K_Auto;
+	F_Reset: BOOL;
+	A_Error: BOOL;
+	A_Error_ID: UDINT;
+	Reset: BOOL;
+	F2_CW: BOOL;
+	F2_CCW: BOOL;
+	F2_FQ: INT;
+	Cz_M_D: INT;
+	podjazd: BOOL;
+	b_Stop_Kartoniarka: BOOL;
+	
+	bExecute_Mag: BOOL;
+	bJogMinus_Mag: BOOL;
+	bStop_Mag: BOOL;
+	lrPosition_Mag: LREAL;
+	lrVelocity_Mag: LREAL;
+	lrAcc_Mag: LREAL;
+	lrDcc_Mag: LREAL;
+	bKoniecKartonow: BOOL;
+	fbMagazyn: FB_Magazyn;
+	bMagazynLaduj: BOOL;
+	bMagazynDocisk: BOOL;
+	bMagazynAutomat: BOOL;
+	bResetMagazyn: BOOL;
+	bMagazynZaladuj: BOOL;
+	bMagazynZaladowany: BOOL;
+	iMagazynPredkoscAuto: INT;
+	bMagazynPodjazdAuto: BOOL;
+	bMagazynCofniAuto: BOOL;
+	abMagazynBlad: ARRAY [0..100] OF BOOL;
+	MagAutomat: BOOL;
+	bMagazynPodjazdManual: BOOL;
+	bMagazynCofniManual: BOOL;
+	
+	fale: INT;
+	MagDocisk: INT;
+	K_Magazyn: FB_Magazyn;
+END_VAR
+
+VAR_INPUT
+	bJogPlus_Mag: BOOL;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//automat
+M_Automat();
+//falowniki kartoniarka
+M_F_Kartoniarka();
+//serwa kartoniarka obsługa
+M_K_Serwo();
+//obsługa io-linka 
+M_K_IO_Link();
+//obsluga auto manual magazyn
+A_FmagazynDocisk();
+//obsługa przycisków kartoniarki
+A_Przyciski_Kartoniarka();
+//
+A_Magazyn();
+//A_Obsluga_bledow(); /// dodane moje
+//obsługa manual auto 
+
+	//IF GVL_HMI.bManual=TRUE THEN
+IF GVL_HMI.bAuto=FALSE THEN			
+	J_Vel:=100;
+	bJog_F:=GVL_HMI.bHmiJogKF;
+	bJog_B:=GVL_HMI.bHmiJogKB;	
+
+END_IF
+]]></ST>
+    </Implementation>
+    <Action Name="A_FmagazynDocisk" Id="{f6215f1e-faf8-4f52-9166-8363ded478dd}">
+      <Implementation>
+        <ST><![CDATA[
+
+	
+	IF GVL_HMI.zaladowalem=TRUE AND  GVL_IO.Cz_M_D=FALSE AND gvl_hmi.bAuto=TRUE AND GVL_HMI.zaladuj=FALSE AND czas[0].Q=FALSE THEN
+	
+		iMagazynPredkoscAuto:=2000;
+		bMagazynPodjazdAuto:=TRUE;
+		GVL_HMI.zaladowalem:=TRUE;
+		
+	END_IF
+	IF gvl_hmi.bAuto=TRUE  AND czas[2].Q=TRUE AND GVL_HMI.zaladuj=FALSE THEN
+		
+
+		iMagazynPredkoscAuto:=0;
+		bMagazynPodjazdAuto:=FALSE;
+	
+	
+	END_IF
+		
+	IF GVL_HMI.zaladuj=TRUE AND czas[1].Q=FALSE AND gvl_hmi.bAuto=TRUE THEN
+		
+		GVL_HMI.zaladowalem:=FALSE;
+		iMagazynPredkoscAuto:=2000;
+		bMagazynCofniAuto:=TRUE;
+	END_IF
+	IF czas[1].Q=TRUE THEN
+		
+		//iMagazynPredkoscAuto:=0;
+		bMagazynCofniAuto:=FALSE;
+		GVL_HMI.zaladuj:=FALSE; 
+	
+	END_IF
+	
+	czas[0](IN:=bMagazynPodjazdAuto=TRUE,PT:=T#10S);
+	czas[1](IN:=bMagazynCofniAuto=TRUE,PT:=T#3S);
+	czas[2](IN:=GVL_IO.Cz_M_D=TRUE,PT:=T#1S);]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_Magazyn" Id="{0f955fcd-d3b8-45fc-9bb7-fa942d35020a}">
+      <Implementation>
+        <ST><![CDATA[K_Magazyn(
+	xPodjedz:=gvl_io.bStart, 
+	xWydajKarton:=, 
+	xKartonPobrany:=, 
+	xCzPodjazd:=, 
+	xCzTrzymacz1:=, 
+	xCzTrzymacz2:=GVL_IO.bCzujnik_Trzymacz1, 
+	xSilPodpych=>GVL_IO.K1K4, 
+	xSilTrzymacz1=>GVL_IO.K1K1, 
+	xSilTrzymacz2=>GVL_IO.K1K3, 
+	xWydalemKarton=>, 
+	xBlad=> );]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_Obsluga_bledow" Id="{4dfb6d6e-f19d-4e38-98de-779948848ef0}">
+      <Implementation>
+        <ST><![CDATA[
+
+// WYŚWIERLANIE NUMERU BŁĘDU 
+
+FOR i_spr_blad:=0 TO 10 DO
+	IF Errors[i_spr_blad]=TRUE THEN
+		i_spr_blad:=GVL_HMI.INT_idError;
+		Error_ind:=TRUE;
+	END_IF
+END_FOR
+
+IF GVL_HMI.bReset=TRUE THEN
+	Error_ind:=FALSE;
+END_IF
+
+
+
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_Przyciski_Kartoniarka" Id="{5272b911-0600-4460-9957-f1ec5594eb27}">
+      <Implementation>
+        <ST><![CDATA[IF  (gvl_hmi.A_Start=TRUE  OR  P_FIRST_CYCLE.Q=TRUE ) THEN GVL_IO.K1K5:=FALSE; GVL_IO.K1K7:=TRUE; L_Kolejny:=L_Kolejny+1; END_IF
+IF gvl_hmi.A_Stop=TRUE THEN GVL_IO.K1K5:=TRUE; GVL_IO.K1K7:=FALSE;  END_IF
+GVL_HMI.A_Start:=gvl_Io.b1K1;
+GVL_HMI.A_Stop:=GVL_IO.b1K3;
+
+
+P_FIRST_CYCLE(CLK:=GVL_HMI.Bit_Startu);]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="M_Automat" Id="{09837414-6a18-4bc7-9668-15482c15622d}">
+      <Implementation>
+        <ST><![CDATA[//Automat kartoniarka
+
+Automat(
+	Zasilanie:= GVL_HMI.bEnableKartoniarka,
+	Start:= GVL_HMI.A_Start, 
+	Stop:=GVL_HMI.A_Stop, 
+	Reset:=GVL_GLOBAL.Error_reset_kart,
+	kolejny:=GVL_HMI.Nastepny_Karton,
+	Pauza:= , 
+	Safety1:=GVL_SafetyFrom_RT2.bSAFETY_PermissionSS1,
+	Safety2:=GVL_SafetyFrom_RT2.bSAFETY_PermissionSS2,
+	W_Wys:= GVL_IO.Wyp_wys, 
+	W_Cof:= GVL_IO.Wyp_cof, 
+	Docisk_Wys:= GVL_IO.Skos_wyp, 
+	Docisk_Cof:= GVL_IO.Skos_cof, 
+	K1_Wys:= GVL_IO.Kl_1_wyp, 
+	K1_Cof:= GVL_IO.Kl_1_cof, 
+	K2_Wys:= GVL_IO.Kl_2_wyp, 
+	K2_Cof:= GVL_IO.Kl_2_cof, 
+	K_Dluga_Wyp:=GVL_IO.Zeb_Wyp , 
+	K_Dluga_Cof:= GVL_IO.Zeb_Cof, 
+	S_Ready:=S_Power.Active, 
+	S_Run:= S_Move.Busy, 
+	S_Done:=S_Move.Done,
+	xKartonWydany:=K_Magazyn.xWydalemKarton,
+	Pred_zad_podjazd:=GVL_Recipe.Predk_mag_pobranie,
+	Pred_zad_odjazd:=GVL_Recipe.Predk_mag_odlozenie,
+	S_KL_Dl=>GVL_GLOBAL.S_KL_Dl , 
+	S_KL1_K=> GVL_global.S_KL1_K, 
+	S_KL2_K=> GVL_global.S_KL2_K, 
+	S_Wy=> GVL_global.S_Wy, 
+	S_EXE=> bExecute, 
+	S_Docisk=>GVL_GLOBAL.S_skos,
+	F2_Run=>GVL_GLOBAL.F1_CW , //tutaj bylo samo F1_CW
+	Pomp_V=>GVL_global.zaw_ssawki_auto, 
+	Pozycja=>Position , 
+	Predkosc=>Predkosc , 
+	F2_CZ=>F1_FQ,
+	Error_ind=>GVL_GLOBAL.Error_ind_kart,
+	Error_numb=>GVL_GLOBAL.Error_numb_kart,
+	xKartonZabrany=>K_Magazyn.xKartonPobrany,
+	xWydajKarton=>K_Magazyn.xWydajKarton,
+    );
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="M_F_Kartoniarka" Id="{882fac88-cc9c-4123-b97e-9fab80beef08}">
+      <Implementation>
+        <ST><![CDATA[//obsługa falownika taśm wyjazdowych 
+	falownik2
+	(w_Status:=GVL_Omron.wOmron_1_Status,
+	ui_CzestotliwoscI:=F1_FQ,
+	b_CCW:=F1_CW, // tutaj było samo F1_CW
+	b_CW:=F1_CCW, // tutaj bylo F1_CCW
+	b_Reset:=F_Reset,
+			
+	w_ControlW=>GVL_Omron.wOmron_1_Control,
+ 	ui_CzestotliwoscO=>GVL_Omron.iOmron_1_SeVelo,);
+	
+	
+
+//-------------------------------obsługa AUTOMAT/MANUAL--------------------------------------------:
+
+(*IF MagAutomat=TRUE THEN 
+	
+	F2_FQ:=iMagazynPredkoscAuto;
+	F2_CW:=bMagazynPodjazdAuto;;
+	F2_CCW:=bMagazynCofniAuto;
+	
+	
+	
+ELSIF MagAutomat=FALSE AND  GVL_AXIS.EC_Magazyn.NcToPlc.ActPos>5200 AND GVL_AXIS.EC_Magazyn.NcToPlc.ActPos<4300 THEN 
+	
+
+	F2_FQ:=1000;
+	F2_CW:=bMagazynPodjazdManual;
+	F2_CCW:=bMagazynCofniManual;
+	*)
+	IF GVL_HMI.bAuto=FALSE THEN 
+		
+	F2_FQ:=2000;
+	F2_CW:=GVL_HMI.bHmiMagCw;
+	F2_CCW:=GVL_HMI.bHmiMagCcw;
+	
+	ELSIF GVL_HMI.bAuto=TRUE THEN 
+		
+	F2_FQ:=iMagazynPredkoscAuto;
+	F2_CW:=bMagazynCofniAuto;
+	F2_CCW:=bMagazynPodjazdAuto;
+	
+	END_IF
+
+//END_IF
+IF GVL_HMI.bAuto=FALSE AND GVL_GLOBAL.falownik_pasow_cewka=TRUE THEN //moje 
+	J_Vel:=100;
+	F1_CW:=TRUE;
+	F1_CCW:=0;
+	F1_FQ:=2000; 
+	
+	ELSIF GVL_HMI.bAuto=FALSE AND GVL_GLOBAL.falownik_pasow_cewka=FALSE THEN
+	J_Vel:=100;
+	F1_CW:=0;
+	F1_CCW:=0;
+	F1_FQ:=0;
+	
+	ELSE
+		J_Vel:=100;
+		F1_CW:=GVL_GLOBAL.F1_CW;
+		F1_CCW:=GVL_GLOBAL.F1_CCW;
+	END_IF 
+	
+
+(*nie działa blok do osi
+fb_Mag_POS(
+	Ax:=GVL_AXIS.F_Magazyn , 
+	Enc:=GVL_AXIS.EC_Magazyn.NcToPlc.ActPos , 
+	ExecuteEn:=bExecute_Mag , 
+	//En1:= , 
+	JogPlus:=bJogPlus_Mag , 
+	JogMinus:=bJogMinus_Mag , 
+	Stop_Ex:=bStop_Mag , 
+	Position:=lrPosition_Mag , 
+	Velocity:=lrVelocity_Mag , 
+	ACC:=lrAcc_Mag , 
+	DCC:=lrDcc_Mag , 
+	A_PosMx2=> , 
+	A_V=> , 
+	Error=> , 
+	bDonePos=> , 
+	Prawo=>,
+	Lewo=> 
+);
+
+*)]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="M_K_IO_Link" Id="{90d8bcd8-cca6-48d4-97c4-939d1ebec153}">
+      <Implementation>
+        <ST><![CDATA[
+
+
+	
+		//załączenie kanałów io-link
+		
+		GVL_IO.IOLinkCh1T:=TRUE;
+		
+	
+
+	
+	//IO Link power
+	
+	gvl_IO.IOLinkCh1T:=TRUE;
+	]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="M_K_Serwo" Id="{af21226d-d9b0-499b-af48-4ea7cbcdeb95}">
+      <Implementation>
+        <ST><![CDATA[	
+	//obsługa serwa
+	
+s_power(
+	Axis:=GVL_AXIS.stAxis1 , 
+	Enable:=GVL_AXIS.bEnable , 
+	Enable_Positive:=GVL_AXIS.bEnable , 
+	Enable_Negative:=GVL_AXIS.bEnable , 
+	Override:=100.0 , 
+	BufferMode:= , 
+	Options:= , 
+	Status=> , 
+	Busy=> , 
+	Active=> , 
+	Error=> , 
+	ErrorID=> );
+	
+	S_Reset(
+	Axis:= GVL_AXIS.stAxis1, 
+	Execute:=GVL_HMI.A_Stop , 
+	Done=> , 
+	Busy=> , 
+	Error=> , 
+	ErrorID=> );
+		
+	S_Jog(
+	Axis:= GVL_AXIS.stAxis1, 
+	JogForward:= bJog_B , 
+	JogBackwards:=bJog_F , 
+	Mode:= , 
+	Position:= , 
+	Velocity:= GVL_HMI.J_VelK, 
+	Acceleration:= , 
+	Deceleration:= , 
+	Jerk:= , 
+	Done=> , 
+	Busy=> , 
+	Active=> , 
+	CommandAborted=> , 
+	Error=> , 
+	ErrorID=> );
+	
+	S_Move(
+	Axis:=GVL_AXIS.stAxis1 , 
+	Execute:= bExecute, 
+	Position:=Position , 
+	Velocity:=Predkosc , 
+	Acceleration:= , 
+	Deceleration:= , 
+	Jerk:= , 
+	BufferMode:= , 
+	Options:= , 
+	Done=> , 
+	Busy=> , 
+	Active=> , 
+	CommandAborted=> , 
+	Error=>A_Error , 
+	ErrorID=>A_Error_ID
+ );
+ 
+ 
+ 
+ 
+ 
+]]></ST>
+      </Implementation>
+    </Action>
+    <LineIds Name="PRG_Kartoniarka">
+      <LineId Id="53" Count="7" />
+      <LineId Id="206" Count="0" />
+      <LineId Id="208" Count="0" />
+      <LineId Id="291" Count="1" />
+      <LineId Id="207" Count="0" />
+      <LineId Id="564" Count="0" />
+      <LineId Id="473" Count="0" />
+      <LineId Id="112" Count="0" />
+      <LineId Id="205" Count="0" />
+      <LineId Id="113" Count="4" />
+      <LineId Id="122" Count="0" />
+      <LineId Id="474" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_Kartoniarka.A_FmagazynDocisk">
+      <LineId Id="32" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="33" Count="2" />
+      <LineId Id="37" Count="0" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="77" Count="0" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="60" Count="0" />
+      <LineId Id="66" Count="0" />
+      <LineId Id="65" Count="0" />
+      <LineId Id="64" Count="0" />
+      <LineId Id="62" Count="1" />
+      <LineId Id="61" Count="0" />
+      <LineId Id="46" Count="2" />
+      <LineId Id="69" Count="0" />
+      <LineId Id="49" Count="1" />
+      <LineId Id="52" Count="0" />
+      <LineId Id="71" Count="1" />
+      <LineId Id="53" Count="1" />
+      <LineId Id="68" Count="0" />
+      <LineId Id="55" Count="0" />
+      <LineId Id="45" Count="0" />
+      <LineId Id="56" Count="3" />
+    </LineIds>
+    <LineIds Name="PRG_Kartoniarka.A_Magazyn">
+      <LineId Id="2" Count="10" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_Kartoniarka.A_Obsluga_bledow">
+      <LineId Id="188" Count="0" />
+      <LineId Id="197" Count="0" />
+      <LineId Id="190" Count="1" />
+      <LineId Id="171" Count="0" />
+      <LineId Id="198" Count="0" />
+      <LineId Id="200" Count="0" />
+      <LineId Id="202" Count="0" />
+      <LineId Id="201" Count="0" />
+      <LineId Id="199" Count="0" />
+      <LineId Id="203" Count="0" />
+      <LineId Id="172" Count="0" />
+      <LineId Id="204" Count="1" />
+      <LineId Id="173" Count="1" />
+      <LineId Id="4" Count="0" />
+      <LineId Id="167" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_Kartoniarka.A_Przyciski_Kartoniarka">
+      <LineId Id="1" Count="0" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="12" Count="1" />
+      <LineId Id="11" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_Kartoniarka.M_Automat">
+      <LineId Id="2" Count="2" />
+      <LineId Id="52" Count="0" />
+      <LineId Id="5" Count="1" />
+      <LineId Id="47" Count="0" />
+      <LineId Id="41" Count="0" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="43" Count="1" />
+      <LineId Id="8" Count="12" />
+      <LineId Id="45" Count="0" />
+      <LineId Id="55" Count="0" />
+      <LineId Id="46" Count="0" />
+      <LineId Id="21" Count="9" />
+      <LineId Id="50" Count="1" />
+      <LineId Id="1" Count="0" />
+      <LineId Id="53" Count="0" />
+      <LineId Id="58" Count="0" />
+      <LineId Id="56" Count="0" />
+      <LineId Id="33" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_Kartoniarka.M_F_Kartoniarka">
+      <LineId Id="2" Count="11" />
+      <LineId Id="1" Count="0" />
+      <LineId Id="48" Count="0" />
+      <LineId Id="50" Count="0" />
+      <LineId Id="49" Count="0" />
+      <LineId Id="51" Count="0" />
+      <LineId Id="62" Count="1" />
+      <LineId Id="61" Count="0" />
+      <LineId Id="58" Count="1" />
+      <LineId Id="55" Count="0" />
+      <LineId Id="53" Count="0" />
+      <LineId Id="70" Count="0" />
+      <LineId Id="86" Count="0" />
+      <LineId Id="71" Count="0" />
+      <LineId Id="68" Count="0" />
+      <LineId Id="56" Count="0" />
+      <LineId Id="77" Count="2" />
+      <LineId Id="84" Count="1" />
+      <LineId Id="81" Count="1" />
+      <LineId Id="87" Count="1" />
+      <LineId Id="90" Count="1" />
+      <LineId Id="89" Count="0" />
+      <LineId Id="83" Count="0" />
+      <LineId Id="80" Count="0" />
+      <LineId Id="57" Count="0" />
+      <LineId Id="52" Count="0" />
+      <LineId Id="76" Count="0" />
+      <LineId Id="92" Count="1" />
+      <LineId Id="75" Count="0" />
+      <LineId Id="104" Count="0" />
+      <LineId Id="112" Count="0" />
+      <LineId Id="94" Count="0" />
+      <LineId Id="107" Count="2" />
+      <LineId Id="106" Count="0" />
+      <LineId Id="111" Count="0" />
+      <LineId Id="110" Count="0" />
+      <LineId Id="105" Count="0" />
+      <LineId Id="95" Count="0" />
+      <LineId Id="97" Count="0" />
+      <LineId Id="96" Count="0" />
+      <LineId Id="103" Count="0" />
+      <LineId Id="73" Count="0" />
+      <LineId Id="27" Count="16" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="44" Count="1" />
+      <LineId Id="47" Count="0" />
+      <LineId Id="46" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_Kartoniarka.M_K_IO_Link">
+      <LineId Id="2" Count="1" />
+      <LineId Id="15" Count="11" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_Kartoniarka.M_K_Serwo">
+      <LineId Id="2" Count="58" />
+      <LineId Id="66" Count="1" />
+      <LineId Id="61" Count="2" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <GVL Name="GVL_MachineMaintenance" Id="{fbc7ef06-0522-45f7-b595-f13791aebdbd}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL
+	eMode									: E_LineMachineMode;	// Global machine mode
+																						(*	eUndefined				:= 0,
+																							eManual					:= 1,
+																							eMaintenance			:= 2,
+																							eAutomatic				:= 3,
+																							eSemiAutomatic			:= 4,
+																							eFirstFilling			:= 5,
+																							eEmptying				:= 6	*)
+																							
+	eCommand								: E_LineMachineCommand; 							// Global machine command
+																						(*	eAbort	  				:= 10,
+																							eStop	  				:= 20,
+																							eRun 	  				:= 30,
+																							eReset	  				:= 40	*)
+																							
+	eState									: E_CaseCloserMachineState; 								// Global machine state
+																						(*	eIdle					:= 0,
+																							eAborting				:= 10,
+																							eAborted				:= 20,
+																							eStopping				:= 30,
+																							eStopped				:= 40,
+																							eStarting				:= 50,
+																							eRunning				:= 60,
+																							eReseting				:= 70,
+																							eError					:= 1000	*)
+																							
+																							
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

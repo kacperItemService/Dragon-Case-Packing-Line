@@ -1,0 +1,232 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="PRG_Zaklejarka" Id="{1fe73493-337f-44b1-bc19-62ce86d03af5}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM PRG_Zaklejarka
+VAR
+	
+	falownik3: FB_MX2;
+
+	IFZaklejarka_FQ: INT;
+	bFZaklejarka_CW: BOOL;
+	bFZaklejarka_CCW: BOOL;
+	bFZaklejarka_Reset: BOOL;
+	krok				:INT;
+	czas                 : ARRAY [0..100] OF TON ;
+	b_Start AT %I* :BOOL;
+	b_Stop AT %I* :BOOL;
+		
+
+	start: BOOL;
+	bJog_F: BOOL;
+	bJog_B: BOOL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[A_Falownik();
+A_Automat_Zaklejarka();
+	
+		//IF GVL_HMI.bManual=TRUE THEN  ///TO NIE MOJE
+
+IF GVL_HMI.bAuto=FALSE 	AND GVL_GLOBAL.tasmy_zaklejarka_cewka=TRUE	THEN		/// TO MOJE
+bFZaklejarka_CCW:=TRUE;							
+bFZaklejarka_CW:=0;
+IFZaklejarka_FQ:=2000;
+
+ELSIF GVL_HMI.bAuto=FALSE AND GVL_GLOBAL.tasmy_zaklejarka_cewka=FALSE THEN
+	bFZaklejarka_CCW:=0;											
+	bFZaklejarka_CW:=0;
+(*ELSE
+
+bFZaklejarka_CCW:=GVL_GLOBAL.bFZaklejarka_CCW;
+bFZaklejarka_CW:=0;
+*)
+END_IF
+]]></ST>
+    </Implementation>
+    <Action Name="A_Automat_Zaklejarka" Id="{c69abc64-5c45-442f-9ac4-9acd5888e7f5}">
+      <Implementation>
+        <ST><![CDATA[CASE Krok OF
+	
+
+	0:
+			//IFZaklejarka_FQ:=2000;
+		bFZaklejarka_CCW:=FALSE; 
+	 IF start=TRUE AND GVL_HMI.bEnableZaklejarka=TRUE  THEN
+		 
+		 
+		 Krok:=5;
+		 
+	 END_IF
+	
+	
+	5:
+		IFZaklejarka_FQ:=3000;
+		bFZaklejarka_CCW:=TRUE; 
+		GVL_GLOBAL.zamykacz_zaklejarka_auto:=FALSE;	
+	
+	IF	czas[1].Q=TRUE THEN
+		
+		Krok:=7;
+	
+	
+	END_IF
+	
+	7:
+	IF	GVL_Zak_IO.b_Czujnik_Karton=FALSE THEN /// tutaj można dodać że jak przez 30s nie przyjedzie karton to stop
+		
+	
+	Krok:=10; 
+	
+	END_IF
+
+	10:
+
+	IF czas[2].Q=TRUE THEN 
+	GVL_GLOBAL.zamykacz_zaklejarka_auto:=TRUE;	
+	Krok:=15 ;
+	END_IF 
+	
+	
+	15:
+	
+	
+	IF czas[0].Q=TRUE THEN 
+	
+	Krok:=20; 
+		
+	END_IF
+	
+	20:
+	
+	
+	Krok:=5 ;
+	
+	
+	
+
+END_CASE
+czas[1](IN:=GVL_Zak_IO.b_Czujnik_Karton, PT:=T#200MS);
+czas[0](IN:=krok=15 , PT:=T#2S);
+czas[2](IN:=krok=10 , PT:=T#500MS);
+
+IF GVL_HMI.A_Start=TRUE AND GVL_HMI.bEnableZaklejarka=TRUE THEN 
+start:=TRUE;
+END_IF
+			IF GVL_HMI.A_Stop=TRUE	OR GVL_HMI.bEnableZaklejarka=FALSE THEN
+			start:=FALSE;	
+			Krok:=0;
+			bFZaklejarka_CCW:=FALSE; 
+			
+			END_IF]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_Falownik" Id="{296eaa1a-6af8-4714-bebf-5cb626dd8a09}">
+      <Implementation>
+        <ST><![CDATA[falownik3
+	(w_Status:=GVL_Omron.wOmron_Za_Status,
+	ui_CzestotliwoscI:=IFZaklejarka_FQ,
+	b_CCW:=bFZaklejarka_CW, 
+	b_CW:=bFZaklejarka_CCW,
+	b_Reset:=bFZaklejarka_Reset,
+	w_ControlW=>GVL_Omron.wOmron_Za_Control,
+ 	ui_CzestotliwoscO=>GVL_Omron.iOmron_Za_SeVelo,);
+
+	
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="ACT_AutomaticMode" Id="{474666b7-2aa1-451d-ab9f-8ab156ae56ab}">
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="ACT_ManualMode" Id="{a3c3c793-0855-4a5b-9f3e-a63bcf133f4b}">
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Action>
+    <LineIds Name="PRG_Zaklejarka">
+      <LineId Id="38" Count="1" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="57" Count="1" />
+      <LineId Id="92" Count="0" />
+      <LineId Id="62" Count="0" />
+      <LineId Id="136" Count="0" />
+      <LineId Id="157" Count="0" />
+      <LineId Id="132" Count="0" />
+      <LineId Id="63" Count="0" />
+      <LineId Id="134" Count="1" />
+      <LineId Id="64" Count="0" />
+      <LineId Id="73" Count="1" />
+      <LineId Id="70" Count="0" />
+      <LineId Id="112" Count="0" />
+      <LineId Id="71" Count="0" />
+      <LineId Id="32" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_Zaklejarka.A_Automat_Zaklejarka">
+      <LineId Id="1" Count="0" />
+      <LineId Id="3" Count="0" />
+      <LineId Id="6" Count="1" />
+      <LineId Id="69" Count="1" />
+      <LineId Id="53" Count="0" />
+      <LineId Id="64" Count="0" />
+      <LineId Id="71" Count="1" />
+      <LineId Id="66" Count="0" />
+      <LineId Id="65" Count="0" />
+      <LineId Id="55" Count="2" />
+      <LineId Id="67" Count="1" />
+      <LineId Id="54" Count="0" />
+      <LineId Id="10" Count="1" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="76" Count="1" />
+      <LineId Id="81" Count="0" />
+      <LineId Id="79" Count="1" />
+      <LineId Id="78" Count="0" />
+      <LineId Id="15" Count="1" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="23" Count="2" />
+      <LineId Id="51" Count="0" />
+      <LineId Id="26" Count="2" />
+      <LineId Id="32" Count="2" />
+      <LineId Id="50" Count="0" />
+      <LineId Id="52" Count="0" />
+      <LineId Id="46" Count="1" />
+      <LineId Id="37" Count="1" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="39" Count="1" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="4" Count="0" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="41" Count="0" />
+      <LineId Id="74" Count="0" />
+      <LineId Id="95" Count="0" />
+      <LineId Id="93" Count="1" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="58" Count="0" />
+      <LineId Id="60" Count="0" />
+      <LineId Id="63" Count="0" />
+      <LineId Id="92" Count="0" />
+      <LineId Id="62" Count="0" />
+      <LineId Id="61" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_Zaklejarka.A_Falownik">
+      <LineId Id="2" Count="9" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_Zaklejarka.ACT_AutomaticMode">
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_Zaklejarka.ACT_ManualMode">
+      <LineId Id="1" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,114 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="FB_LoadStart" Id="{922530f1-625d-420c-be3b-72d34935780d}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_LoadStart
+VAR_INPUT
+	bExec: 			BOOL;
+	sPrg: 			STRING(1024);
+	nChan: 			UINT;
+END_VAR
+VAR_OUTPUT
+	nErrId: 		UDINT;
+	bBusy: 			BOOL;
+	bErr:			BOOL;
+END_VAR
+VAR
+	nState: 		UINT := 16#0;
+	ItpLoadProg1: 	ItpLoadProgEx;
+	ItpStartStop1:  ItpStartStopEx;
+	nItpState: 		UDINT;
+	fbRTrig: 		R_TRIG;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* ==========================================================*)
+(*     FB: FB_LoadStart			                             *)
+(* ----------------------------------------------------------*)
+(*   Desc: Load programm in NCI and after success start it	 *)
+(*   Auth: MiB / TV                                          *)
+(*   Date: 02.09.2005                                        *)
+(*   Last: 02.04.2013                                        *)
+(*   Rev.: 1.1                                               *)
+(* ==========================================================*)
+
+
+
+fbRTrig(Clk := bExec);
+
+CASE nState OF
+16#0:	(* init *)
+		IF fbRTrig.Q THEN
+			nItpState	:=	ItpGetStateInterpreter( arrNCToPLC_NCIChannel_REF[nChan-1] );
+			IF nItpState = NCI_INTERPRETER_IDLE OR nItpState = NCI_INTERPRETER_READY THEN
+				bBusy	:= TRUE;
+				bErr	:= FALSE;
+				nErrId	:= 0;
+				nState := 16#10;
+			ELSE
+				nState := 16#30;   (* do nothing *)
+			END_IF
+		END_IF
+
+16#10: (* load program *)
+
+		ItpLoadProg1.bExecute:= TRUE;						
+		ItpLoadProg1.sPrg:= sPrg;
+		ItpLoadProg1.nLength:= LEN(sPrg);
+		ItpLoadProg1.tTimeOut:= t#20s;
+		nState	:= 16#15;		
+16#15:
+		IF (NOT ItpLoadProg1.bBusy) THEN
+			ItpLoadProg1.bExecute := FALSE;
+			IF NOT ItpLoadProg1.bErr THEN
+				nState	:= 16#20;
+			ELSE
+				(* an error occured *)
+				bErr		:= TRUE;
+				nErrId	:= ItpLoadProg1.nErrId;
+				nState	:= 16#999;
+			END_IF
+		END_IF
+
+16#20: (* start program *)
+
+		ItpStartStop1.bStart := TRUE;
+		ItpStartStop1.bStop := FALSE;				
+		ItpStartStop1.tTimeOut:= T#250MS;		
+		nState := 16#25; 	
+16#25:
+
+		IF (NOT ItpStartStop1.bBusy) THEN
+			ItpStartStop1.bStart:=FALSE;
+			IF NOT ItpStartStop1.bErr THEN
+				nState := 16#30; (* end *)
+			ELSE
+			(* an error occured *)
+				bErr		:= TRUE;
+				nErrId	:= ItpStartStop1.nErrId;
+				nState	:= 16#999;
+			END_IF
+		END_IF
+
+16#30:
+
+		bBusy := FALSE;
+		bErr	:= FALSE;
+		nErrId	:= 0;
+		nState := 0;
+
+
+16#999:	(* Error *)
+		bBusy := FALSE;
+		nState := 0;
+
+END_CASE
+
+ItpStartStop1( sNciToPlc := arrNCToPLC_NCIChannel_REF[nChan-1]);	
+ItpLoadProg1( sNciToPlc := arrNCToPLC_NCIChannel_REF[nChan-1]);	]]></ST>
+    </Implementation>
+    <LineIds Name="FB_LoadStart">
+      <LineId Id="3" Count="82" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

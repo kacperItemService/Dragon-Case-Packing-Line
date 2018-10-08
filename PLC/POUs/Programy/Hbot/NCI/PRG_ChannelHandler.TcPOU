@@ -1,0 +1,85 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="PRG_ChannelHandler" Id="{c26edc63-cb02-4919-b2e3-ac8f67c34d02}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM PRG_ChannelHandler
+VAR
+nChan:uint;
+	nOldSelectedChannel		: 	UDINT;
+	fbNCIChannel1: 			FB_NCIChannel;	
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* ==========================================================*)
+(*   FB: FB_ChannelHandler		                             *)
+(* ----------------------------------------------------------*)
+(*   Desc:  										         *)
+(*   Auth: TV                                                *)
+(*   Date: 02.04.2013                                        *)
+(*   Last: 02.04.2013                                        *)
+(*   Rev.: 1.0                                               *)
+(* ==========================================================*)
+
+// Channel 1 is PTP Channel
+
+(****************************************************************************************)
+(*	  Map CNC function selection from HMI to selected channel (and state vice versa)  	*)
+(****************************************************************************************)
+IF (nOldSelectedChannel <>INT_TO_UDINT(PLCSelectedChannel)) THEN
+	PLCChannelSignals.SingleBlock 		:= PLCMachineMode[PLCSelectedChannel].SingleBlock;
+	PLCChannelSignals.PrgBlockIgnore	:= PLCMachineMode[PLCSelectedChannel].PrgBlockIgnore;
+	PLCChannelSignals.M01Stop 			:= PLCMachineMode[PLCSelectedChannel].M01Stop;
+	PLCChannelSignals.Backward 			:= PLCMachineMode[PLCSelectedChannel].Backward;
+	PLCChannelSignals.FeedHold 			:= PLCMachineMode[PLCSelectedChannel].FeedHold;
+	nOldSelectedChannel 				:= INT_TO_UDINT(PLCSelectedChannel);
+END_IF
+
+PLCMachineMode[PLCSelectedChannel].SingleBlock 		:= PLCChannelSignals.SingleBlock;
+PLCMachineMode[PLCSelectedChannel].PrgBlockIgnore 	:= PLCChannelSignals.PrgBlockIgnore;
+PLCMachineMode[PLCSelectedChannel].M01Stop 			:= PLCChannelSignals.M01Stop;
+PLCMachineMode[PLCSelectedChannel].Backward 		:= PLCChannelSignals.Backward;
+PLCMachineMode[PLCSelectedChannel].FeedHold 		:= PLCChannelSignals.FeedHold;
+//PLCMachineMode[PLCSelectedChannel].Reset 			:= PLCReset;
+
+// First NC I Channel, default Channel ID=2 
+nChan:=GVL_NCI.nChan;
+
+fbNCIChannel1(
+	nChan:=nChan ,
+
+	(* Operation Mode *)
+	bModeStandby := 			PLCMachineMode[nChan].Standby,
+	bModeAutomatic :=			PLCMachineMode[nChan].Automatic,
+	bModeManual :=				PLCMachineMode[nChan].Manual,
+	bModeMDI :=					PLCMachineMode[nChan].MDI,
+	bModeReference :=			PLCMachineMode[nChan].Homing,
+
+	(* Operation State *)
+	bStateStart:= 				PLCMachineMode[nChan].Start,
+	bStateStop:= 				PLCMachineMode[nChan].Stop,
+	bStateReset:= 				PLCMachineMode[nChan].Reset,
+	(*Error*)
+	bStateError:=				PLCMachineMode[nChan].Error,
+	(* Special Functions *)
+	bBackwardMotion:= 			PLCMachineMode[nChan].Backward,
+	bPrgBlockIgnore:= 			PLCMachineMode[nChan].PrgBlockIgnore,
+	bFeedHold:= 				PLCMachineMode[nChan].FeedHold,
+	bSingleBlock:= 				PLCMachineMode[nChan].SingleBlock,
+	bDoSingleBlock:= 			PLCMachineMode[nChan].DoSingleBlock,
+
+	(* Strings *)
+	sProgramName := 			PLCMachineMode[nChan].ProgramName,
+	sMDIString :=				PLCMachineMode[nChan].MDIString );
+
+]]></ST>
+    </Implementation>
+    <LineIds Name="PRG_ChannelHandler">
+      <LineId Id="3" Count="31" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="78" Count="0" />
+      <LineId Id="37" Count="13" />
+      <LineId Id="85" Count="0" />
+      <LineId Id="51" Count="11" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

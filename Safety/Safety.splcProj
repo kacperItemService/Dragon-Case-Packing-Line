@@ -1,0 +1,74 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Crc="3341941046" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{2152bae0-09ed-4402-a413-2a4daafe0c46}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>TwinCAT3SafePlcProject</RootNamespace>
+    <AssemblyName>TwinCAT3SafePlcProject</AssemblyName>
+    <FileUpgradeFlags />
+    <UpgradeBackupLocation />
+    <OldToolsVersion>2.0</OldToolsVersion>
+    <TargetSystem>EL6900</TargetSystem>
+    <ProgrammingLanguage>Graphical Editor</ProgrammingLanguage>
+    <Worker>Ksieciunio</Worker>
+    <IntProjName>Safety</IntProjName>
+    <IsNewCreated>false</IsNewCreated>
+    <SPlcProjVersion>1.2.0.0</SPlcProjVersion>
+    <NextSdsId>77</NextSdsId>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugSymbols>false</DebugSymbols>
+    <OutputPath>bin\Release\</OutputPath>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="TwinSafeGroup1\Alias Devices\bPLCEstopReset.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\bRUN_STOP_TSG1.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\bERR_ACK_TSG1.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\bFB_ERR_TSG1.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\bCOM_ERR_TSG1.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\bOTHER_ERR_TSG1.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\Term 17 %28EL1904%29 - Module 1 %28FSOES%29.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\Term 24 %28EL1904%29 - Module 1 %28FSOES%29.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\Term 3 %28EL1904%29 - Module 1 %28FSOES%29.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\Term 38 %28EL1904%29 - Module 1 %28FSOES%29.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\Term 4 %28EL1904%29 - Module 1 %28FSOES%29.sds" />
+    <None Include="TwinSafeGroup1\TwinSafeGroup1.sal" />
+    <None Include="TwinSafeGroup1\TwinSafeGroup1.sal.diagram">
+      <DependentUpon>TwinSafeGroup1\TwinSafeGroup1.sal</DependentUpon>
+      <Visible>false</Visible>
+    </None>
+    <None Include="TargetSystemConfig.xml">
+      <Visible>false</Visible>
+    </None>
+    <None Include="TwinSafeGroup2\Alias Devices\bPloterFalownikEstopOut.sds" />
+    <None Include="TwinSafeGroup2\Alias Devices\bZaklejarkaEstopOut.sds" />
+    <None Include="TwinSafeGroup2\Alias Devices\bKierownicaFalownikEstopOut.sds" />
+    <None Include="TwinSafeGroup2\Alias Devices\bKierownicaServoEstopOut.sds" />
+    <None Include="TwinSafeGroup2\Alias Devices\bOmronStopToPLC.sds" />
+    <None Include="TwinSafeGroup2\Alias Devices\bAX5000StopToPLC.sds" />
+    <None Include="TwinSafeGroup2\Alias Devices\bERR_ACK_TSG2.sds" />
+    <None Include="TwinSafeGroup2\Alias Devices\bRUN_STOP_TSG1.sds" />
+    <None Include="TwinSafeGroup2\Alias Devices\bCOM_ERR_TSG2.sds" />
+    <None Include="TwinSafeGroup2\Alias Devices\bFB_ERR_TSG2.sds" />
+    <None Include="TwinSafeGroup2\Alias Devices\bOTHER_ERR_TSG2.sds" />
+    <None Include="TwinSafeGroup2\Alias Devices\Term 19 %28EL2904%29 - Module 1 %28FSOES%29.sds" />
+    <None Include="TwinSafeGroup2\Alias Devices\Term 27 (EL2904) - Module 1 (FSOES).sds" />
+    <None Include="TwinSafeGroup2\Alias Devices\Term 40 %28EL2904%29 - Module 1 %28FSOES%29.sds" />
+    <None Include="TwinSafeGroup2\Alias Devices\Term 5 %28EL2904%29 - Module 1 %28FSOES%29.sds" />
+    <None Include="TwinSafeGroup2\TwinSafeGroup2.sal" />
+    <None Include="TwinSafeGroup2\TwinSafeGroup2.sal.diagram">
+      <Visible>false</Visible>
+      <DependentUpon>TwinSafeGroup2\TwinSafeGroup2.sal</DependentUpon>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="TwinSafeGroup1" />
+    <Folder Include="TwinSafeGroup1\Alias Devices" />
+    <Folder Include="TwinSafeGroup2" />
+    <Folder Include="TwinSafeGroup2\Alias Devices" />
+  </ItemGroup>
+</Project>

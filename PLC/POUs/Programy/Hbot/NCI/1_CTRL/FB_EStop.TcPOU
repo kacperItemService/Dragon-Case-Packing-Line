@@ -1,0 +1,103 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="FB_EStop" Id="{0cfea7b5-a95f-4af8-81a9-03ed81a3a2ca}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_EStop
+VAR_INPUT
+	bExec: 		BOOL;
+	nChan: 		UINT;
+END_VAR
+VAR_OUTPUT
+	bBusy: 		BOOL;
+	nErrId: 		UDINT;
+	bErr: 		BOOL;
+END_VAR
+VAR
+	fbRTrig: 	R_TRIG;
+	nState: 		UINT;
+	fbADSREAD: 	ADSREAD;
+	nGroup: 		UDINT;
+	fbItpEStop: ItpEStopEx;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* ==========================================================*)
+(*     FB: FB_EStop					                         *)
+(* ----------------------------------------------------------*)
+(*   Desc:                                                   *)
+(*   Auth: MiB  / TV                                         *)
+(*   Date: 02.09.2005                                        *)
+(*   Last: 02.04.2013                                        *)
+(*   Rev.: 1.1                                               *)
+(* ==========================================================*)
+
+
+fbRTrig(Clk := bExec);
+
+CASE nState OF
+
+
+16#0: (* init *)
+		IF fbRTrig.Q THEN
+			bBusy	:= TRUE;
+			bErr	:= FALSE;
+			nErrId	:= 0;
+			nState := 16#10;
+		END_IF
+
+16#10: (* Read Group ID *)
+		fbADSREAD(
+			NETID:= ,
+			PORT:= 	501,  			(* NCI Channel *)
+			IDXGRP:= 16#2000+nChan, (* Spezifikation für Kanal-Parameter *)
+			IDXOFFS:=16#21 ,			(* 0x00000021  Read  every  UINT32  1   Gruppen-ID (nur eindeutig für 3D- und FIFO-Kanal   *)
+			LEN:= SIZEOF(nGroup),
+			DESTADDR:=ADR(nGroup) ,
+			READ:= TRUE,
+			TMOUT:= T#200ms,
+			BUSY=> ,
+			ERR=> ,
+			ERRID=> );
+
+		IF fbADSREAD.ERR THEN
+			fbADSREAD(READ := FALSE);
+			bErr := TRUE;
+			nErrId := fbADSREAD.ERRID;
+			nState := 16#999;
+		END_IF
+
+		IF (NOT fbADSREAD.ERR) AND (NOT fbADSREAD.BUSY) THEN
+			fbADSREAD(READ := FALSE);
+			nState := 16#20;
+		END_IF;
+
+16#20: (* initiate EStop in NCI *)
+		fbItpEStop.bExecute := TRUE;
+		fbItpEStop.tTimeOut:= T#250MS;
+		nState := 16#25;		
+16#25:			
+		IF NOT fbItpEStop.bBusy THEN
+			fbItpEStop.bExecute := FALSE;
+			IF fbItpEStop.bErr THEN
+				nErrId := fbItpEStop.nErrId;
+				bErr := TRUE;
+				nState := 16#999;
+			ELSE
+				nState := 16#0;
+				bBusy := FALSE;
+			END_IF
+		END_IF
+
+16#999:	(* Error *)
+		bBusy := FALSE;
+		nState := 0;
+END_CASE
+
+fbItpEStop( sNciToPlc := arrNCToPLC_NCIChannel_REF[nChan-1]);
+]]></ST>
+    </Implementation>
+    <LineIds Name="FB_EStop">
+      <LineId Id="3" Count="72" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

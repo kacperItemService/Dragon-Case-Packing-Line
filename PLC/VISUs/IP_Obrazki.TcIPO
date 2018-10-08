@@ -1,0 +1,147 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.6">
+  <ImagePool Name="IP_Obrazki" Id="{56cccc9f-9c3d-4ab3-a619-9736209ef664}">
+    <XmlArchive>
+      <Data>
+        <o xml:space="preserve" t="ImagePoolObject">
+          <v n="UniqueIdGenerator">"42"</v>
+          <l n="BitmapPool" t="ArrayList" cet="ImagePoolItem">
+            <o>
+              <v n="BitmapID">"0"</v>
+              <v n="FileID">"5ce3da45-db07-42e7-a21c-a00fff4ed8f6|VISUs\Obrazki\ITEMService-logo-200.jpg"</v>
+              <v n="ItemID">14</v>
+            </o>
+            <o>
+              <v n="BitmapID">"1"</v>
+              <v n="FileID">"5ce3da45-db07-42e7-a21c-a00fff4ed8f6|VISUs\Obrazki\ITEMService-logo-800.jpg"</v>
+              <v n="ItemID">15</v>
+            </o>
+            <o>
+              <v n="BitmapID">"2"</v>
+              <v n="FileID">"5ce3da45-db07-42e7-a21c-a00fff4ed8f6|VISUs\Obrazki\ITEMService-logo-1200.jpg"</v>
+              <v n="ItemID">16</v>
+            </o>
+            <o>
+              <v n="BitmapID">"ITEM Service - logo - corel 09"</v>
+              <v n="FileID">"5ce3da45-db07-42e7-a21c-a00fff4ed8f6|VISUs\Obrazki\ITEM Service - logo - corel 09.jpg"</v>
+              <v n="ItemID">17</v>
+            </o>
+            <o>
+              <v n="BitmapID">"ITEM Service - logo - kwadrat"</v>
+              <v n="FileID">"5ce3da45-db07-42e7-a21c-a00fff4ed8f6|VISUs\Obrazki\ITEM Service - logo - kwadrat.png"</v>
+              <v n="ItemID">18</v>
+            </o>
+            <o>
+              <v n="BitmapID">"ITEM Service - logo czorne 1"</v>
+              <v n="FileID">"5ce3da45-db07-42e7-a21c-a00fff4ed8f6|VISUs\Obrazki\ITEM Service - logo czorne 1.png"</v>
+              <v n="ItemID">19</v>
+            </o>
+            <o>
+              <v n="BitmapID">"ITEM Service - logo -czorne przeź"</v>
+              <v n="FileID">"5ce3da45-db07-42e7-a21c-a00fff4ed8f6|VISUs\Obrazki\ITEM Service - logo -czorne przeź.png"</v>
+              <v n="ItemID">20</v>
+            </o>
+            <o>
+              <v n="BitmapID">"bell-icon-silhouette"</v>
+              <v n="FileID">"5ce3da45-db07-42e7-a21c-a00fff4ed8f6|VISUs\Obrazki\bell-icon-silhouette.png"</v>
+              <v n="ItemID">22</v>
+            </o>
+            <o>
+              <v n="BitmapID">"business-graph"</v>
+              <v n="FileID">"5ce3da45-db07-42e7-a21c-a00fff4ed8f6|VISUs\Obrazki\business-graph.png"</v>
+              <v n="ItemID">26</v>
+            </o>
+            <o>
+              <v n="BitmapID">"home-icon-silhouette (1)"</v>
+              <v n="FileID">"5ce3da45-db07-42e7-a21c-a00fff4ed8f6|VISUs\Obrazki\home-icon-silhouette (1).png"</v>
+              <v n="ItemID">27</v>
+            </o>
+            <o>
+              <v n="BitmapID">"on-button"</v>
+              <v n="FileID">"5ce3da45-db07-42e7-a21c-a00fff4ed8f6|VISUs\Obrazki\on-button.png"</v>
+              <v n="ItemID">28</v>
+            </o>
+            <o>
+              <v n="BitmapID">"repair-tools"</v>
+              <v n="FileID">"5ce3da45-db07-42e7-a21c-a00fff4ed8f6|VISUs\Obrazki\repair-tools.png"</v>
+              <v n="ItemID">29</v>
+            </o>
+            <o>
+              <v n="BitmapID">"statistics-silhouette"</v>
+              <v n="FileID">"5ce3da45-db07-42e7-a21c-a00fff4ed8f6|VISUs\Obrazki\statistics-silhouette.png"</v>
+              <v n="ItemID">30</v>
+            </o>
+            <o>
+              <v n="BitmapID">"writing-square"</v>
+              <v n="FileID">"5ce3da45-db07-42e7-a21c-a00fff4ed8f6|VISUs\Obrazki\writing-square.png"</v>
+              <v n="ItemID">31</v>
+            </o>
+            <o>
+              <v n="BitmapID">"3"</v>
+              <v n="FileID">"5ce3da45-db07-42e7-a21c-a00fff4ed8f6|VISUs\Obrazki\1.jpg"</v>
+              <v n="ItemID">24</v>
+            </o>
+            <o>
+              <v n="BitmapID">"4"</v>
+              <v n="FileID">"5ce3da45-db07-42e7-a21c-a00fff4ed8f6|VISUs\Obrazki\2.jpg"</v>
+              <v n="ItemID">34</v>
+            </o>
+            <o>
+              <v n="BitmapID">"01122.00.0000 Ploter butelek_TOP"</v>
+              <v n="FileID">"5ce3da45-db07-42e7-a21c-a00fff4ed8f6|VISUs\Obrazki\01122.00.0000 Ploter butelek_TOP.png"</v>
+              <v n="ItemID">32</v>
+            </o>
+            <o>
+              <v n="BitmapID">"01122.00.0000 Ploter buteleTOP"</v>
+              <v n="FileID">"5ce3da45-db07-42e7-a21c-a00fff4ed8f6|VISUs\Obrazki\01122.00.0000 Ploter buteleTOP.png"</v>
+              <v n="ItemID">37</v>
+            </o>
+            <o>
+              <v n="BitmapID">"01122.01.0500 Napęd plotera"</v>
+              <v n="FileID">"5ce3da45-db07-42e7-a21c-a00fff4ed8f6|VISUs\Obrazki\01122.01.0500 Napęd plotera.png"</v>
+              <v n="ItemID">38</v>
+            </o>
+            <o>
+              <v n="BitmapID">"7001-01-2000 - Kartoniarka - osłony"</v>
+              <v n="FileID">"5ce3da45-db07-42e7-a21c-a00fff4ed8f6|VISUs\Obrazki\7001-01-2000 - Kartoniarka - osłony.png"</v>
+              <v n="ItemID">39</v>
+            </o>
+            <o>
+              <v n="BitmapID">"7001-01-2000 - Kartoniarka - TOP"</v>
+              <v n="FileID">"5ce3da45-db07-42e7-a21c-a00fff4ed8f6|VISUs\Obrazki\7001-01-2000 - Kartoniarka - TOP.png"</v>
+              <v n="ItemID">40</v>
+            </o>
+            <o>
+              <v n="BitmapID">"7002-00-0000 20170911-ZAKLEJARKA OK"</v>
+              <v n="FileID">"5ce3da45-db07-42e7-a21c-a00fff4ed8f6|VISUs\Obrazki\7002-00-0000 20170911-ZAKLEJARKA OK.png"</v>
+              <v n="ItemID">41</v>
+            </o>
+            <o>
+              <v n="BitmapID">"7002-00-0000 20170911-ZAKLEJARKA top"</v>
+              <v n="FileID">"5ce3da45-db07-42e7-a21c-a00fff4ed8f6|VISUs\Obrazki\7002-00-0000 20170911-ZAKLEJARKA top.png"</v>
+              <v n="ItemID">42</v>
+            </o>
+            <o>
+              <v n="BitmapID">""</v>
+              <v n="FileID">""</v>
+              <v n="ItemID">35</v>
+            </o>
+          </l>
+          <v n="GuidInit">{0322fed1-7fb5-48a7-b77e-16cb2977adf0}</v>
+          <v n="GuidReInit">{fac43ac9-6809-4147-a29c-53de72749417}</v>
+          <v n="GuidExitX">{264e4968-a90c-464f-a6b8-7fe5c99f309a}</v>
+          <v n="ValidIds">true</v>
+        </o>
+      </Data>
+      <TypeList>
+        <Type n="ArrayList">System.Collections.ArrayList</Type>
+        <Type n="Boolean">System.Boolean</Type>
+        <Type n="Guid">System.Guid</Type>
+        <Type n="ImagePoolItem">{215b2719-0347-4e4d-ba85-8bcd66946f66}</Type>
+        <Type n="ImagePoolObject">{bb0b9044-714e-4614-ad3e-33cbdf34d16b}</Type>
+        <Type n="Int32">System.Int32</Type>
+        <Type n="String">System.String</Type>
+      </TypeList>
+    </XmlArchive>
+  </ImagePool>
+</TcPlcObject>

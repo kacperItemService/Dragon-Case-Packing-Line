@@ -1,0 +1,144 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="PRG_GroupAxesToNCI" Id="{da88b50e-0907-4bf3-ab18-4011430cf8ee}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM PRG_GroupAxesToNCI
+VAR_INPUT
+	stMachineMode 	: ST_MachineMode;
+	nChan : UINT;
+END_VAR
+VAR
+	fbTrigBuildGroup	: 	R_TRIG;
+	fbTrigReleaseGroup	: 	R_TRIG;
+	fbBuildGroup1		: 	FB_BuildGroup;
+	fbReleaseGroup1		: 	FB_ReleaseGroup;
+	bGroup1Release		: 	BOOL := FALSE;
+	nState 				:	UINT;
+	bBuildGroup			: 	BOOL;
+	bClearGroup			: 	BOOL;
+END_VAR
+
+VAR_IN_OUT
+	stAxisRef_X			: Axis_REF;
+	stAxisRef_Y			: Axis_REF;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* ==========================================================*)
+(*   PRG: GroupAxisToNci			        		         *)
+(* ----------------------------------------------------------*)
+(*   Desc: 													 *)
+(*   Auth: MiB / TV                                          *)
+(*   Date: 02.09.2005                                        *)
+(*   Last: 02.04.2013                                        *)
+(*   Rev.: 1.1                                               *)
+(* ==========================================================*)
+
+
+(* build axis3d groups *)
+
+(* homing status of 1st group *)
+nChan := GVL_NCI.nChan;
+bBuildGroup := stMachineMode.Automatic OR stMachineMode.MDI;			(* this is an example condition for building a group *)
+bClearGroup := stMachineMode.Homing OR stMachineMode.Manual;		(* this is an exmaple condition for releasing a group *)
+
+IF (nState = 0) THEN
+	fbTrigBuildGroup( clk := bBuildGroup );
+	IF fbTrigBuildGroup.Q THEN
+		bGroup1 := TRUE;
+		bGroup1Release := FALSE;
+		nState := 0;
+	
+	END_IF
+	
+	fbTrigReleaseGroup( clk := (bClearGroup) );
+	IF fbTrigReleaseGroup.Q THEN
+		bGroup1 := FALSE;
+		bGroup1Release := TRUE;
+		nState := 0;
+	END_IF
+END_IF
+
+CASE nState OF
+
+0: (* Wait for action *)
+	IF bGroup1 OR bGroup1Release THEN
+		nState := nState + 1;
+	END_IF
+
+1: (* Reset axis *)
+	(*PRG_ResetAllAxesWithError(execute := TRUE);
+	IF PRG_ResetAllAxesWithError.Done THEN*)
+		IF bGroup1 THEN   (* buid group *)
+			nState := 10;
+		END_IF;
+		IF bGroup1Release THEN
+			nState := 20;	(* release group *)
+		END_IF
+
+	(*END_IF*)
+
+
+10:(* build 1st group in channel2 *)
+	fbBuildGroup1(
+		bExec:= bGroup1 ,
+		nChan:= nChan,
+		nXAxisId:= stAxisRef_X.NcToPlc.AxisId,
+		nYAxisId:= stAxisRef_Y.NcToPlc.AxisId,
+		nZAxisId:= ,
+		nQ1AxisId:= ,
+		nQ2AxisId:= ,
+		nQ3AxisId:= ,
+		nQ4AxisId:= ,
+		nQ5AxisId:= ,
+		nGroup => nGroup[nChan-1],
+		bBusy=> ,
+		bErr=> ,
+		nErrId=> );
+
+
+
+	IF (NOT fbBuildGroup1.bBusy) AND NOT fbBuildGroup1.bErr AND bGroup1 (*AND (NOT fbBuildGroup2.bBusy) AND NOT fbBuildGroup2.bErr AND bGroup2 *) THEN
+		fbBuildGroup1( bExec := FALSE );
+		bGroup1 := FALSE;
+		nState := 0;
+	END_IF
+
+	IF ((NOT fbBuildGroup1.bBusy) AND fbBuildGroup1.bErr)  THEN
+		fbBuildGroup1( bExec := FALSE );
+		bGroup1 := TRUE;   (*bei Fehler nochmal versuchen *)
+		nState := 0;
+	END_IF
+
+
+20: (* release Group *)
+			fbReleaseGroup1(
+			bExec:= bGroup1Release,
+			nChan:= nChan);
+		IF (NOT fbReleaseGroup1.bBusy) AND NOT fbReleaseGroup1.bErr  AND bGroup1Release THEN
+			fbReleaseGroup1( bExec := FALSE );
+			bGroup1Release := FALSE;
+			nState := 0;
+		END_IF
+
+		IF (NOT fbReleaseGroup1.bBusy) AND fbReleaseGroup1.bErr THEN
+			fbReleaseGroup1( bExec := FALSE );
+			bGroup1Release := TRUE; (* bei Fehler weiter versuchen, Gruppe aufzulösen *)
+			nState := 0;
+		END_IF
+END_CASE]]></ST>
+    </Implementation>
+    <LineIds Name="PRG_GroupAxesToNCI">
+      <LineId Id="3" Count="13" />
+      <LineId Id="26" Count="8" />
+      <LineId Id="37" Count="7" />
+      <LineId Id="47" Count="24" />
+      <LineId Id="73" Count="15" />
+      <LineId Id="113" Count="3" />
+      <LineId Id="118" Count="0" />
+      <LineId Id="120" Count="4" />
+      <LineId Id="126" Count="0" />
+      <LineId Id="128" Count="4" />
+      <LineId Id="134" Count="13" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <GVL Name="GVL_SafetyFrom_RT2" Id="{e8bd64c9-f261-4488-98aa-41824aaa48bc}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL
+	// =================== SAFETY ===================
+	bSAFETY_Error				AT %I*	: BOOL;
+	bSAFETY_ResetCMD 			AT %Q*	: BOOL;
+	bSAFETY_ResetBusy			AT %I*	: BOOL;
+	bSAFETY_PermissionSS1		AT %I*	: BOOL; 				// Sygnal NC - TRUE - pozwolenie na prace
+	bSAFETY_PermissionSS2		AT %I*	: BOOL; 				// Sygnal NC - TRUE - pozwolenie na prace
+	bSAFETY_ServoKierPermitionOutSS1		AT%I* 	: BOOL;
+	bSAFETY_FalownikKierPermitionOutSS1		AT%I* 	: BOOL;
+	bSAFETY_ZaklejarkaKierPermitionOutSS1	AT%I* 	: BOOL;
+// ======== Error and states collection =========
+	dwGroupErrors				AT %I*	: DWORD;				// Group Error collection - Communication, FB, Other...
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

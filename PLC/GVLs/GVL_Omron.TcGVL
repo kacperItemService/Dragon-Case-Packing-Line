@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <GVL Name="GVL_Omron" Id="{bfc108ba-1c28-4600-8b41-b81987e88426}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL
+	//Kartoniarka 
+	wOmron_1_Status 	AT%I* 	:WORD;
+	iOmronErectorAcc    AT%I*	:UDINT;
+	iOmronErectorDcc    AT%I*	:UDINT;
+	iOmron_1_ActVelo	AT%I*	:INT;
+ 	wOmron_1_Control	AT%Q*	:WORD;
+	iOmron_1_SeVelo		AT%Q*	:INT;
+
+	
+
+	//Zaklejarka
+	wOmron_Za_Status 	AT%I* 	:WORD; 
+	iOmron_Za_ActVelo	AT%I*	:INT;	
+ 	wOmron_Za_Control	AT%Q*	:WORD;
+	iOmron_Za_SeVelo	AT%Q*	:INT;
+	
+	//Ploter
+	wOmron_Pl_Status 	AT%I* 	:WORD; 
+	iOmron_Pl_ActVelo	AT%I*	:INT;	
+ 	wOmron_Pl_Control	AT%Q*	:WORD;
+	iOmron_Pl_SeVelo	AT%Q*	:INT;
+	
+	//Kierownica
+	wOmron_Kier_Status 	AT%I* 	:WORD; 
+	iOmron_Kier_ActVelo	AT%I*	:INT;	
+ 	wOmron_Kier_Control	AT%Q*	:WORD;
+	iOmron_Kier_SeVelo	AT%Q*	:INT;
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

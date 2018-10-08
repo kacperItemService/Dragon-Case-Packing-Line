@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <GVL Name="GVL_AXIS" Id="{b49b04b8-6f42-4fdf-89da-5c386172ff85}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL
+	//serwo kartoniarka 
+		stAxis1 :AXIS_REF;
+		bLogDriveDiagMsgs 	: BOOL := FALSE;
+	bForceStateChgAfterDrvReset : BOOL := FALSE;
+		bEnable :BOOL;
+	
+		//serwo kierownica 
+		stAxis2 :AXIS_REF;
+		//enkoder balluff 
+
+		EC_Magazyn :AXIS_REF;	
+		F_Magazyn :AXIS_REF;	
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

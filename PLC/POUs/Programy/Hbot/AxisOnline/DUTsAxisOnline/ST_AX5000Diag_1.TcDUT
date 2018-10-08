@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <DUT Name="ST_AX5000Diag_1" Id="{7316e03c-ed1f-4d1e-8b67-5630e6dd8c0c}">
+    <Declaration><![CDATA[TYPE ST_AX5000Diag_1 :
+STRUCT
+(* NC-Status *)
+	nNCAxisID							: UDINT;
+	bOperational						: BOOL;
+	bC1DError							: BOOL;
+	bWcStateError						: BOOL;
+	bAxisError							: BOOL;
+	iAxisErrorCode						: UDINT;
+
+(* Drive Diag *)
+	strDriveType						: STRING(19);
+	strMotorType						: STRING(31);
+	wDriveStatus						: WORD;
+	wClass1Diag							: WORD;
+	stClass1Diag						: ST_AX5000_C1D;
+	stDriveStatus						: ST_AX5000DriveStatus;
+	stEcSlaveStateBits					: ST_EcSlaveStateBits;
+	stEcSlaveState						: ST_EcSlaveState;
+	bPreopToSafeOpError					: BOOL;
+	bSafeOpToOpError					: BOOL;
+	stCPxInvParamList					: ST_SoE_CPxInvParamList;
+	iDiagNumber							: UDINT;
+	stDiagNumberList					: ST_SoE_DiagNumList;
+	strDiagMessage						: STRING;
+END_STRUCT
+END_TYPE]]></Declaration>
+  </DUT>
+</TcPlcObject>

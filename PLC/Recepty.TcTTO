@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <Task Name="Recepty" Id="{474b0a99-707b-44f6-8bf2-a2c118dcd614}">
+    <!--CycleTime in micro seconds.-->
+    <CycleTime>50000</CycleTime>
+    <Priority>1</Priority>
+    <PouCall>
+      <Name>RecipeManagement</Name>
+    </PouCall>
+    <TaskFBGuid>{17143f2d-d925-4f49-b5f8-132461f29faa}</TaskFBGuid>
+    <Fb_init>{bfd68341-a3e5-4563-b618-053ae5c92cec}</Fb_init>
+    <Fb_exit>{9e2b990a-1218-49b6-bec0-a00c6bdb70d1}</Fb_exit>
+    <CycleUpdate>{69809b82-b835-4adb-a6b6-47c192f464bb}</CycleUpdate>
+    <PostCycleUpdate>{0fa71792-929b-4ad8-b540-875356ee9cc1}</PostCycleUpdate>
+  </Task>
+</TcPlcObject>
